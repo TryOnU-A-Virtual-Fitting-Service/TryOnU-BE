@@ -1,0 +1,71 @@
+package tryonu.api.common.dto;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+/**
+ * 모든 API 응답을 위한 공통 래퍼 클래스
+ * 
+ * @param <T> 응답 데이터의 타입
+ */
+@Schema(description = "API 응답 공통 형식")
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public record ApiResponseWrapper<T>(
+    @Schema(description = "요청 성공 여부", example = "true")
+    boolean isSuccess,
+    
+    @Schema(description = "응답 데이터")
+    T data,
+    
+    @Schema(description = "에러 정보")
+    ErrorResponse error
+) {
+    
+    /**
+     * 성공 응답 생성
+     * 
+     * @param data 응답 데이터
+     * @param <T> 데이터 타입
+     * @return 성공 응답
+     */
+    public static <T> ApiResponseWrapper<T> ofSuccess(T data) {
+        return new ApiResponseWrapper<>(true, data, null);
+    }
+    
+    /**
+     * 성공 응답 생성 (데이터 없음)
+     * 
+     * @param <T> 데이터 타입
+     * @return 성공 응답
+     */
+    public static <T> ApiResponseWrapper<T> ofSuccess() {
+        return new ApiResponseWrapper<>(true, null, null);
+    }
+    
+    /**
+     * 실패 응답 생성
+     * 
+     * @param errorCode 에러 코드
+     * @param message 에러 메시지
+     * @param <T> 데이터 타입
+     * @return 실패 응답
+     */
+    public static <T> ApiResponseWrapper<T> ofFailure(String errorCode, String message) {
+        return new ApiResponseWrapper<>(false, null, new ErrorResponse(errorCode, message));
+    }
+    
+    /**
+     * 에러 응답 정보
+     * 
+     * @param code 에러 코드
+     * @param message 에러 메시지
+     */
+    @Schema(description = "에러 응답 정보")
+    public record ErrorResponse(
+        @Schema(description = "에러 코드", example = "USER_NOT_FOUND")
+        String code,
+        
+        @Schema(description = "에러 메시지", example = "사용자를 찾을 수 없습니다.")
+        String message
+    ) {}
+} 
