@@ -5,7 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import tryonu.api.common.dto.ApiResponseWrapper;
+import tryonu.api.common.wrapper.ApiResponseWrapper;
 
 /**
  * 전역 예외 처리기
