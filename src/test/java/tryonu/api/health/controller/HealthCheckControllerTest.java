@@ -7,7 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import tryonu.api.common.dto.ApiResponseWrapper;
+import tryonu.api.common.wrapper.ApiResponseWrapper;
 import tryonu.api.controller.HealthCheckController;
 import tryonu.api.dto.responses.HealthCheckResponse;
 import tryonu.api.service.health.HealthCheckService;
