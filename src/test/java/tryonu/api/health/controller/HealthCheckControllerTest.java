@@ -8,8 +8,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import tryonu.api.common.dto.ApiResponseWrapper;
-import tryonu.api.health.dto.responses.HealthCheckResponse;
-import tryonu.api.health.service.HealthCheckService;
+import tryonu.api.controller.HealthCheckController;
+import tryonu.api.dto.responses.HealthCheckResponse;
+import tryonu.api.service.health.HealthCheckService;
 
 import java.time.LocalDateTime;
 

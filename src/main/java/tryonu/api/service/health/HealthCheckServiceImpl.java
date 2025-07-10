@@ -1,9 +1,9 @@
-package tryonu.api.health.service;
+package tryonu.api.service.health;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import tryonu.api.health.dto.responses.HealthCheckResponse;
+import tryonu.api.dto.responses.HealthCheckResponse;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;

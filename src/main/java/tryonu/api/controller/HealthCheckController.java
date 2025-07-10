@@ -1,4 +1,4 @@
-package tryonu.api.health.controller;
+package tryonu.api.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -13,8 +13,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import tryonu.api.common.dto.ApiResponseWrapper;
-import tryonu.api.health.dto.responses.HealthCheckResponse;
-import tryonu.api.health.service.HealthCheckService;
+import tryonu.api.dto.responses.HealthCheckResponse;
+import tryonu.api.service.health.HealthCheckService;
+
 
 /**
  * 헬스체크 API 컨트롤러

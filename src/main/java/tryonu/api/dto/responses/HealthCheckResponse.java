@@ -1,4 +1,4 @@
-package tryonu.api.health.dto.responses;
+package tryonu.api.dto.responses;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
