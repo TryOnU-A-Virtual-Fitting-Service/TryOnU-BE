@@ -47,6 +47,7 @@ dependencies {
     
     // 개발 도구
     compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     
     // 데이터베이스
