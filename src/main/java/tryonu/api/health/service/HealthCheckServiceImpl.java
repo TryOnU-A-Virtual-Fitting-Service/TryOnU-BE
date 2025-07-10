@@ -3,7 +3,7 @@ package tryonu.api.health.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import tryonu.api.health.dto.HealthCheckResponse;
+import tryonu.api.health.dto.responses.HealthCheckResponse;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -31,8 +31,7 @@ public class HealthCheckServiceImpl implements HealthCheckService {
             uptimeSeconds
         );
         
-        log.info("✅ [HealthCheck] 상태 확인 완료 - status={}, uptime={}초", 
-                response.status(), response.uptime());
+        log.info("✅ [HealthCheck] 상태 확인 완료 - status={}, uptime={}초", response.status(), response.uptime());
         
         return response;
     }

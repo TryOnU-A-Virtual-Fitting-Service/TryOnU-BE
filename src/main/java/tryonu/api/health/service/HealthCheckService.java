@@ -1,6 +1,6 @@
 package tryonu.api.health.service;
 
-import tryonu.api.health.dto.HealthCheckResponse;
+import tryonu.api.health.dto.responses.HealthCheckResponse;
 
 /**
  * 헬스체크 서비스 인터페이스

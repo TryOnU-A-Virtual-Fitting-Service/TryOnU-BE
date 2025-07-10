@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import tryonu.api.common.dto.ApiResponseWrapper;
-import tryonu.api.health.dto.HealthCheckResponse;
+import tryonu.api.health.dto.responses.HealthCheckResponse;
 import tryonu.api.health.service.HealthCheckService;
 
 /**
