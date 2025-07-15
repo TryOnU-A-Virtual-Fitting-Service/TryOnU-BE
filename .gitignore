@@ -39,6 +39,7 @@ out/
 ### Application Configuration ###
 src/main/resources/application.yml
 src/main/resources/application-local.yml
+src/main/resources/application-dev.yml
 src/main/resources/application-test.yml
 src/main/resources/application-prod.yml
 
@@ -162,5 +163,6 @@ jspm_packages/
 
 # Application specific
 application-local.yml
+application-dev.yml
 application-test.yml
 application-prod.yml
