@@ -4,7 +4,10 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "fitting_models")
+@Table(name = "fitting_models", indexes = {
+    @Index(name = "idx_fitting_models_is_deleted", columnList = "is_deleted"),
+    @Index(name = "idx_fitting_models_user_id", columnList = "user_id")
+})
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

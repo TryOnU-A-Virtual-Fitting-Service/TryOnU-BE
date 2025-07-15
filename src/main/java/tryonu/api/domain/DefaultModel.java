@@ -5,7 +5,10 @@ import jakarta.persistence.*;
 
 
 @Entity
-@Table(name = "default_models")
+@Table(name = "default_models", indexes = {
+    @Index(name = "idx_default_models_is_deleted", columnList = "is_deleted"),
+    @Index(name = "idx_default_models_user_id", columnList = "user_id")
+})
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

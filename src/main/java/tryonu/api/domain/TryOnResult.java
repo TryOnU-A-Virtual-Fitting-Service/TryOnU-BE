@@ -4,7 +4,11 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "try_on_results")
+@Table(name = "try_on_results", indexes = {
+    @Index(name = "idx_try_on_results_is_deleted", columnList = "is_deleted"),
+    @Index(name = "idx_try_on_results_user_id", columnList = "user_id"),
+    @Index(name = "idx_try_on_results_fitting_model_id", columnList = "fitting_model_id")
+})
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

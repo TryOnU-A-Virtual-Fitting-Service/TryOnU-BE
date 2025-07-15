@@ -5,7 +5,10 @@ import lombok.*;
 import tryonu.api.common.enums.Category;
 
 @Entity
-@Table(name = "clothes")
+@Table(name = "clothes", indexes = {
+    @Index(name = "idx_clothes_is_deleted", columnList = "is_deleted"),
+    @Index(name = "idx_clothes_category", columnList = "category")
+})
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

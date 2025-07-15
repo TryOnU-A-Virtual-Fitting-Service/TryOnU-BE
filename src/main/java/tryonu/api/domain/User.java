@@ -5,7 +5,10 @@ import lombok.*;
 import tryonu.api.common.enums.Gender;
 
 @Entity
-@Table(name = "users")
+@Table(name = "users", indexes = {
+    @Index(name = "idx_users_is_deleted", columnList = "is_deleted"),
+    @Index(name = "idx_users_device_id", columnList = "device_id")
+})
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
