@@ -1,5 +1,8 @@
 package tryonu.api.common.enums;
 
+import lombok.Getter;
+
+@Getter
 public enum Gender {
     MALE("남성"),
     FEMALE("여성");
@@ -11,11 +14,11 @@ public enum Gender {
     }
     
     public String getDescription() {
-        return description;
+        return description; // "남성" 또는 "여성"
     }
     
     public String getValue() {
-        return this.name();
+        return this.name(); //  "MALE" 또는 "FEMALE"
     }
     
     public static Gender fromString(String value) {
