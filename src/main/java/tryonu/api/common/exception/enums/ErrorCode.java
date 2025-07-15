@@ -18,6 +18,9 @@ public enum ErrorCode {
     // FittingModel 관련 에러
     FITTING_MODEL_NOT_FOUND("F001", "피팅 모델을 찾을 수 없습니다."),
     
+    // DefaultModel 관련 에러
+    DEFAULT_MODEL_NOT_FOUND("D001", "기본 모델을 찾을 수 없습니다."),
+    
     // TryOnResult 관련 에러
     TRY_ON_RESULT_NOT_FOUND("T001", "피팅 결과를 찾을 수 없습니다."),
     
