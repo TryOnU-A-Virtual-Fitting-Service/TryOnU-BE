@@ -21,7 +21,11 @@ public enum Category {
     }
 
     public SuperType getSuperType() {
-        return superType;
+        return superType; // SuperType.ACCESSORY, SuperType.BOTTOM, SuperType.TOP, SuperType.FOOTWEAR
+    }
+
+    public String getCategoryName() {
+        return this.name(); // "ACCESSORY", "LONG_PANTS", "LONG_SLEEVE", "OUTWEAR", "SHOES", "SHORT_PANTS", "SHORT_SLEEVE", "SLEEVELESS"
     }
 
 } 
