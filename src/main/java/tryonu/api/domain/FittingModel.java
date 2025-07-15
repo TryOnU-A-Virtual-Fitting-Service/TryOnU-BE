@@ -26,9 +26,4 @@ public class FittingModel {
     @Setter
     Boolean isDeleted = false; // 삭제 여부. 삭제되면 true로
 
-    @Column(name = "is_default", nullable = false)
-    @Builder.Default
-    Boolean isDefault = false; // 기본 모델 여부. 기본 모델이면 true로 설정
-
-
 }

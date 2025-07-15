@@ -3,7 +3,6 @@ package tryonu.api.repository.user;
 import org.springframework.lang.NonNull;
 import tryonu.api.domain.User;
 
-import java.util.List;
 
 public interface UserRepository {
     
@@ -15,17 +14,17 @@ public interface UserRepository {
     /**
      * 사용자 ID로 조회 (예외처리 포함)
      */
-    User findByIdOrThrow(@NonNull Long userId);
+    User findByIdAndIsDeletedFalseOrThrow(@NonNull Long userId);
     
     /**
      * 디바이스 ID로 사용자 조회 (예외처리 포함)
      */
-    User findByDeviceIdOrThrow(@NonNull String deviceId);
+    User findByDeviceIdAndIsDeletedFalseOrThrow(@NonNull String deviceId);
     
     /**
      * 디바이스 ID로 사용자 존재 여부 확인
      */
-    boolean existsByDeviceId(@NonNull String deviceId);
+    boolean existsByDeviceIdAndIsDeletedFalse(@NonNull String deviceId);
     
     /**
      * 사용자 소프트 삭제 (예외처리 포함)

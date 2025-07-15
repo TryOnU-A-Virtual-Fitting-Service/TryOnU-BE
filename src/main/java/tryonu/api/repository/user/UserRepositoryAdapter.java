@@ -24,8 +24,8 @@ public class UserRepositoryAdapter implements UserRepository {
     }
     
     @Override
-    public User findByIdOrThrow(@NonNull Long userId) {
-        return jpaUserRepository.findById(userId)
+    public User findByIdAndIsDeletedFalseOrThrow(@NonNull Long userId) {
+        return jpaUserRepository.findByIdAndIsDeletedFalse(userId)
             .orElseThrow(() -> {
                 log.error("[UserRepositoryAdapter] 사용자를 찾을 수 없음 - userId: {}", userId);
                 return new CustomException(ErrorCode.USER_NOT_FOUND, 
@@ -34,8 +34,8 @@ public class UserRepositoryAdapter implements UserRepository {
     }
     
     @Override
-    public User findByDeviceIdOrThrow(@NonNull String deviceId) {
-        return jpaUserRepository.findByDeviceId(deviceId)
+    public User findByDeviceIdAndIsDeletedFalseOrThrow(@NonNull String deviceId) {
+        return jpaUserRepository.findByDeviceIdAndIsDeletedFalse(deviceId)
             .orElseThrow(() -> {
                 log.error("[UserRepositoryAdapter] 사용자를 찾을 수 없음 - deviceId: {}", deviceId);
                 return new CustomException(ErrorCode.USER_NOT_FOUND, 
@@ -45,8 +45,8 @@ public class UserRepositoryAdapter implements UserRepository {
     
     
     @Override
-    public boolean existsByDeviceId(@NonNull String deviceId) {
-        boolean exists = jpaUserRepository.existsByDeviceId(deviceId);
+    public boolean existsByDeviceIdAndIsDeletedFalse(@NonNull String deviceId) {
+        boolean exists = jpaUserRepository.existsByDeviceIdAndIsDeletedFalse(deviceId);
         log.debug("[UserRepositoryAdapter] 사용자 존재 여부 확인 - deviceId: {}, exists: {}", deviceId, exists);
         return exists;
     }

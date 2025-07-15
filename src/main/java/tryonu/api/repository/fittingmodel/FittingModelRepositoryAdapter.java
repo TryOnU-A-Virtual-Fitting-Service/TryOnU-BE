@@ -24,8 +24,8 @@ public class FittingModelRepositoryAdapter implements FittingModelRepository {
     }
     
     @Override
-    public FittingModel findByIdOrThrow(@NonNull Long id) {
-        return jpaFittingModelRepository.findById(id)
+    public FittingModel findByIdAndIsDeletedFalseOrThrow(@NonNull Long id) {
+        return jpaFittingModelRepository.findByIdAndIsDeletedFalse(id)
             .orElseThrow(() -> {
                 log.error("[FittingModelRepositoryAdapter] 피팅 모델을 찾을 수 없음 - id: {}", id);
                 return new CustomException(ErrorCode.FITTING_MODEL_NOT_FOUND, 
@@ -34,8 +34,8 @@ public class FittingModelRepositoryAdapter implements FittingModelRepository {
     }
     
     @Override
-    public FittingModel findAllByUserIdOrThrow(@NonNull Long userId) {
-        FittingModel fittingModel = jpaFittingModelRepository.findAllByUser_Id(userId);
+    public FittingModel findAllByUserIdAndIsDeletedFalseOrThrow(@NonNull Long userId) {
+        FittingModel fittingModel = jpaFittingModelRepository.findAllByUser_IdAndIsDeletedFalse(userId);
         if (fittingModel == null) {
             log.error("[FittingModelRepositoryAdapter] 피팅 모델을 찾을 수 없음 - userId: {}", userId);
             throw new CustomException(ErrorCode.FITTING_MODEL_NOT_FOUND, 

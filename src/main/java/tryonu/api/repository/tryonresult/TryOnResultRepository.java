@@ -15,17 +15,17 @@ public interface TryOnResultRepository {
     /**
      * 피팅 결과 ID로 조회 (예외처리 포함)
      */
-    TryOnResult findByIdOrThrow(@NonNull Long id);
+    TryOnResult findByIdAndIsDeletedFalseOrThrow(@NonNull Long id);
     
     /**
      * 사용자 ID로 전체 피팅 결과 조회 (예외처리 포함)
      */
-    List<TryOnResult> findAllByUserIdOrThrow(@NonNull Long userId);
+    List<TryOnResult> findAllByUserIdAndIsDeletedFalseOrThrow(@NonNull Long userId);
     
     /**
      * 사용자 ID로 전체 피팅 결과와 연결된 상세 정보 조회 (예외처리 포함)
      */
-    List<TryOnResult> findAllByUserIdWithDetailsOrThrow(@NonNull Long userId);
+    List<TryOnResult> findAllByUserIdWithDetailsAndIsDeletedFalseOrThrow(@NonNull Long userId);
     
     
     /**

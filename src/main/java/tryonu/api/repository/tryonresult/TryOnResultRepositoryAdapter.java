@@ -26,8 +26,8 @@ public class TryOnResultRepositoryAdapter implements TryOnResultRepository {
     }
     
     @Override
-    public TryOnResult findByIdOrThrow(@NonNull Long id) {
-        return jpaTryOnResultRepository.findById(id)
+    public TryOnResult findByIdAndIsDeletedFalseOrThrow(@NonNull Long id) {
+        return jpaTryOnResultRepository.findByIdAndIsDeletedFalse(id)
             .orElseThrow(() -> {
                 log.error("[TryOnResultRepositoryAdapter] 피팅 결과를 찾을 수 없음 - id: {}", id);
                 return new CustomException(ErrorCode.TRY_ON_RESULT_NOT_FOUND, 
@@ -36,15 +36,15 @@ public class TryOnResultRepositoryAdapter implements TryOnResultRepository {
     }
     
     @Override
-    public List<TryOnResult> findAllByUserIdOrThrow(@NonNull Long userId) {
-        List<TryOnResult> tryOnResults = jpaTryOnResultRepository.findByUser_Id(userId);
+    public List<TryOnResult> findAllByUserIdAndIsDeletedFalseOrThrow(@NonNull Long userId) {
+        List<TryOnResult> tryOnResults = jpaTryOnResultRepository.findByUser_IdAndIsDeletedFalse(userId);
         log.debug("[TryOnResultRepositoryAdapter] 사용자별 피팅 결과 조회 - userId: {}, count: {}", userId, tryOnResults.size());
         return tryOnResults;
     }
     
     @Override
-    public List<TryOnResult> findAllByUserIdWithDetailsOrThrow(@NonNull Long userId) {
-        List<TryOnResult> tryOnResults = jpaTryOnResultRepository.findByUser_Id(userId);
+    public List<TryOnResult> findAllByUserIdWithDetailsAndIsDeletedFalseOrThrow(@NonNull Long userId) {
+        List<TryOnResult> tryOnResults = jpaTryOnResultRepository.findByUserIdWithDetailsAndIsDeletedFalse(userId);
         log.debug("[TryOnResultRepositoryAdapter] 사용자별 피팅 결과 상세 조회 - userId: {}, count: {}", userId, tryOnResults.size());
         return tryOnResults;
     }

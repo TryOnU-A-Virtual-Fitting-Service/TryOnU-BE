@@ -9,12 +9,17 @@ import java.util.Optional;
 public interface JpaUserRepository extends JpaRepository<User, Long> {
     
     /**
-     * 디바이스 ID로 사용자 조회
+     * id와 삭제되지 않은 사용자 조회
      */
-    Optional<User> findByDeviceId(@NonNull String deviceId);
+    Optional<User> findByIdAndIsDeletedFalse(Long id);
     
     /**
-     * 디바이스 ID로 사용자 존재 여부 확인
+     * 디바이스 ID로 삭제되지 않은 사용자 조회
      */
-    boolean existsByDeviceId(@NonNull String deviceId);
+    Optional<User> findByDeviceIdAndIsDeletedFalse(@NonNull String deviceId);
+    
+    /**
+     * 디바이스 ID로 삭제되지 않은 사용자 존재 여부 확인
+     */
+    boolean existsByDeviceIdAndIsDeletedFalse(@NonNull String deviceId);
 } 

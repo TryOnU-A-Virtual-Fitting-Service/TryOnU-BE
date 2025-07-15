@@ -25,8 +25,8 @@ public class ClothRepositoryAdapter implements ClothRepository {
     }
     
     @Override
-    public Cloth findByIdOrThrow(@NonNull Long clothId) {
-        return jpaClothRepository.findById(clothId)
+    public Cloth findByIdAndIsDeletedFalseOrThrow(@NonNull Long clothId) {
+        return jpaClothRepository.findByIdAndIsDeletedFalse(clothId)
             .orElseThrow(() -> {
                 log.error("[ClothRepositoryAdapter] 의류를 찾을 수 없음 - clothId: {}", clothId);
                 return new CustomException(ErrorCode.CLOTH_NOT_FOUND, 

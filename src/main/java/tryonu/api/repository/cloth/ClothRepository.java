@@ -13,7 +13,7 @@ public interface ClothRepository {
     /**
      * 의류 ID로 조회 (예외처리 포함)
      */
-    Cloth findByIdOrThrow(@NonNull Long clothId);
+    Cloth findByIdAndIsDeletedFalseOrThrow(@NonNull Long clothId);
 
     
     /**
