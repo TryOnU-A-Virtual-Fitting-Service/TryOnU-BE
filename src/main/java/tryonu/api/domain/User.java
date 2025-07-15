@@ -21,20 +21,20 @@ public class User {
     @Column(name = "device_id", nullable = false)
     String deviceId;
 
-    @Column(name = "name", nullable = false)
+    @Column(name = "name", nullable = true)
     String name;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "gender", nullable = false)
+    @Column(name = "gender", nullable = true)
     Gender gender;
 
-    @Column(name = "age", nullable = false)
+    @Column(name = "age", nullable = true)
     Integer age;
 
-    @Column(name = "height", nullable = false)
+    @Column(name = "height", nullable = true)
     Integer height;
 
-    @Column(name = "weight", nullable = false)
+    @Column(name = "weight", nullable = true)
     Integer weight;
 
     @Column(name = "is_deleted", nullable = false)
