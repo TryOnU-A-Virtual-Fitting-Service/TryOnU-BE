@@ -11,8 +11,9 @@ echo "📊 PostgreSQL 데이터베이스: tryonu-dev"
 
 # 환경 변수 설정
 export SPRING_PROFILES_ACTIVE=local
-export GRADLE_OPTS="-Dfile.encoding=UTF-8"
+export GRADLE_OPTS="-Dfile.encoding=UTF-8 -Dconsole.encoding=UTF-8"
+
 
 # 애플리케이션 실행
-./gradlew bootRun --args="--spring.profiles.active=local" -Dfile.encoding=UTF-8 -Duser.language=ko -Duser.country=KR -Dspring.output.ansi.enabled=ALWAYS
+./gradlew bootRun --args="--spring.profiles.active=local"
 
