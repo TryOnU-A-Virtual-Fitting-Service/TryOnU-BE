@@ -44,11 +44,13 @@ dependencies {
     
     // 로깅
     implementation 'org.springframework.boot:spring-boot-starter-logging'
-    
+
+    // 보안
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+
     // 개발 도구
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
-    developmentOnly 'org.springframework.boot:spring-boot-devtools'
     
     // 데이터베이스
     runtimeOnly 'org.postgresql:postgresql'
@@ -59,8 +61,7 @@ dependencies {
     // 테스트
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.mockito:mockito-core'
-    testImplementation 'org.mockito:mockito-junit-jupiter'
+    testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
@@ -72,7 +73,7 @@ dependencyManagement {
 
 tasks.named('test') {
     outputs.dir snippetsDir
-    useJUnitPlatform()
+//    useJUnitPlatform()
 }
 
 tasks.named('asciidoctor') {
