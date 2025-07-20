@@ -13,7 +13,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @Getter
-public class TryOnResult {
+public class TryOnResult extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
@@ -40,9 +40,5 @@ public class TryOnResult {
     @Builder.Default
     @Setter
     Boolean isDeleted = false; // 삭제 여부. 삭제되면 true로
-
-    @Column(name = "is_default", nullable = false)
-    @Builder.Default
-    Boolean isDefault = false;  // 기본 모델로 생성 된 결과 여부. 기본 결과이면 true로 설정
 
 }
