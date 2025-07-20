@@ -22,4 +22,9 @@ public interface JpaUserRepository extends JpaRepository<User, Long> {
      * 디바이스 ID로 삭제되지 않은 사용자 존재 여부 확인
      */
     boolean existsByDeviceIdAndIsDeletedFalse(@NonNull String deviceId);
+
+    /**
+     * 디바이스 ID로 삭제되지 않은 사용자 조회
+     */
+    Optional<User> findByDeviceId(@NonNull String deviceId);
 } 
