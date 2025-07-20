@@ -11,6 +11,7 @@ public enum ErrorCode {
     USER_NOT_FOUND("U001", "사용자를 찾을 수 없습니다."),
     USER_ALREADY_EXISTS("U002", "이미 존재하는 사용자입니다."),
     DEVICE_ID_REQUIRED("U003", "디바이스 ID는 필수입니다."),
+    USER_INFO_NOT_FOUND("U004", "사용자 개인정보를 찾을 수 없습니다."),
     
     // Cloth 관련 에러
     CLOTH_NOT_FOUND("C001", "의류를 찾을 수 없습니다."),
