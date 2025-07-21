@@ -13,16 +13,20 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import lombok.RequiredArgsConstructor;
 import tryonu.api.dto.responses.DefaultModelResponse;
+import org.springframework.validation.annotation.Validated;
+import jakarta.validation.constraints.NotNull;
+import tryonu.api.common.exception.CustomException;
+import tryonu.api.common.exception.enums.ErrorCode;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/default-model")
 @Tag(name = "기본 모델 API", description = "기본 모델 관련 API")
+@Validated
+@RequestMapping("/default-model")
 public class DefaultModelController {
 
     private final DefaultModelService defaultModelService;
@@ -42,10 +46,12 @@ public class DefaultModelController {
     })
     @PostMapping(value = "", consumes = "multipart/form-data")
     public ApiResponseWrapper<DefaultModelResponse> uploadDefaultModel(
-            @RequestHeader("X-Device-Id") String deviceId,
-            @RequestParam("file") MultipartFile file
+            @RequestParam("file") @NotNull MultipartFile file
     ) {
-        DefaultModelResponse response = defaultModelService.uploadDefaultModel(deviceId, file);
+        if (file.isEmpty()) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST, "업로드할 파일이 비어있습니다.");
+        }
+        DefaultModelResponse response = defaultModelService.uploadDefaultModel(file);
         return ApiResponseWrapper.ofSuccess(response);
     }
 
