@@ -27,14 +27,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<ApiResponseWrapper<Void>> handleCustomException(CustomException ex) {
         log.error("❗ [GlobalExceptionHandler] 커스텀 예외 발생: code={}, message={}", ex.getErrorCode().getCode(), ex.getMessage());
-        HttpStatus status = switch (ex.getErrorCode()) {
-            case INVALID_REQUEST, DEVICE_ID_REQUIRED -> HttpStatus.BAD_REQUEST;
-            case DEFAULT_MODEL_NOT_FOUND, FITTING_MODEL_NOT_FOUND, USER_NOT_FOUND, USER_INFO_NOT_FOUND, CLOTH_NOT_FOUND, TRY_ON_RESULT_NOT_FOUND, RESOURCE_NOT_FOUND -> HttpStatus.NOT_FOUND;
-            case USER_ALREADY_EXISTS -> HttpStatus.CONFLICT;
-            case UNAUTHORIZED -> HttpStatus.UNAUTHORIZED;
-            case FORBIDDEN -> HttpStatus.FORBIDDEN;
-            default -> HttpStatus.INTERNAL_SERVER_ERROR;
-        };
+        HttpStatus status = ex.getErrorCode().getHttpStatus();
         ApiResponseWrapper<Void> response = ApiResponseWrapper.ofFailure(
             ex.getErrorCode().getCode(),
             ex.getMessage()
