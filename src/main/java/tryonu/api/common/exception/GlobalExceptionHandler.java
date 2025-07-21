@@ -6,6 +6,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import tryonu.api.common.wrapper.ApiResponseWrapper;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.validation.FieldError;
 
 /**
  * 전역 예외 처리기
@@ -16,6 +18,29 @@ import tryonu.api.common.wrapper.ApiResponseWrapper;
 public class GlobalExceptionHandler {
     
     /**
+     * 커스텀 예외 처리
+     * @param ex CustomException
+     * @return 에러 응답
+     */
+    @ExceptionHandler(CustomException.class)
+    public ResponseEntity<ApiResponseWrapper<Void>> handleCustomException(CustomException ex) {
+        log.error("❗ [GlobalExceptionHandler] 커스텀 예외 발생: code={}, message={}", ex.getErrorCode().getCode(), ex.getMessage());
+        HttpStatus status = switch (ex.getErrorCode()) {
+            case INVALID_REQUEST -> HttpStatus.BAD_REQUEST;
+            case DEFAULT_MODEL_NOT_FOUND, FITTING_MODEL_NOT_FOUND, USER_NOT_FOUND, USER_INFO_NOT_FOUND, CLOTH_NOT_FOUND, TRY_ON_RESULT_NOT_FOUND -> HttpStatus.NOT_FOUND;
+            case USER_ALREADY_EXISTS -> HttpStatus.CONFLICT;
+            case UNAUTHORIZED -> HttpStatus.UNAUTHORIZED;
+            case FORBIDDEN -> HttpStatus.FORBIDDEN;
+            default -> HttpStatus.INTERNAL_SERVER_ERROR;
+        };
+        ApiResponseWrapper<Void> response = ApiResponseWrapper.ofFailure(
+            ex.getErrorCode().getCode(),
+            ex.getMessage()
+        );
+        return ResponseEntity.status(status).body(response);
+    }
+
+    /**
      * 일반적인 런타임 예외 처리
      * 
      * @param e 발생한 예외
@@ -24,12 +49,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ApiResponseWrapper<Void>> handleRuntimeException(RuntimeException e) {
         log.error("⚠️ [GlobalExceptionHandler] 런타임 예외 발생", e);
-        
         ApiResponseWrapper<Void> response = ApiResponseWrapper.ofFailure(
             "RUNTIME_ERROR",
             "서버 내부 오류가 발생했습니다."
         );
-        
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
     
@@ -42,12 +65,22 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponseWrapper<Void>> handleException(Exception e) {
         log.error("🚨 [GlobalExceptionHandler] 예상치 못한 예외 발생", e);
-        
         ApiResponseWrapper<Void> response = ApiResponseWrapper.ofFailure(
             "UNEXPECTED_ERROR",
             "예상치 못한 오류가 발생했습니다."
         );
-        
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+    }
+
+    /**
+     * @Valid 검증 실패 (RequestBody 등) 처리
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponseWrapper<Void>> handleValidationException(MethodArgumentNotValidException ex) {
+        FieldError fieldError = ex.getBindingResult().getFieldError();
+        String message = (fieldError != null) ? fieldError.getDefaultMessage() : "잘못된 요청입니다.";
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ApiResponseWrapper.ofFailure("INVALID_REQUEST", message));
     }
 } 
