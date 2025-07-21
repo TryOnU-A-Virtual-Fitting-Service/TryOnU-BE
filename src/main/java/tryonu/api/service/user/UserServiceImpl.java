@@ -19,8 +19,6 @@ import tryonu.api.common.enums.Gender;
 import tryonu.api.converter.DefaultModelConverter;
 import tryonu.api.converter.FittingModelConverter;
 import tryonu.api.common.auth.SecurityUtils;
-import tryonu.api.common.exception.CustomException;
-import tryonu.api.common.exception.enums.ErrorCode;
 
 import java.util.List;
 import java.util.Optional;
@@ -83,14 +81,8 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public UserInfoResponse getCurrentUserInfo() {
-        // 현재 사용자 조회 (인증되지 않은 경우 적절한 예외 발생)
-        Optional<User> currentUserOptional = SecurityUtils.getCurrentUserOptional();
-        if (currentUserOptional.isEmpty()) {
-            log.warn("[UserService] 인증되지 않은 사용자의 정보 조회 시도");
-            throw new CustomException(ErrorCode.UNAUTHORIZED, "로그인이 필요합니다. 올바른 X-Device-Id 헤더를 제공해주세요.");
-        }
-        
-        User currentUser = currentUserOptional.get();
+        // Security Filter에서 이미 인증된 사용자만 여기까지 올 수 있음
+        User currentUser = SecurityUtils.getCurrentUser();
         log.info("[UserService] 현재 사용자 정보 조회 시작 - userId: {}, deviceId: {}", currentUser.getId(), currentUser.getDeviceId());
         
         // 사용자의 모델 정보 조회 (id 내림차순 정렬)
