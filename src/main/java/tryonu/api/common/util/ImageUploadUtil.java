@@ -53,6 +53,9 @@ public class ImageUploadUtil {
     @Value("${file.upload.max-size}")
     private long maxFileSize;
 
+    @Value("${cloudfront.domain}")
+    private String cloudfrontDomain;
+
     private Set<String> allowedExtensions;
     private Set<String> allowedContentTypes;
 
@@ -100,8 +103,8 @@ public class ImageUploadUtil {
                 s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(inputStream, file.getSize()));
             } // 자동 close 처리
 
-            // S3 URL 생성 (s3Client.utilities() 사용)
-            String imageUrl = s3Client.utilities().getUrl(b -> b.bucket(bucketName).key(s3Key)).toString();
+            // S3 URL 생성 (CloudFront 도메인 사용)
+            String imageUrl = cloudfrontDomain + "/" + s3Key;
 
             log.info("[ImageUploadUtil] 이미지 업로드 성공 - imageUrl={}", imageUrl);
             return imageUrl;
