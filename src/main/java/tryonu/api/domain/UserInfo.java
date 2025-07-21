@@ -3,6 +3,9 @@ package tryonu.api.domain;
 import lombok.*;
 import jakarta.persistence.*;
 import tryonu.api.common.enums.Gender;
+import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Max;
 
 /**
  * 사용자 개인정보 엔티티
@@ -17,7 +20,6 @@ import tryonu.api.common.enums.Gender;
 @AllArgsConstructor
 @Builder
 @Getter
-@Setter
 public class UserInfo extends BaseEntity {
     
     @Id
@@ -29,6 +31,7 @@ public class UserInfo extends BaseEntity {
     User user;
     
     @Column(name = "name")
+    @Size(max = 100, message = "Name must not exceed 100 characters")
     String name;
     
     @Enumerated(EnumType.STRING)
@@ -36,12 +39,18 @@ public class UserInfo extends BaseEntity {
     Gender gender;
     
     @Column(name = "age")
+    @Min(value = 1, message = "Age must be positive")
+    @Max(value = 150, message = "Age must be realistic")
     Integer age;
     
     @Column(name = "height")
+    @Min(value = 1, message = "Height must be positive")
+    @Max(value = 300, message = "Height must be realistic")
     Integer height;
     
     @Column(name = "weight")
+    @Min(value = 1, message = "Weight must be positive")
+    @Max(value = 500, message = "Weight must be realistic")
     Integer weight;
     
 
