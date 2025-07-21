@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import tryonu.api.common.exception.CustomException;
 import tryonu.api.common.exception.enums.ErrorCode;
 import tryonu.api.domain.User;
-
+import java.util.Optional;
 
 @Slf4j
 @Repository
@@ -15,6 +15,11 @@ import tryonu.api.domain.User;
 public class UserRepositoryAdapter implements UserRepository {
     
     private final JpaUserRepository jpaUserRepository;
+
+    @Override
+    public Optional<User> findByDeviceId(@NonNull String deviceId) {
+        return jpaUserRepository.findByDeviceId(deviceId);
+    }
     
     @Override
     public User save(@NonNull User user) {

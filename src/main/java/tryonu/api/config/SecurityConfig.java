@@ -54,28 +54,26 @@ public class SecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             
-            // 커스텀 인증 필터 추가
-            .addFilterBefore(deviceIdAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-            
             // 요청별 권한 설정
             .authorizeHttpRequests(authz -> authz
-                // 헬스체크 엔드포인트 - 인증 없이 접근 가능
-                .requestMatchers("/health", "/actuator/health").permitAll()
-                
-                // Swagger UI 관련 엔드포인트 - 인증 없이 접근 가능
+                // 인증 없이 접근 가능한 엔드포인트 통합 설정
                 .requestMatchers(
-                    "/swagger-ui/**",
-                    "/swagger-ui.html",
-                    "/api-docs/**",
-                    "/v3/api-docs/**"
+                    "/health",                // 헬스 체크 엔드포인트 (무조건 허용)
+                    "/actuator/health",       // 스프링 액추에이터 헬스 체크 (무조건 허용)
+                    "/swagger-ui/**",         // Swagger UI 리소스 (API 문서화용, 무조건 허용)
+                    "/swagger-ui.html",       // Swagger UI 진입점 (무조건 허용)
+                    "/api-docs/**",           // Swagger API 문서 엔드포인트 (무조건 허용)
+                    "/v3/api-docs/**",        // OpenAPI 3.0 문서 엔드포인트 (무조건 허용)
+                    "/users/init",            // 익명 사용자 초기화 API (회원가입/최초 진입, 무조건 허용)
+                    "/error"                  // 에러 페이지 (무조건 허용)
                 ).permitAll()
-                
-                // 사용자 초기화 API - 인증 없이 접근 가능
-                .requestMatchers("/users/init").permitAll()
                 
                 // 그 외 모든 요청은 인증 필요
                 .anyRequest().authenticated()
-            );
+            )
+            
+            // 커스텀 인증 필터 추가 (권한 설정 후에 추가)
+            .addFilterBefore(deviceIdAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         
         log.info("✅ [SecurityConfig] Spring Security 설정 완료 - 헬스체크, Swagger UI, API 엔드포인트 인증 해제");
         

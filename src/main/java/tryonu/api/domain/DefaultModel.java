@@ -13,9 +13,9 @@ import jakarta.persistence.*;
 @AllArgsConstructor
 @Builder
 @Getter
-public class DefaultModel {
+public class DefaultModel extends BaseEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY) 
     Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)

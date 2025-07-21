@@ -13,7 +13,7 @@ import tryonu.api.common.enums.Category;
 @AllArgsConstructor
 @Builder
 @Getter
-public class Cloth {
+public class Cloth extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

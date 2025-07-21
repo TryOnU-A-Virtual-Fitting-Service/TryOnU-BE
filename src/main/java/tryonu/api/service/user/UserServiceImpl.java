@@ -6,8 +6,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tryonu.api.domain.User;
 import tryonu.api.dto.requests.UserInitRequest;
-import tryonu.api.dto.responses.UserResponse;
+import tryonu.api.repository.defaultmodel.DefaultModelRepository;
+import tryonu.api.repository.fittingmodel.FittingModelRepository;
 import tryonu.api.repository.user.UserRepository;
+import tryonu.api.domain.DefaultModel;
+import tryonu.api.domain.FittingModel;
+import tryonu.api.common.enums.Gender;
+import tryonu.api.converter.DefaultModelConverter;
+import tryonu.api.converter.FittingModelConverter;
 
 import java.util.Optional;
 
@@ -16,52 +22,44 @@ import java.util.Optional;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
-@Transactional(readOnly = true)
+@RequiredArgsConstructor    
+@Transactional(readOnly = true) 
 public class UserServiceImpl implements UserService {
-
+    
     private final UserRepository userRepository;
+    private final DefaultModelRepository defaultModelRepository;
+    private final FittingModelRepository fittingModelRepository;
 
-    @Override
-    public Optional<User> findByDeviceId(String deviceId) {
-        log.debug("[UserService] deviceId로 사용자 조회: deviceId={}", deviceId);
-        
-        try {
-            User user = userRepository.findByDeviceIdAndIsDeletedFalseOrThrow(deviceId);
-            return Optional.of(user);
-        } catch (Exception e) {
-            log.debug("[UserService] 사용자를 찾을 수 없음: deviceId={}", deviceId);
-            return Optional.empty();
-        }
-    }
+    private final DefaultModelConverter defaultModelConverter;  
+    private final FittingModelConverter fittingModelConverter;
 
     @Override
     @Transactional
-    public UserResponse initializeUser(UserInitRequest request) {
+    public void initializeUser(UserInitRequest request) {
         log.info("[UserService] 익명 사용자 초기화 시작: deviceId={}", request.deviceId());
         
         // 이미 존재하는 사용자인지 확인
-        Optional<User> existingUser = findByDeviceId(request.deviceId());
-        if (existingUser.isPresent()) {
+        Optional<User> existingUser = userRepository.findByDeviceId(request.deviceId());
+        if (existingUser.isPresent()) { // 이미 존재하는 사용자인 경우: 기존 사용자 정보 반환
             User user = existingUser.get();
             log.info("[UserService] 기존 사용자 발견: userId={}, deviceId={}", user.getId(), request.deviceId());
-            return UserResponse.from(user);
+            return;
         }
         
-        // 새로운 사용자 생성
+        // 존재하지 않는 경우: 새로운 사용자 생성 후 반환
         User newUser = User.builder()
                 .deviceId(request.deviceId())
-                .name(null)
-                .gender(null)
-                .age(null)
-                .height(null)
-                .weight(null)
                 .build();
-        
         User savedUser = userRepository.save(newUser);
-        log.info("[UserService] 새 사용자 생성 완료: userId={}, deviceId={}", savedUser.getId(), request.deviceId());
+
+        for (Gender gender : Gender.values()) {
+            DefaultModel defaultModel = defaultModelConverter.createDefaultModel(savedUser, gender);
+            defaultModelRepository.save(defaultModel);
+            FittingModel fittingModel = fittingModelConverter.createFittingModel(savedUser, gender);
+            fittingModelRepository.save(fittingModel);
+        }
         
-        return UserResponse.from(savedUser);
+        log.info("[UserService] 새 사용자 생성 완료: userId={}, deviceId={}", savedUser.getId(), request.deviceId());
     }
 
 
