@@ -29,7 +29,10 @@ public enum ErrorCode {
     INVALID_REQUEST("C002", "잘못된 요청입니다."),
     INTERNAL_SERVER_ERROR("C003", "서버 내부 오류가 발생했습니다."),
     UNAUTHORIZED("C004", "인증이 필요합니다."),
-    FORBIDDEN("C005", "접근 권한이 없습니다.");
+    FORBIDDEN("C005", "접근 권한이 없습니다."),
+    
+    // 인프라 관련 에러
+    S3_CLIENT_CREATION_FAILED("C006", "S3 클라이언트 생성에 실패했습니다.");
     
     private final String code;
     private final String message;

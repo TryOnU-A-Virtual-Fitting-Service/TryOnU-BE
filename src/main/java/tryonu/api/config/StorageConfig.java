@@ -7,6 +7,7 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import tryonu.api.common.exception.enums.ErrorCode;
 
 @Configuration
 public class StorageConfig {
@@ -32,12 +33,16 @@ public class StorageConfig {
      */
     @Bean
     public S3Client s3Client() {
-        return S3Client.builder()
-                .region(Region.of(region))
-                .credentialsProvider(StaticCredentialsProvider.create(
-                        AwsBasicCredentials.create(accessKey, secretKey)
-                ))
-                .build();
+        try {
+            return S3Client.builder()
+                    .region(Region.of(region))
+                    .credentialsProvider(StaticCredentialsProvider.create(
+                            AwsBasicCredentials.create(accessKey, secretKey)
+                    ))
+                    .build();
+        } catch (Exception e) {
+            throw new IllegalStateException(ErrorCode.S3_CLIENT_CREATION_FAILED.getMessage(), e);
+        }
     }
 
     /**
