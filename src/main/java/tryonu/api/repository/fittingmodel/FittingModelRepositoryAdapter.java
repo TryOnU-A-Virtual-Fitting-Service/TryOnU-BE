@@ -7,6 +7,9 @@ import org.springframework.stereotype.Repository;
 import tryonu.api.common.exception.CustomException;
 import tryonu.api.common.exception.enums.ErrorCode;
 import tryonu.api.domain.FittingModel;
+import tryonu.api.dto.responses.FittingModelDto;
+
+import java.util.List;
 
 
 @Slf4j
@@ -45,6 +48,12 @@ public class FittingModelRepositoryAdapter implements FittingModelRepository {
         return fittingModel;
     }
     
+    @Override
+    public List<FittingModelDto> findFittingModelsByUserIdOrderByIdDesc(@NonNull Long userId) {
+        List<FittingModelDto> fittingModels = jpaFittingModelRepository.findFittingModelsByUserIdOrderByIdDesc(userId);
+        log.debug("[FittingModelRepositoryAdapter] 피팅 모델 목록 조회 성공 (정렬) - userId: {}, count: {}", userId, fittingModels.size());
+        return fittingModels;
+    }
 
     
     @Override

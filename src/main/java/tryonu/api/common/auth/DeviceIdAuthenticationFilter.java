@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * DeviceId 기반 인증 필터
@@ -71,18 +72,24 @@ public class DeviceIdAuthenticationFilter extends OncePerRequestFilter {
             log.debug("[DeviceIdAuthenticationFilter] deviceId 추출: {}", deviceId);
             
             try {
-                // deviceId로 사용자 조회 (
-                User user = userRepository.findByDeviceIdAndIsDeletedFalseOrThrow(deviceId);
-                log.debug("[DeviceIdAuthenticationFilter] 사용자 인증 성공: userId={}, deviceId={}", 
-                         user.getId(), deviceId);
-                
-                // SecurityContext에 인증 정보 설정
-                DeviceIdAuthenticationToken authentication = new DeviceIdAuthenticationToken(user, Collections.emptyList());
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                // deviceId로 사용자 조회 - 예외 처리 개선
+                Optional<User> userOptional = userRepository.findByDeviceId(deviceId);
+                if (userOptional.isPresent() && !userOptional.get().getIsDeleted()) {
+                    User user = userOptional.get();
+                    log.debug("[DeviceIdAuthenticationFilter] 사용자 인증 성공: userId={}, deviceId={}", 
+                             user.getId(), deviceId);
+                    
+                    // SecurityContext에 인증 정보 설정
+                    DeviceIdAuthenticationToken authentication = new DeviceIdAuthenticationToken(user, Collections.emptyList());
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                } else {
+                    log.warn("[DeviceIdAuthenticationFilter] 유효하지 않은 deviceId: {}", deviceId);
+                    // 인증 실패해도 필터는 계속 진행 - 컨트롤러에서 적절히 처리
+                }
                 
             } catch (Exception e) {
-                log.error("[DeviceIdAuthenticationFilter] 사용자 조회 중 오류 발생: deviceId={}, error={}", deviceId, e.getMessage(), e);
-                throw e;
+                log.error("[DeviceIdAuthenticationFilter] 사용자 조회 중 예외 발생: deviceId={}, error={}", deviceId, e.getMessage());
+                // 예외가 발생해도 필터는 계속 진행 - 컨트롤러에서 적절히 처리
             }
         }
         

@@ -6,6 +6,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tryonu.api.domain.User;
 import tryonu.api.dto.requests.UserInitRequest;
+import tryonu.api.dto.responses.UserInitResponse;
+import tryonu.api.dto.responses.UserInfoResponse;
+import tryonu.api.dto.responses.FittingModelDto;
+import tryonu.api.dto.responses.DefaultModelDto;
 import tryonu.api.repository.defaultmodel.DefaultModelRepository;
 import tryonu.api.repository.fittingmodel.FittingModelRepository;
 import tryonu.api.repository.user.UserRepository;
@@ -14,7 +18,11 @@ import tryonu.api.domain.FittingModel;
 import tryonu.api.common.enums.Gender;
 import tryonu.api.converter.DefaultModelConverter;
 import tryonu.api.converter.FittingModelConverter;
+import tryonu.api.common.auth.SecurityUtils;
+import tryonu.api.common.exception.CustomException;
+import tryonu.api.common.exception.enums.ErrorCode;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -35,31 +43,64 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void initializeUser(UserInitRequest request) {
+    public UserInitResponse initializeUser(UserInitRequest request) {
         log.info("[UserService] 익명 사용자 초기화 시작: deviceId={}", request.deviceId());
         
+        User user;
         // 이미 존재하는 사용자인지 확인
         Optional<User> existingUser = userRepository.findByDeviceId(request.deviceId());
-        if (existingUser.isPresent()) { // 이미 존재하는 사용자인 경우: 기존 사용자 정보 반환
-            User user = existingUser.get();
+        if (existingUser.isPresent()) { 
+            // 이미 존재하는 사용자인 경우: 기존 사용자 정보 사용
+            user = existingUser.get();
             log.info("[UserService] 기존 사용자 발견: userId={}, deviceId={}", user.getId(), request.deviceId());
-            return;
-        }
-        
-        // 존재하지 않는 경우: 새로운 사용자 생성 후 반환
-        User newUser = User.builder()
-                .deviceId(request.deviceId())
-                .build();
-        User savedUser = userRepository.save(newUser);
+        } else {
+            // 존재하지 않는 경우: 새로운 사용자 생성
+            User newUser = User.builder()
+                    .deviceId(request.deviceId())
+                    .build();
+            user = userRepository.save(newUser);
 
-        for (Gender gender : Gender.values()) {
-            DefaultModel defaultModel = defaultModelConverter.createDefaultModel(savedUser, gender);
-            defaultModelRepository.save(defaultModel);
-            FittingModel fittingModel = fittingModelConverter.createFittingModel(savedUser, gender);
-            fittingModelRepository.save(fittingModel);
+            for (Gender gender : Gender.values()) {
+                DefaultModel defaultModel = defaultModelConverter.createDefaultModel(user, gender);
+                defaultModelRepository.save(defaultModel);
+                FittingModel fittingModel = fittingModelConverter.createFittingModel(user, gender);
+                fittingModelRepository.save(fittingModel);
+            }
+            
+            log.info("[UserService] 새 사용자 생성 완료: userId={}, deviceId={}", user.getId(), request.deviceId());
         }
         
-        log.info("[UserService] 새 사용자 생성 완료: userId={}, deviceId={}", savedUser.getId(), request.deviceId());
+        // 사용자의 모델 정보 조회 (id 내림차순 정렬)
+        List<FittingModelDto> fittingModels = fittingModelRepository.findFittingModelsByUserIdOrderByIdDesc(user.getId());
+        List<DefaultModelDto> defaultModels = defaultModelRepository.findDefaultModelsByUserIdOrderByIdDesc(user.getId());
+        
+        log.info("[UserService] 사용자 초기화 응답 생성 완료 - userId: {}, fittingModels: {}, defaultModels: {}", 
+                user.getId(), fittingModels.size(), defaultModels.size());
+                
+        return new UserInitResponse(fittingModels, defaultModels);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public UserInfoResponse getCurrentUserInfo() {
+        // 현재 사용자 조회 (인증되지 않은 경우 적절한 예외 발생)
+        Optional<User> currentUserOptional = SecurityUtils.getCurrentUserOptional();
+        if (currentUserOptional.isEmpty()) {
+            log.warn("[UserService] 인증되지 않은 사용자의 정보 조회 시도");
+            throw new CustomException(ErrorCode.UNAUTHORIZED, "로그인이 필요합니다. 올바른 X-Device-Id 헤더를 제공해주세요.");
+        }
+        
+        User currentUser = currentUserOptional.get();
+        log.info("[UserService] 현재 사용자 정보 조회 시작 - userId: {}, deviceId: {}", currentUser.getId(), currentUser.getDeviceId());
+        
+        // 사용자의 모델 정보 조회 (id 내림차순 정렬)
+        List<FittingModelDto> fittingModels = fittingModelRepository.findFittingModelsByUserIdOrderByIdDesc(currentUser.getId());
+        List<DefaultModelDto> defaultModels = defaultModelRepository.findDefaultModelsByUserIdOrderByIdDesc(currentUser.getId());
+        
+        log.info("[UserService] 사용자 정보 조회 완료 - userId: {}, fittingModels: {}, defaultModels: {}", 
+                currentUser.getId(), fittingModels.size(), defaultModels.size());
+                
+        return new UserInfoResponse(fittingModels, defaultModels);
     }
 
 

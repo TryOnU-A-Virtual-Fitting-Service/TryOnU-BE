@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import tryonu.api.common.exception.CustomException;
 import tryonu.api.common.exception.enums.ErrorCode;
 import tryonu.api.domain.DefaultModel;
+import tryonu.api.dto.responses.DefaultModelDto;
 
 import java.util.List;
 
@@ -50,6 +51,13 @@ public class DefaultModelRepositoryAdapter implements DefaultModelRepository {
     public List<DefaultModel> findAllByUserIdAndIsDeletedFalse(@NonNull Long userId) {
         List<DefaultModel> defaultModels = jpaDefaultModelRepository.findAllByUser_IdAndIsDeletedFalse(userId);
         log.debug("[DefaultModelRepositoryAdapter] 삭제되지 않은 기본 모델 목록 조회 - userId: {}, count: {}", userId, defaultModels.size());
+        return defaultModels;
+    }
+    
+    @Override
+    public List<DefaultModelDto> findDefaultModelsByUserIdOrderByIdDesc(@NonNull Long userId) {
+        List<DefaultModelDto> defaultModels = jpaDefaultModelRepository.findDefaultModelsByUserIdOrderByIdDesc(userId);
+        log.debug("[DefaultModelRepositoryAdapter] 기본 모델 목록 조회 성공 (정렬) - userId: {}, count: {}", userId, defaultModels.size());
         return defaultModels;
     }
     
