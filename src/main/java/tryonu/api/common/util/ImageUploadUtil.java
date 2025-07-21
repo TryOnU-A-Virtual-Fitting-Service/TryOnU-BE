@@ -177,7 +177,7 @@ public class ImageUploadUtil {
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
         String uuid = UUID.randomUUID().toString().substring(0, 8);
         
-        return timestamp + "_" + uuid + extension;
+        return timestamp + "_" + uuid + "." + extension;
     }
 
     /**
@@ -185,6 +185,6 @@ public class ImageUploadUtil {
      */
     private static String getFileExtension(String filename) {
         int lastDotIndex = filename.lastIndexOf(".");
-        return lastDotIndex > 0 ? filename.substring(lastDotIndex + 1, filename.length()).toLowerCase() : "";
+        return lastDotIndex > 0 ? filename.substring(lastDotIndex + 1).toLowerCase() : "";
     }
 } 
