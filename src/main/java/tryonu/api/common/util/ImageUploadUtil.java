@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
+import java.util.Set;
 
 /**
  * 이미지 업로드 유틸리티 클래스
@@ -31,7 +32,7 @@ public class ImageUploadUtil {
     @Value("${aws.s3.endpoint}")
     private String s3Endpoint;
 
-    private static final String[] ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"};
+    private static final Set<String> ALLOWED_EXTENSIONS = Set.of(".jpg", ".jpeg", ".png", ".webp");
     private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
     /**
      * S3에 이미지를 업로드합니다.
@@ -65,7 +66,7 @@ public class ImageUploadUtil {
             s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
             
             // S3 URL 생성
-            String imageUrl = s3Endpoint + "/" + bucketName + "/" + s3Key;
+            String imageUrl = s3Client.utilities().getUrl(b -> b.bucket(bucketName).key(s3Key)).toString();
             
             log.info("[ImageUploadUtil] 이미지 업로드 성공 - imageUrl={}", imageUrl);
             return imageUrl;
@@ -116,13 +117,7 @@ public class ImageUploadUtil {
         }
 
         String extension = getFileExtension(originalFilename);
-        boolean isValidExtension = false;
-        for (String allowedExtension : ALLOWED_EXTENSIONS) {
-            if (allowedExtension.equalsIgnoreCase(extension)) {
-                isValidExtension = true;
-                break;
-            }
-        }
+        boolean isValidExtension = ALLOWED_EXTENSIONS.contains(extension.toLowerCase());
 
         if (!isValidExtension) {
             throw new IllegalArgumentException("지원하지 않는 파일 형식입니다. 지원 형식: " + String.join(", ", ALLOWED_EXTENSIONS));
