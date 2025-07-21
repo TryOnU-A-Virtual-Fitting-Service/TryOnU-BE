@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import tryonu.api.common.wrapper.ApiResponseWrapper;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
+import tryonu.api.common.exception.enums.ErrorCode;
 
 /**
  * 전역 예외 처리기
@@ -26,8 +28,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponseWrapper<Void>> handleCustomException(CustomException ex) {
         log.error("❗ [GlobalExceptionHandler] 커스텀 예외 발생: code={}, message={}", ex.getErrorCode().getCode(), ex.getMessage());
         HttpStatus status = switch (ex.getErrorCode()) {
-            case INVALID_REQUEST -> HttpStatus.BAD_REQUEST;
-            case DEFAULT_MODEL_NOT_FOUND, FITTING_MODEL_NOT_FOUND, USER_NOT_FOUND, USER_INFO_NOT_FOUND, CLOTH_NOT_FOUND, TRY_ON_RESULT_NOT_FOUND -> HttpStatus.NOT_FOUND;
+            case INVALID_REQUEST, DEVICE_ID_REQUIRED -> HttpStatus.BAD_REQUEST;
+            case DEFAULT_MODEL_NOT_FOUND, FITTING_MODEL_NOT_FOUND, USER_NOT_FOUND, USER_INFO_NOT_FOUND, CLOTH_NOT_FOUND, TRY_ON_RESULT_NOT_FOUND, RESOURCE_NOT_FOUND -> HttpStatus.NOT_FOUND;
             case USER_ALREADY_EXISTS -> HttpStatus.CONFLICT;
             case UNAUTHORIZED -> HttpStatus.UNAUTHORIZED;
             case FORBIDDEN -> HttpStatus.FORBIDDEN;
@@ -50,8 +52,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponseWrapper<Void>> handleRuntimeException(RuntimeException e) {
         log.error("⚠️ [GlobalExceptionHandler] 런타임 예외 발생", e);
         ApiResponseWrapper<Void> response = ApiResponseWrapper.ofFailure(
-            "RUNTIME_ERROR",
-            "서버 내부 오류가 발생했습니다."
+            ErrorCode.INTERNAL_SERVER_ERROR.getCode(),
+            ErrorCode.INTERNAL_SERVER_ERROR.getMessage()
         );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
@@ -66,8 +68,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponseWrapper<Void>> handleException(Exception e) {
         log.error("🚨 [GlobalExceptionHandler] 예상치 못한 예외 발생", e);
         ApiResponseWrapper<Void> response = ApiResponseWrapper.ofFailure(
-            "UNEXPECTED_ERROR",
-            "예상치 못한 오류가 발생했습니다."
+            ErrorCode.UNEXPECTED_ERROR.getCode(),
+            ErrorCode.UNEXPECTED_ERROR.getMessage()
         );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
@@ -81,6 +83,15 @@ public class GlobalExceptionHandler {
         String message = (fieldError != null) ? fieldError.getDefaultMessage() : "잘못된 요청입니다.";
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
-            .body(ApiResponseWrapper.ofFailure("INVALID_REQUEST", message));
+            .body(ApiResponseWrapper.ofFailure(ErrorCode.INVALID_REQUEST.getCode(), message));
+    }
+
+    /**
+     * 정적 리소스 요청 404 (NoResourceFoundException) 처리
+     */
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ApiResponseWrapper<Void>> handleNoResourceFoundException(NoResourceFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(ApiResponseWrapper.ofFailure(ErrorCode.RESOURCE_NOT_FOUND.getCode(), ErrorCode.RESOURCE_NOT_FOUND.getMessage()));
     }
 } 
