@@ -59,8 +59,7 @@ public class UserController {
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "사용자 정보 조회 성공"),
-        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
-        @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음")
+        @ApiResponse(responseCode = "401", description = "잘못된 X-Device-Id 헤더, 또는 인증되지 않은 사용자"),
     })
     @GetMapping("/me")
     public ApiResponseWrapper<UserInfoResponse> getCurrentUserInfo() {
