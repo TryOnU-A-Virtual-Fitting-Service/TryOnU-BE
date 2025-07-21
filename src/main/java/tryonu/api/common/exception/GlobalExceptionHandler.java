@@ -7,9 +7,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import tryonu.api.common.wrapper.ApiResponseWrapper;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.validation.FieldError;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 import tryonu.api.common.exception.enums.ErrorCode;
+
+import java.util.Map;
 
 /**
  * 전역 예외 처리기
@@ -72,11 +73,15 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponseWrapper<Void>> handleValidationException(MethodArgumentNotValidException ex) {
-        FieldError fieldError = ex.getBindingResult().getFieldError();
-        String message = (fieldError != null) ? fieldError.getDefaultMessage() : "잘못된 요청입니다.";
+        Map<String, String> errors = ex.getBindingResult().getFieldErrors().stream()
+            .collect(java.util.stream.Collectors.toMap(
+                org.springframework.validation.FieldError::getField,
+                org.springframework.validation.FieldError::getDefaultMessage,
+                (msg1, msg2) -> msg1 // 필드 중복 시 첫 번째 메시지 사용
+            ));
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
-            .body(ApiResponseWrapper.ofFailure(ErrorCode.INVALID_REQUEST.getCode(), message));
+            .body(ApiResponseWrapper.ofValidationFailure(ErrorCode.INVALID_REQUEST.getCode(), "요청값이 올바르지 않습니다.", errors));
     }
 
     /**
