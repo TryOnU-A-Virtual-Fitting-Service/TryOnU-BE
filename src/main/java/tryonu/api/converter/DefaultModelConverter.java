@@ -18,4 +18,11 @@ public class DefaultModelConverter {
                 .imageUrl(defaultModelConfig.getDefaultModelUrl(gender))
                 .build();
     }
+
+    public DefaultModel createDefaultModel(User user, String imageUrl) {
+        return DefaultModel.builder()
+                .user(user)
+                .imageUrl(imageUrl)
+                .build();
+    }
 } 
