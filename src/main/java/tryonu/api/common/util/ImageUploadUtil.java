@@ -32,6 +32,15 @@ public class ImageUploadUtil {
     @Value("${aws.s3.endpoint}")
     private String s3Endpoint;
 
+    @Value("${aws.s3.model-folder}")
+    private String modelFolder;
+
+    @Value("${aws.s3.cloth-folder}")
+    private String clothFolder;
+
+    @Value("${aws.s3.tryonresult-folder}")
+    private String tryonResultFolder;
+
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of(".jpg", ".jpeg", ".png", ".webp");
     private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
     /**
@@ -82,21 +91,21 @@ public class ImageUploadUtil {
      * 피팅 모델 이미지를 업로드합니다.
      */
     public String uploadModelImage(MultipartFile file) {
-        return uploadToS3(file, "users/models");
+        return uploadToS3(file, modelFolder);
     }
 
     /**
      * 의류 이미지를 업로드합니다.
      */
     public String uploadClothImage(MultipartFile file) {
-        return uploadToS3(file, "users/clothes");
+        return uploadToS3(file, clothFolder);
     }
 
     /**
      * 트라이온 결과 이미지를 업로드합니다.
      */
     public String uploadTryOnResult(MultipartFile file) {
-        return uploadToS3(file, "users/tryonresults");
+        return uploadToS3(file, tryonResultFolder);
     }
 
     /**
