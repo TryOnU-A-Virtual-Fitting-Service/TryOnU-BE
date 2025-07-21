@@ -11,8 +11,9 @@ import tryonu.api.repository.fittingmodel.FittingModelRepository;
 import tryonu.api.repository.user.UserRepository;
 import tryonu.api.domain.DefaultModel;
 import tryonu.api.domain.FittingModel;
-import tryonu.api.config.DefaultModelConfig;
 import tryonu.api.common.enums.Gender;
+import tryonu.api.converter.DefaultModelConverter;
+import tryonu.api.converter.FittingModelConverter;
 
 import java.util.Optional;
 
@@ -29,7 +30,8 @@ public class UserServiceImpl implements UserService {
     private final DefaultModelRepository defaultModelRepository;
     private final FittingModelRepository fittingModelRepository;
 
-    private final DefaultModelConfig defaultModelConfig;        
+    private final DefaultModelConverter defaultModelConverter;  
+    private final FittingModelConverter fittingModelConverter;
 
     @Override
     @Transactional
@@ -50,32 +52,12 @@ public class UserServiceImpl implements UserService {
                 .build();
         User savedUser = userRepository.save(newUser);
 
-
-        DefaultModel maleDefaultModel = DefaultModel.builder()
-                .user(savedUser)
-                .imageUrl(defaultModelConfig.getDefaultModelUrl(Gender.MALE))
-                .build();
-        defaultModelRepository.save(maleDefaultModel);
-
-
-        DefaultModel femaleDefaultModel = DefaultModel.builder()
-                .user(savedUser)
-                .imageUrl(defaultModelConfig.getDefaultModelUrl(Gender.FEMALE))
-                .build();
-        defaultModelRepository.save(femaleDefaultModel);
-
-        FittingModel maleFittingModel = FittingModel.builder()
-                .user(savedUser)
-                .imageUrl(defaultModelConfig.getDefaultModelUrl(Gender.MALE))
-                .build();
-        fittingModelRepository.save(maleFittingModel);
-
-        FittingModel femaleFittingModel = FittingModel.builder()
-                .user(savedUser)
-                .imageUrl(defaultModelConfig.getDefaultModelUrl(Gender.FEMALE))
-                .build();
-        fittingModelRepository.save(femaleFittingModel);
-
+        for (Gender gender : Gender.values()) {
+            DefaultModel defaultModel = defaultModelConverter.createDefaultModel(savedUser, gender);
+            defaultModelRepository.save(defaultModel);
+            FittingModel fittingModel = fittingModelConverter.createFittingModel(savedUser, gender);
+            fittingModelRepository.save(fittingModel);
+        }
         
         log.info("[UserService] 새 사용자 생성 완료: userId={}, deviceId={}", savedUser.getId(), request.deviceId());
     }
