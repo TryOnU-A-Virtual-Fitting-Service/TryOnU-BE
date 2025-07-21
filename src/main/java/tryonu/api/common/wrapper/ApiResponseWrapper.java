@@ -2,6 +2,7 @@ package tryonu.api.common.wrapper;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.Map;
 
 /**
  * 모든 API 응답을 위한 공통 래퍼 클래스
@@ -51,7 +52,19 @@ public record ApiResponseWrapper<T>(
      * @return 실패 응답
      */
     public static <T> ApiResponseWrapper<T> ofFailure(String errorCode, String message) {
-        return new ApiResponseWrapper<>(false, null, new ErrorResponse(errorCode, message));
+        return new ApiResponseWrapper<>(false, null, new ErrorResponse(errorCode, message, null));
+    }
+
+    /**
+     * 필드별 validation 에러를 포함한 실패 응답 생성
+     * @param errorCode 에러 코드
+     * @param message 에러 메시지
+     * @param validationErrors 필드별 에러 맵
+     * @param <T> 데이터 타입
+     * @return 실패 응답
+     */
+    public static <T> ApiResponseWrapper<T> ofValidationFailure(String errorCode, String message, Map<String, String> validationErrors) {
+        return new ApiResponseWrapper<>(false, null, new ErrorResponse(errorCode, message, validationErrors));
     }
     
     /**
@@ -59,6 +72,7 @@ public record ApiResponseWrapper<T>(
      * 
      * @param code 에러 코드
      * @param message 에러 메시지
+     * @param validationErrors 필드별 validation 에러 (선택)
      */
     @Schema(description = "에러 응답 정보")
     public record ErrorResponse(
@@ -66,6 +80,10 @@ public record ApiResponseWrapper<T>(
         String code,
         
         @Schema(description = "에러 메시지", example = "사용자를 찾을 수 없습니다.")
-        String message
+        String message,
+
+        @Schema(description = "필드별 validation 에러", example = "{ 'name': '이름은 필수입니다.' }")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        Map<String, String> validationErrors
     ) {}
 } 

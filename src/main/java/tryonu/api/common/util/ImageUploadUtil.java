@@ -153,12 +153,19 @@ public class ImageUploadUtil {
 
         String extension = getFileExtension(originalFilename);
         if (!allowedExtensions.contains(extension.toLowerCase())) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST, "지원하지 않는 파일 형식입니다. 지원 형식: " + String.join(", ", allowedExtensions));
+            throw new CustomException(
+                ErrorCode.INVALID_REQUEST, "지원하지 않는 파일 형식입니다. 지원 형식: " + String.join(", ", allowedExtensions) +
+                " (실제: " + extension + ")"
+            );
         }
 
         String contentType = file.getContentType();
         if (contentType == null || !allowedContentTypes.contains(contentType.toLowerCase())) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST, "지원하지 않는 Content-Type입니다. 지원 형식: " + String.join(", ", allowedContentTypes));
+            throw new CustomException(
+                ErrorCode.INVALID_REQUEST,
+                "지원하지 않는 Content-Type입니다. 지원 형식: " + String.join(", ", allowedContentTypes) +
+                " (실제: " + contentType + ")"
+            );
         }
     }
 
@@ -170,7 +177,7 @@ public class ImageUploadUtil {
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
         String uuid = UUID.randomUUID().toString().substring(0, 8);
         
-        return timestamp + "_" + uuid + extension;
+        return timestamp + "_" + uuid + "." + extension;
     }
 
     /**
@@ -178,6 +185,6 @@ public class ImageUploadUtil {
      */
     private static String getFileExtension(String filename) {
         int lastDotIndex = filename.lastIndexOf(".");
-        return lastDotIndex > 0 ? filename.substring(lastDotIndex).toLowerCase() : "";
+        return lastDotIndex > 0 ? filename.substring(lastDotIndex + 1).toLowerCase() : "";
     }
 } 

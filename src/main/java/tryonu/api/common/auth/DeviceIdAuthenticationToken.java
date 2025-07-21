@@ -49,6 +49,10 @@ public class DeviceIdAuthenticationToken extends AbstractAuthenticationToken {
 
     @Override
     public Object getPrincipal() {
+        return deviceId;
+    }
+
+    public User getUser() {
         return user;
     }
 } 
