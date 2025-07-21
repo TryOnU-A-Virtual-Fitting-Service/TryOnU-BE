@@ -31,9 +31,6 @@ public class ImageUploadUtil {
 
     @Value("${aws.s3.bucket-name}")
     private String bucketName;
-    
-    @Value("${aws.s3.endpoint}")
-    private String s3Endpoint;
 
     @Value("${aws.s3.model-folder}")
     private String modelFolder;
