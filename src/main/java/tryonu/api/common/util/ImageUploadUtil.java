@@ -9,12 +9,15 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
-import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 import java.util.Set;
+import jakarta.annotation.PostConstruct;
+import tryonu.api.common.exception.CustomException;
+import tryonu.api.common.exception.enums.ErrorCode;
 
 /**
  * 이미지 업로드 유틸리티 클래스
@@ -41,8 +44,28 @@ public class ImageUploadUtil {
     @Value("${aws.s3.tryonresult-folder}")
     private String tryonResultFolder;
 
-    private static final Set<String> ALLOWED_EXTENSIONS = Set.of(".jpg", ".jpeg", ".png", ".webp");
-    private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+    @Value("${file.upload.allowed-types}")
+    private String allowedExtensionsConfig;
+
+    @Value("${file.upload.allowed-content-types}")
+    private String allowedContentTypesConfig;
+
+    @Value("${file.upload.max-size}")
+    private long maxFileSize;
+
+    private Set<String> allowedExtensions;
+    private Set<String> allowedContentTypes;
+
+    @PostConstruct
+    private void initAllowedExtensions() {
+        this.allowedExtensions = Set.of(allowedExtensionsConfig.split(","));
+    }
+
+    @PostConstruct
+    private void initAllowedContentTypes() {
+        this.allowedContentTypes = Set.of(allowedContentTypesConfig.split(","));
+    }
+
     /**
      * S3에 이미지를 업로드합니다.
      *
@@ -56,33 +79,36 @@ public class ImageUploadUtil {
      */
     public String uploadToS3(MultipartFile file, String folderPath) {
         log.info("[ImageUploadUtil] 이미지 업로드 시작 - fileName={}, folderPath={}", file.getOriginalFilename(), folderPath);
-        
-        // 파일 검증
+
+        // 파일 검증 (확장자, Content-Type 포함)
         validateFile(file);
-        
+
         try {
             // 파일명 생성 (중복 방지)
             String fileName = generateFileName(file.getOriginalFilename());
             String s3Key = folderPath + "/" + fileName;
-            
+
             // S3 업로드
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(bucketName)
                     .key(s3Key)
                     .contentType(file.getContentType())
+                    .contentLength(file.getSize())
                     .build();
-            // 파일 업로드
-            s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
-            
-            // S3 URL 생성
+            // 파일 업로드 (InputStream 안전하게 처리)
+            try (InputStream inputStream = file.getInputStream()) {
+                s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(inputStream, file.getSize()));
+            } // 자동 close 처리
+
+            // S3 URL 생성 (s3Client.utilities() 사용)
             String imageUrl = s3Client.utilities().getUrl(b -> b.bucket(bucketName).key(s3Key)).toString();
-            
+
             log.info("[ImageUploadUtil] 이미지 업로드 성공 - imageUrl={}", imageUrl);
             return imageUrl;
-            
-        } catch (IOException e) {
-            log.error("[ImageUploadUtil] 이미지 업로드 실패 - fileName={}, error={}", file.getOriginalFilename(), e.getMessage());
-            throw new RuntimeException("이미지 업로드 중 오류가 발생했습니다.", e);
+
+        } catch (Exception e) {
+            log.error("[ImageUploadUtil] S3 업로드 실패 - fileName={}, error={}", file.getOriginalFilename(), e.getMessage());
+            throw new RuntimeException("S3 업로드 중 오류가 발생했습니다.", e);
         }
     }
 
@@ -111,25 +137,28 @@ public class ImageUploadUtil {
     /**
      * 파일을 검증합니다.
      */
-    private static void validateFile(MultipartFile file) {
+    private void validateFile(MultipartFile file) {
         if (file == null || file.isEmpty()) {
-            throw new IllegalArgumentException("업로드할 파일이 없습니다.");
+            throw new CustomException(ErrorCode.INVALID_REQUEST, "업로드할 파일이 없습니다.");
         }
 
-        if (file.getSize() > MAX_FILE_SIZE) {
-            throw new IllegalArgumentException("파일 크기가 10MB를 초과합니다.");
+        if (file.getSize() > maxFileSize) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST, "파일 크기가 " + maxFileSize + "바이트를 초과합니다.");
         }
 
         String originalFilename = file.getOriginalFilename();
         if (originalFilename == null) {
-            throw new IllegalArgumentException("파일명이 없습니다.");
+            throw new CustomException(ErrorCode.INVALID_REQUEST, "파일명이 없습니다.");
         }
 
         String extension = getFileExtension(originalFilename);
-        boolean isValidExtension = ALLOWED_EXTENSIONS.contains(extension.toLowerCase());
+        if (!allowedExtensions.contains(extension.toLowerCase())) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST, "지원하지 않는 파일 형식입니다. 지원 형식: " + String.join(", ", allowedExtensions));
+        }
 
-        if (!isValidExtension) {
-            throw new IllegalArgumentException("지원하지 않는 파일 형식입니다. 지원 형식: " + String.join(", ", ALLOWED_EXTENSIONS));
+        String contentType = file.getContentType();
+        if (contentType == null || !allowedContentTypes.contains(contentType.toLowerCase())) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST, "지원하지 않는 Content-Type입니다. 지원 형식: " + String.join(", ", allowedContentTypes));
         }
     }
 
