@@ -22,7 +22,7 @@ import tryonu.api.service.fittingmodel.FittingModelService;
 @RequiredArgsConstructor
 @RequestMapping("/fitting-model")
 @Tag(name = "피팅 모델 API", description = "피팅 모델 관련 API")
-public class FiitngModelController {
+public class FittingModelController {
 
     private final FittingModelService fittingModelService;
 
