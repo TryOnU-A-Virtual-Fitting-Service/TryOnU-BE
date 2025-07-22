@@ -1,7 +1,6 @@
 package tryonu.api.service.user;
 
 import tryonu.api.dto.requests.UserInitRequest;
-import tryonu.api.dto.responses.UserInitResponse;
 import tryonu.api.dto.responses.UserInfoResponse;
 
 /**
@@ -15,7 +14,7 @@ public interface UserService {
      * @param request 초기화 요청 정보
      * @return 사용자 초기화 응답 (기본 모델, 피팅 모델 포함)
      */
-    UserInitResponse initializeUser(UserInitRequest request);
+    UserInfoResponse initializeUser(UserInitRequest request);
     
     /**
      * 현재 사용자 정보 조회 (X-Device-Id 헤더 기반)

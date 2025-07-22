@@ -88,7 +88,7 @@ public class DeviceIdAuthenticationFilter extends OncePerRequestFilter {
                 }
                 
             } catch (Exception e) {
-                log.error("[DeviceIdAuthenticationFilter] 사용자 조회 중 예외 발생: deviceId={}, error={}", deviceId, e.getMessage());
+                log.error("[DeviceIdAuthenticationFilter] 사용자 조회 중 예외 발생: deviceId={}, error={}", deviceId, e);
                 // 예외가 발생해도 필터는 계속 진행 - 컨트롤러에서 적절히 처리
             }
         }

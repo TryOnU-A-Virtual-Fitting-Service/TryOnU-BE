@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tryonu.api.domain.User;
 import tryonu.api.dto.requests.UserInitRequest;
-import tryonu.api.dto.responses.UserInitResponse;
 import tryonu.api.dto.responses.UserInfoResponse;
 import tryonu.api.dto.responses.FittingModelDto;
 import tryonu.api.dto.responses.DefaultModelDto;
@@ -41,7 +40,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserInitResponse initializeUser(UserInitRequest request) {
+    public UserInfoResponse initializeUser(UserInitRequest request) {
         log.info("[UserService] 익명 사용자 초기화 시작: deviceId={}", request.deviceId());
         
         User user;
@@ -68,14 +67,7 @@ public class UserServiceImpl implements UserService {
             log.info("[UserService] 새 사용자 생성 완료: userId={}, deviceId={}", user.getId(), request.deviceId());
         }
         
-        // 사용자의 모델 정보 조회 (id 내림차순 정렬)
-        List<FittingModelDto> fittingModels = fittingModelRepository.findFittingModelsByUserIdOrderByIdDesc(user.getId());
-        List<DefaultModelDto> defaultModels = defaultModelRepository.findDefaultModelsByUserIdOrderByIdDesc(user.getId());
-        
-        log.info("[UserService] 사용자 초기화 응답 생성 완료 - userId: {}, fittingModels: {}, defaultModels: {}", 
-                user.getId(), fittingModels.size(), defaultModels.size());
-                
-        return new UserInitResponse(fittingModels, defaultModels);
+        return buildUserInfoResponse(user.getId(), "사용자 초기화 응답 생성 완료");
     }
     
     @Override
@@ -84,14 +76,19 @@ public class UserServiceImpl implements UserService {
         // Security Filter에서 이미 인증된 사용자만 여기까지 올 수 있음
         User currentUser = SecurityUtils.getCurrentUser();
         log.info("[UserService] 현재 사용자 정보 조회 시작 - userId: {}, deviceId: {}", currentUser.getId(), currentUser.getDeviceId());
-        
-        // 사용자의 모델 정보 조회 (id 내림차순 정렬)
-        List<FittingModelDto> fittingModels = fittingModelRepository.findFittingModelsByUserIdOrderByIdDesc(currentUser.getId());
-        List<DefaultModelDto> defaultModels = defaultModelRepository.findDefaultModelsByUserIdOrderByIdDesc(currentUser.getId());
-        
-        log.info("[UserService] 사용자 정보 조회 완료 - userId: {}, fittingModels: {}, defaultModels: {}", 
-                currentUser.getId(), fittingModels.size(), defaultModels.size());
-                
+        return buildUserInfoResponse(currentUser.getId(), "사용자 정보 조회 완료");
+    }
+
+    /**
+     * userId로 모델 리스트를 조회하여 UserInfoResponse를 생성한다.
+     * @param userId 사용자 ID
+     * @param logContext 로그 메시지에 들어갈 맥락
+     * @return UserInfoResponse
+     */
+    private UserInfoResponse buildUserInfoResponse(Long userId, String logContext) {
+        List<FittingModelDto> fittingModels = fittingModelRepository.findFittingModelsByUserIdOrderByIdDesc(userId);
+        List<DefaultModelDto> defaultModels = defaultModelRepository.findDefaultModelsByUserIdOrderByIdDesc(userId);
+        log.info("[UserService] {} - userId: {}, fittingModels: {}, defaultModels: {}", logContext, userId, fittingModels.size(), defaultModels.size());
         return new UserInfoResponse(fittingModels, defaultModels);
     }
 

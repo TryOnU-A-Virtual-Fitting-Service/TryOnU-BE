@@ -37,7 +37,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
 
         ApiResponseWrapper<Void> errorResponse = ApiResponseWrapper.ofFailure(
             ErrorCode.UNAUTHORIZED.getCode(),
-            "로그인이 필요합니다. 올바른 X-Device-Id 헤더를 제공해주세요."
+            "로그인이 필요합니다. 유효한 X-Device-Id 헤더를 제공해주세요."
         );
 
         String jsonResponse = objectMapper.writeValueAsString(errorResponse);

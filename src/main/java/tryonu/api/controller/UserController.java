@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import tryonu.api.common.wrapper.ApiResponseWrapper;
 import tryonu.api.dto.requests.UserInitRequest;
-import tryonu.api.dto.responses.UserInitResponse;
 import tryonu.api.dto.responses.UserInfoResponse;
 import tryonu.api.service.user.UserService;
 
@@ -42,8 +41,8 @@ public class UserController {
         @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터")
     })
     @PostMapping("/init")
-    public ApiResponseWrapper<UserInitResponse> initializeUser(@Valid @RequestBody UserInitRequest request) {
-        UserInitResponse response = userService.initializeUser(request);
+    public ApiResponseWrapper<UserInfoResponse> initializeUser(@Valid @RequestBody UserInitRequest request) {
+        UserInfoResponse response = userService.initializeUser(request);
         return ApiResponseWrapper.ofSuccess(response);
     }
     
