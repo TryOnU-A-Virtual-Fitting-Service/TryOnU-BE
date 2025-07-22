@@ -1,11 +1,29 @@
 package tryonu.api;
 
-import lombok.extern.slf4j.Slf4j;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.security.SecurityScheme;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @SpringBootApplication
+@OpenAPIDefinition(
+    info = @Info(
+        title = "ThatzFit Virtual Fitting API",
+        version = "1.0.0",
+        description = "가상 피팅 서비스 API"
+    )
+)
+@SecurityScheme(
+    name = "DeviceId",
+    type = SecuritySchemeType.APIKEY,
+    in = io.swagger.v3.oas.annotations.enums.SecuritySchemeIn.HEADER,
+    paramName = "X-Device-Id",
+    description = "디바이스 ID 헤더"
+)
 public class ApiApplication {
 
     public static void main(String[] args) {

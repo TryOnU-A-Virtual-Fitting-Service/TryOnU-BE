@@ -17,11 +17,13 @@ import tryonu.api.common.wrapper.ApiResponseWrapper;
 import tryonu.api.dto.requests.AddFittingModelRequest;
 import tryonu.api.dto.responses.AddFittingModelResponse;
 import tryonu.api.service.fittingmodel.FittingModelService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/fitting-model")
 @Tag(name = "피팅 모델 API", description = "피팅 모델 관련 API")
+@SecurityRequirement(name = "DeviceId")
 public class FittingModelController {
 
     private final FittingModelService fittingModelService;

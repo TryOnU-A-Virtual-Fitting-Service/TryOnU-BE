@@ -19,12 +19,14 @@ import lombok.RequiredArgsConstructor;
 import tryonu.api.dto.responses.DefaultModelResponse;
 import org.springframework.validation.annotation.Validated;
 import tryonu.api.common.validation.NotEmptyFile;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 @RequiredArgsConstructor
 @RestController
 @Tag(name = "기본 모델 API", description = "기본 모델 관련 API")
 @Validated
 @RequestMapping("/default-model")
+@SecurityRequirement(name = "DeviceId")
 public class DefaultModelController {
 
     private final DefaultModelService defaultModelService;
