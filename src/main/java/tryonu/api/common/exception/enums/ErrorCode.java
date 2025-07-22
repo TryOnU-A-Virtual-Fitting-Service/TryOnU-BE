@@ -26,6 +26,13 @@ public enum ErrorCode {
     // TryOnResult 관련 에러
     TRY_ON_RESULT_NOT_FOUND("T001", "피팅 결과를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     
+    // 가상피팅 관련 에러
+    VIRTUAL_FITTING_FAILED("VF001", "가상피팅 처리 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    CATEGORY_PREDICTION_FAILED("VF002", "의류 카테고리 예측에 실패했습니다.", HttpStatus.BAD_REQUEST),
+    BACKGROUND_REMOVAL_FAILED("VF003", "배경 제거 처리에 실패했습니다.", HttpStatus.BAD_REQUEST),
+    VIRTUAL_FITTING_TIMEOUT("VF004", "가상피팅 처리 시간이 초과되었습니다.", HttpStatus.REQUEST_TIMEOUT),
+    VIRTUAL_FITTING_API_ERROR("VF005", "가상피팅 API 호출에 실패했습니다.", HttpStatus.BAD_GATEWAY),
+    
     // 공통 에러
     INVALID_REQUEST("COM001", "잘못된 요청입니다.", HttpStatus.BAD_REQUEST),
     INTERNAL_SERVER_ERROR("COM002", "서버 내부 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
