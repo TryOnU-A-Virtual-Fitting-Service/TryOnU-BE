@@ -29,4 +29,10 @@ public class FittingModel extends BaseEntity {
     @Setter
     Boolean isDeleted = false; // 삭제 여부. 삭제되면 true로
 
+    /**
+     * 피팅 모델 이미지 URL 업데이트
+     */
+    public void updateImageUrl(String newImageUrl) {
+        this.imageUrl = newImageUrl;
+    }
 }

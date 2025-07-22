@@ -23,7 +23,7 @@ public class Cloth extends BaseEntity {
     @Column(nullable = false)
     Category category;
 
-    @Column(name = "product_page_url", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "product_page_url", nullable = true, columnDefinition = "TEXT")
     String productPageUrl;
 
     @Column(name = "image_url", nullable = false, columnDefinition = "TEXT")
