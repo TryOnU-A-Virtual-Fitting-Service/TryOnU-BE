@@ -149,6 +149,9 @@ public class ImageUploadUtil {
     public String uploadModelImage(byte[] image) {
         return uploadToS3(image, modelFolder, "image/png");
     }
+    public String uploadModelImage(MultipartFile file) {
+        return uploadToS3(file, modelFolder);
+    }
 
     /**
      * 의류 이미지를 업로드합니다.
@@ -156,12 +159,18 @@ public class ImageUploadUtil {
     public String uploadClothImage(MultipartFile file) {
         return uploadToS3(file, clothFolder);
     }
+    public String uploadClothImage(byte[] image) {
+        return uploadToS3(image, clothFolder, "image/jpeg");
+    }
 
     /**
      * 트라이온 결과 이미지를 업로드합니다.
      */
     public String uploadTryOnResult(MultipartFile file) {
         return uploadToS3(file, tryonResultFolder);
+    }
+    public String uploadTryOnResultImage(byte[] image) {
+        return uploadToS3(image, tryonResultFolder, "image/png");
     }
 
     /**
