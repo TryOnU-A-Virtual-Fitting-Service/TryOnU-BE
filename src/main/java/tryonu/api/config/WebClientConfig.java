@@ -27,7 +27,10 @@ public class WebClientConfig {
 
     @Value("${external.category-prediction-api.base-url}")
     private String categoryPredictionApiBaseUrl;
-
+    
+    @Value("${webclient.max-in-memory-size-mb}")
+    private int maxInMemorySizeMb;
+    
     /**
      * 가상피팅 API용 WebClient
      */
@@ -47,9 +50,7 @@ public class WebClientConfig {
     public WebClient backgroundRemovalWebClient() {
         return WebClient.builder()
                 .baseUrl(backgroundRemovalApiBaseUrl)
-                .filter(logRequest())
-                .filter(logResponse())
-                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.MULTIPART_FORM_DATA_VALUE)
+                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(maxInMemorySizeMb * 1024 * 1024))
                 .defaultHeader(HttpHeaders.ACCEPT, MediaType.IMAGE_PNG_VALUE)
                 .build();
     }
@@ -61,14 +62,21 @@ public class WebClientConfig {
     public WebClient categoryPredictionWebClient() {
         return WebClient.builder()
                 .baseUrl(categoryPredictionApiBaseUrl)
-                .filter(logRequest())
-                .filter(logResponse())
-                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.MULTIPART_FORM_DATA_VALUE)
+                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(maxInMemorySizeMb * 1024 * 1024))
                 .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 .build();
     }
 
-
+    /**
+     * 이미지 다운로드 전용 WebClient
+     */
+    @Bean
+    public WebClient imageDownloadWebClient() {
+        return WebClient.builder()
+                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(maxInMemorySizeMb * 1024 * 1024))
+                .defaultHeader(HttpHeaders.ACCEPT, "image/*")
+                .build();
+    }
 
     private ExchangeFilterFunction logRequest() {
         return ExchangeFilterFunction.ofRequestProcessor(request -> {
@@ -83,5 +91,4 @@ public class WebClientConfig {
             return Mono.just(response);
         });
     }
-
 } 
