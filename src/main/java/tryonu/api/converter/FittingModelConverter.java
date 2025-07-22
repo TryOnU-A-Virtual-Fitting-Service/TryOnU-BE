@@ -7,6 +7,7 @@ import tryonu.api.domain.FittingModel;
 import tryonu.api.domain.DefaultModel;
 import tryonu.api.domain.User;
 import tryonu.api.common.enums.Gender;
+import tryonu.api.dto.responses.AddFittingModelResponse;
 
 @Component
 @RequiredArgsConstructor
@@ -25,5 +26,12 @@ public class FittingModelConverter {
                 .user(defaultModel.getUser())
                 .imageUrl(defaultModel.getImageUrl())
                 .build();
+    }
+
+    /**
+     * AddFittingModelResponse 생성
+     */
+    public AddFittingModelResponse toAddFittingModelResponse(FittingModel fittingModel) {
+        return new AddFittingModelResponse(fittingModel.getId(), fittingModel.getImageUrl());
     }
 } 

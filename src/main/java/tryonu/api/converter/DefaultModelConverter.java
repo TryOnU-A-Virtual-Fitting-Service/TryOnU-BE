@@ -6,6 +6,7 @@ import tryonu.api.config.DefaultModelConfig;
 import tryonu.api.domain.DefaultModel;
 import tryonu.api.domain.User;
 import tryonu.api.common.enums.Gender;
+import tryonu.api.dto.responses.DefaultModelResponse;
 
 @Component
 @RequiredArgsConstructor
@@ -24,5 +25,12 @@ public class DefaultModelConverter {
                 .user(user)
                 .imageUrl(imageUrl)
                 .build();
+    }
+
+    /**
+     * DefaultModelResponse 생성
+     */
+    public DefaultModelResponse toDefaultModelResponse(DefaultModel defaultModel) {
+        return new DefaultModelResponse(defaultModel.getId(), defaultModel.getImageUrl());
     }
 } 
