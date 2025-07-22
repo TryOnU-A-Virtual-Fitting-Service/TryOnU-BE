@@ -11,6 +11,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import tryonu.api.common.auth.DeviceIdAuthenticationFilter;
+import tryonu.api.common.auth.CustomAuthenticationEntryPoint;
+import tryonu.api.common.auth.CustomAccessDeniedHandler;
 
 /**
  * Spring Security 설정
@@ -23,6 +25,8 @@ import tryonu.api.common.auth.DeviceIdAuthenticationFilter;
 public class SecurityConfig {
 
     private final DeviceIdAuthenticationFilter deviceIdAuthenticationFilter;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
     /**
      * Security Filter Chain 설정
@@ -73,7 +77,13 @@ public class SecurityConfig {
             )
             
             // 커스텀 인증 필터 추가 (권한 설정 후에 추가)
-            .addFilterBefore(deviceIdAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(deviceIdAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+            
+            // 커스텀 예외 처리 핸들러 설정
+            .exceptionHandling(exceptions -> exceptions
+                .authenticationEntryPoint(customAuthenticationEntryPoint)
+                .accessDeniedHandler(customAccessDeniedHandler)
+            );
         
         log.info("✅ [SecurityConfig] Spring Security 설정 완료 - 헬스체크, Swagger UI, API 엔드포인트 인증 해제");
         

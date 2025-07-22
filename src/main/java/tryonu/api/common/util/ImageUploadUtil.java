@@ -50,7 +50,7 @@ public class ImageUploadUtil {
     @Value("${file.upload.max-size}")
     private long maxFileSize;
 
-    @Value("${cloudfront.domain}")
+    @Value("${aws.cloudfront.domain}")
     private String cloudfrontDomain;
 
     private Set<String> allowedExtensions;
