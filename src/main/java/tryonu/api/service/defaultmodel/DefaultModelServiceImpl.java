@@ -44,8 +44,7 @@ public class DefaultModelServiceImpl implements DefaultModelService {
         DefaultModel defaultModel = defaultModelConverter.createDefaultModel(currentUser, imageUrl);
         DefaultModel saved = defaultModelRepository.save(defaultModel);
 
-        // 응답 DTO 생성 및 반환
-        return new DefaultModelResponse(saved.getId(), saved.getImageUrl());
+        return defaultModelConverter.toDefaultModelResponse(saved);
     }
 
     
