@@ -11,6 +11,9 @@ import tryonu.api.repository.defaultmodel.DefaultModelRepository;
 import tryonu.api.converter.DefaultModelConverter;
 import tryonu.api.common.auth.SecurityUtils;
 import tryonu.api.domain.User;
+import tryonu.api.common.exception.CustomException;
+import tryonu.api.common.exception.enums.ErrorCode;
+import tryonu.api.common.util.BackgroundRemovalUtil;
 
 @Service
 @RequiredArgsConstructor
@@ -20,14 +23,22 @@ public class DefaultModelServiceImpl implements DefaultModelService {
     private final DefaultModelConverter defaultModelConverter;
     private final ImageUploadUtil imageUploadUtil;
 
+    private final BackgroundRemovalUtil backgroundRemovalUtil;
+
     @Override
     @Transactional
     public DefaultModelResponse uploadDefaultModel(MultipartFile file) {
-        // Security Filter에서 이미 인증된 사용자만 여기까지 올 수 있음
+        if (file.isEmpty()) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST, "업로드할 파일이 비어있습니다.");
+        }
+
         User currentUser = SecurityUtils.getCurrentUser();
-        
+
+        // 배경 제거
+        byte[] backgroundRemovedImage = backgroundRemovalUtil.removeBackground(file);
+
         // 이미지 S3 업로드
-        String imageUrl = imageUploadUtil.uploadModelImage(file);
+        String imageUrl = imageUploadUtil.uploadModelImage(backgroundRemovedImage);
 
         // DefaultModel 엔티티 생성 및 저장
         DefaultModel defaultModel = defaultModelConverter.createDefaultModel(currentUser, imageUrl);
@@ -36,4 +47,6 @@ public class DefaultModelServiceImpl implements DefaultModelService {
         // 응답 DTO 생성 및 반환
         return new DefaultModelResponse(saved.getId(), saved.getImageUrl());
     }
+
+    
 }

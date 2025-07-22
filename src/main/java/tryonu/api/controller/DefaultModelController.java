@@ -18,9 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import lombok.RequiredArgsConstructor;
 import tryonu.api.dto.responses.DefaultModelResponse;
 import org.springframework.validation.annotation.Validated;
-import jakarta.validation.constraints.NotNull;
-import tryonu.api.common.exception.CustomException;
-import tryonu.api.common.exception.enums.ErrorCode;
+import tryonu.api.common.validation.NotEmptyFile;
 
 @RequiredArgsConstructor
 @RestController
@@ -46,11 +44,8 @@ public class DefaultModelController {
     })
     @PostMapping(value = "", consumes = "multipart/form-data")
     public ApiResponseWrapper<DefaultModelResponse> uploadDefaultModel(
-            @RequestParam("file") @NotNull MultipartFile file
+            @NotEmptyFile @RequestParam("file") MultipartFile file
     ) {
-        if (file.isEmpty()) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST, "업로드할 파일이 비어있습니다.");
-        }
         DefaultModelResponse response = defaultModelService.uploadDefaultModel(file);
         return ApiResponseWrapper.ofSuccess(response);
     }

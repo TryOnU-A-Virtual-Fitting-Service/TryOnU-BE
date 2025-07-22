@@ -112,12 +112,42 @@ public class ImageUploadUtil {
         }
     }
 
+    /**
+     * S3에 이미지를 업로드합니다. (byte[] 버전)
+     *
+     * @param image 업로드할 이미지 바이트 배열
+     * @param folderPath S3 내 폴더 경로
+     * @param contentType Content-Type (예: image/png)
+     * @return 업로드된 이미지의 S3 URL
+     */
+    public String uploadToS3(byte[] image, String folderPath, String contentType) {
+        try {
+            String fileName = generateFileName("image.png");
+            String s3Key = folderPath + "/" + fileName;
+
+            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(s3Key)
+                    .contentType(contentType)
+                    .contentLength((long) image.length)
+                    .build();
+
+            s3Client.putObject(putObjectRequest, RequestBody.fromBytes(image));
+
+            String imageUrl = cloudfrontDomain + "/" + s3Key;
+            log.info("[ImageUploadUtil] 이미지 업로드 성공(byte[]) - imageUrl={}", imageUrl);
+            return imageUrl;
+        } catch (Exception e) {
+            log.error("[ImageUploadUtil] S3 업로드 실패(byte[]) - error={}", e.getMessage());
+            throw new RuntimeException("S3 업로드 중 오류가 발생했습니다.", e);
+        }
+    }
 
     /**
      * 피팅 모델 이미지를 업로드합니다.
      */
-    public String uploadModelImage(MultipartFile file) {
-        return uploadToS3(file, modelFolder);
+    public String uploadModelImage(byte[] image) {
+        return uploadToS3(image, modelFolder, "image/png");
     }
 
     /**
