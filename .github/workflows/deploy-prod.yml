@@ -94,6 +94,12 @@ jobs:
               sleep 5
             done
 
+            # 헬스체크 최종 실패 시
+            echo "❌ Health check failed after all attempts."
+            echo "--- Container Logs ---"
+            sudo docker logs thatzfit-api-container
+            exit 1 # 스크립트를 실패 처리하여 GitHub Actions를 중단
+
     # Slack 알림
   notify-slack:
     needs: build-and-deploy
