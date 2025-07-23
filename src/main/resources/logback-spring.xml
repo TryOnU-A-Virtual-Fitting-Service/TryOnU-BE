@@ -31,7 +31,7 @@
             <encoder class="net.logstash.logback.encoder.LogstashEncoder">
                 <includeContext>true</includeContext>
                 <includeMdc>true</includeMdc>
-                <customFields>{"service":"tryonu-api","environment":"prod"}</customFields>
+                <customFields>{"service":"thatzfit-api","environment":"prod","version":"0.0.1-SNAPSHOT"}</customFields>
                 <fieldNames>
                     <timestamp>@timestamp</timestamp>
                     <version>[ignore]</version>
@@ -48,7 +48,7 @@
             <encoder class="net.logstash.logback.encoder.LogstashEncoder">
                 <includeContext>true</includeContext>
                 <includeMdc>true</includeMdc>
-                <customFields>{"service":"tryonu-api","environment":"prod"}</customFields>
+                <customFields>{"service":"thatzfit-api","environment":"prod","version":"0.0.1-SNAPSHOT"}</customFields>
                 <fieldNames>
                     <timestamp>@timestamp</timestamp>
                     <version>[ignore]</version>
@@ -61,7 +61,7 @@
         </appender>
 
         <!-- 애플리케이션별 로거 설정 -->
-        <logger name="thatzfit.api" level="INFO" additivity="false">
+        <logger name="tryonu.api" level="INFO" additivity="false">
             <appender-ref ref="CONSOLE_JSON"/>
             <appender-ref ref="FILE"/>
         </logger>
@@ -78,8 +78,14 @@
             <appender-ref ref="FILE"/>
         </logger>
 
-        <!-- HTTP 요청 로그 -->
-        <logger name="org.springframework.web" level="WARN" additivity="false">
+        <!-- HTTP 요청 로그 (API 모니터링용) -->
+        <logger name="org.springframework.web" level="INFO" additivity="false">
+            <appender-ref ref="CONSOLE_JSON"/>
+            <appender-ref ref="FILE"/>
+        </logger>
+
+        <!-- HTTP 서블릿 로그 (API 완료 로그용) -->
+        <logger name="org.springframework.web.servlet.DispatcherServlet" level="INFO" additivity="false">
             <appender-ref ref="CONSOLE_JSON"/>
             <appender-ref ref="FILE"/>
         </logger>
@@ -98,6 +104,8 @@
     <!-- 특정 로거 레벨 설정 -->
     <logger name="com.zaxxer.hikari" level="WARN"/>
     <logger name="org.hibernate.validator" level="WARN"/>
+    <logger name="org.hibernate.SQL" level="TRACE"/>
+    <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE"/>
     <logger name="org.apache.http" level="WARN"/>
     <logger name="software.amazon.awssdk" level="WARN"/>
 </configuration> 
