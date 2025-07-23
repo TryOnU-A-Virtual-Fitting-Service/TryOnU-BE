@@ -104,7 +104,7 @@ public class TryOnServiceImpl implements TryOnService {
 
             // 피팅 결과 저장
             byte[] backgroundRemovedImage = backgroundRemovalUtil.removeBackground(resultImageUrl);
-            String backgroundRemovedImageUrl = imageUploadUtil.uploadClothImage(backgroundRemovedImage);
+            String backgroundRemovedImageUrl = imageUploadUtil.uploadTryOnResultImage(backgroundRemovedImage);
             
             TryOnResult tryOnResult = tryOnConverter.toTryOnResultEntity(cloth, fittingModel, backgroundRemovedImageUrl);
             tryOnResultRepository.save(tryOnResult);
