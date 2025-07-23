@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- 공통 변수 정의 -->
+    <springProfile name="!prod">
+        <!-- 로컬/개발 환경용 설정 -->
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>
+                    %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %highlight(%-5level) %cyan(%logger{20}) - %msg%n
+                </pattern>
+                <charset>UTF-8</charset>
+            </encoder>
+        </appender>
+        
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+
+    <!-- 프로덕션 환경용 CloudWatch 설정 -->
+    <springProfile name="prod">
+        <!-- 파일 로그 (로컬 백업용) -->
+        <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>/app/logs/application.log</file>
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <fileNamePattern>/app/logs/application.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+                <maxFileSize>100MB</maxFileSize>
+                <maxHistory>30</maxHistory>
+                <totalSizeCap>3GB</totalSizeCap>
+            </rollingPolicy>
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                <includeContext>true</includeContext>
+                <includeMdc>true</includeMdc>
+                <customFields>{"service":"tryonu-api","environment":"prod"}</customFields>
+                <fieldNames>
+                    <timestamp>@timestamp</timestamp>
+                    <version>[ignore]</version>
+                    <level>level</level>
+                    <thread>thread</thread>
+                    <logger>logger</logger>
+                    <message>message</message>
+                </fieldNames>
+            </encoder>
+        </appender>
+
+        <!-- CloudWatch용 JSON 콘솔 출력 -->
+        <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                <includeContext>true</includeContext>
+                <includeMdc>true</includeMdc>
+                <customFields>{"service":"tryonu-api","environment":"prod"}</customFields>
+                <fieldNames>
+                    <timestamp>@timestamp</timestamp>
+                    <version>[ignore]</version>
+                    <level>level</level>
+                    <thread>thread</thread>
+                    <logger>logger</logger>
+                    <message>message</message>
+                </fieldNames>
+            </encoder>
+        </appender>
+
+        <!-- 애플리케이션별 로거 설정 -->
+        <logger name="thatzfit.api" level="INFO" additivity="false">
+            <appender-ref ref="CONSOLE_JSON"/>
+            <appender-ref ref="FILE"/>
+        </logger>
+
+        <!-- 시큐리티 관련 로그 -->
+        <logger name="org.springframework.security" level="WARN" additivity="false">
+            <appender-ref ref="CONSOLE_JSON"/>
+            <appender-ref ref="FILE"/>
+        </logger>
+
+        <!-- 데이터베이스 관련 로그 -->
+        <logger name="org.springframework.transaction" level="WARN" additivity="false">
+            <appender-ref ref="CONSOLE_JSON"/>
+            <appender-ref ref="FILE"/>
+        </logger>
+
+        <!-- HTTP 요청 로그 -->
+        <logger name="org.springframework.web" level="WARN" additivity="false">
+            <appender-ref ref="CONSOLE_JSON"/>
+            <appender-ref ref="FILE"/>
+        </logger>
+
+        <!-- 루트 로거 -->
+        <root level="WARN">
+            <appender-ref ref="CONSOLE_JSON"/>
+            <appender-ref ref="FILE"/>
+        </root>
+    </springProfile>
+
+    <!-- 비동기 로깅 성능 향상을 위한 설정 -->
+    <property name="ASYNC_QUEUE_SIZE" value="1024"/>
+    <property name="ASYNC_MAX_FLUSH_TIME" value="1000"/>
+    
+    <!-- 특정 로거 레벨 설정 -->
+    <logger name="com.zaxxer.hikari" level="WARN"/>
+    <logger name="org.hibernate.validator" level="WARN"/>
+    <logger name="org.apache.http" level="WARN"/>
+    <logger name="software.amazon.awssdk" level="WARN"/>
+</configuration> 
