@@ -26,6 +26,8 @@ import tryonu.api.domain.TryOnResult;
 import tryonu.api.converter.TryOnConverter;
 import tryonu.api.common.enums.Category;
 
+import java.util.Arrays;
+
 
 /**
  * 가상 피팅 서비스 구현체
@@ -51,15 +53,7 @@ public class TryOnServiceImpl implements TryOnService {
     @Value("${virtual-fitting.polling.interval-ms:1000}")        // 기본 1초 간격
     private long pollIntervalMs;
 
-    /**
-     * 지원하지 않는 카테고리 검증
-     */
-    private void validateSupportedCategory(String className) {
-        if ("ACCESSORY".equalsIgnoreCase(className) || "SHOES".equalsIgnoreCase(className)) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST, 
-                    "액세서리와 신발은 가상피팅에서 지원하지 않습니다. (감지된 카테고리: " + className + ")");
-        }
-    }
+    
 
     @Override
     public TryOnResponse tryOn(Long fittingModelId, String productPageUrl, MultipartFile file) {
@@ -91,13 +85,21 @@ public class TryOnServiceImpl implements TryOnService {
 
         // 결과 처리
         if ("completed".equals(finalStatus.status())) {
+            // 안전한 결과 추출 - null/empty 체크
+            if (finalStatus.output() == null || finalStatus.output().isEmpty()) {
+                log.error("[TryOnService] 가상 피팅 완료되었으나 결과 이미지가 없음 - fittingModelId={}, output={}", 
+                        fittingModelId, finalStatus.output());
+                throw new CustomException(ErrorCode.VIRTUAL_FITTING_FAILED, "가상피팅이 완료되었으나 결과 이미지를 받지 못했습니다.");
+            }
+            
             String resultImageUrl = finalStatus.output().get(0);  // 첫 번째 결과 이미지
 
             log.info("[TryOnService] 가상 피팅 성공 - fittingModelId={}, resultUrl={}", 
                     fittingModelId, resultImageUrl);
 
-            // 의류 저장
-            Cloth cloth = tryOnConverter.toClothEntity(clothImageUrl, productPageUrl, Category.valueOf(categoryPredictionResponse.className()));
+            // 의류 저장 - 안전한 카테고리 변환
+            Category category = parseCategory(categoryPredictionResponse.className());
+            Cloth cloth = tryOnConverter.toClothEntity(clothImageUrl, productPageUrl, category);
             clothRepository.save(cloth);
 
             // 피팅 결과 저장
@@ -119,6 +121,37 @@ public class TryOnServiceImpl implements TryOnService {
                 ErrorCode.VIRTUAL_FITTING_FAILED, 
                 finalStatus.error() != null ? finalStatus.error().message() : "알 수 없는 오류"
             );
+        }
+    }
+
+    /**
+     * 지원하지 않는 카테고리 검증
+     */
+    private void validateSupportedCategory(String className) {
+        if ("ACCESSORY".equalsIgnoreCase(className) || "SHOES".equalsIgnoreCase(className)) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST, 
+                    "액세서리와 신발은 가상피팅에서 지원하지 않습니다. (감지된 카테고리: " + className + ")");
+        }
+    }
+
+    /**
+     * 외부 API 카테고리 응답을 안전하게 Category enum으로 변환
+     */
+    private Category parseCategory(String className) {
+        try {
+            // 대소문자 정규화 및 안전한 변환
+            String normalizedClassName = className.trim().toUpperCase();
+            log.debug("[TryOnService] 카테고리 변환 시도 - original: {}, normalized: {}", className, normalizedClassName);
+            
+            return Category.valueOf(normalizedClassName);
+        } catch (IllegalArgumentException e) {
+            log.error("[TryOnService] 지원하지 않는 카테고리 - className: {}, supportedCategories: {}", 
+                    className, Arrays.toString(Category.values()));
+            throw new CustomException(ErrorCode.INVALID_REQUEST, 
+                    "지원하지 않는 의류 카테고리입니다. (감지된 카테고리: " + className + ")");
+        } catch (NullPointerException e) {
+            log.error("[TryOnService] 카테고리가 null임 - className: {}", className);
+            throw new CustomException(ErrorCode.INVALID_REQUEST, "의류 카테고리 정보가 없습니다.");
         }
     }
 } 
