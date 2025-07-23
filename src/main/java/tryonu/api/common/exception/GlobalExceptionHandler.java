@@ -102,8 +102,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponseWrapper<?>> handleDataBufferLimitException(DataBufferLimitException ex) {
         log.error("이미지 응답 크기 초과: {}", ex.getMessage());
         return ResponseEntity
-            .status(HttpStatus.BAD_REQUEST)
-            .body(ApiResponseWrapper.ofFailure("IMAGE_TOO_LARGE", "이미지 크기가 너무 큽니다. 10MB 이하로 업로드 해주세요."));
+            .status(ErrorCode.IMAGE_TOO_LARGE.getHttpStatus())
+            .body(ApiResponseWrapper.ofFailure(ErrorCode.IMAGE_TOO_LARGE.getCode(), ErrorCode.IMAGE_TOO_LARGE.getMessage()));
     }
 
     /**
