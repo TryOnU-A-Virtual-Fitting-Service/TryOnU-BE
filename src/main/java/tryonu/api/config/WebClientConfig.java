@@ -142,6 +142,8 @@ public class WebClientConfig {
                 .clientConnector(new ReactorClientHttpConnector(createHeavyHttpClient()))
                 .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(maxInMemorySizeMb * 1024 * 1024))
                 .defaultHeader(HttpHeaders.ACCEPT, MediaType.IMAGE_PNG_VALUE)
+                .filter(logRequest())
+                .filter(logResponse())
                 .build();
     }
 
@@ -155,6 +157,8 @@ public class WebClientConfig {
                 .clientConnector(new ReactorClientHttpConnector(createFastHttpClient()))
                 .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(maxInMemorySizeMb * 1024 * 1024))
                 .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                .filter(logRequest())
+                .filter(logResponse())
                 .build();
     }
 
@@ -167,6 +171,8 @@ public class WebClientConfig {
                 .clientConnector(new ReactorClientHttpConnector(createFastHttpClient()))
                 .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(maxInMemorySizeMb * 1024 * 1024))
                 .defaultHeader(HttpHeaders.ACCEPT, "image/*")
+                .filter(logRequest())
+                .filter(logResponse())
                 .build();
     }
 
