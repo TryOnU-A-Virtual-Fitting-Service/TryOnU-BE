@@ -82,22 +82,31 @@ jobs:
               --log-opt awslogs-create-group=true \
               ${{ steps.build-image.outputs.image }}
             
-            # 헬스체크 확인
+            # [개선된 헬스체크]
             echo "Waiting for API server to start..."
             for i in {1..12}; do
-              if curl -s http://localhost:8080/actuator/health | grep -q '"status":"UP"'; then
-                echo "✅ Health check successful!"
-                sudo docker image prune -f
-                exit 0
+              # HTTP 상태 코드를 먼저 확인
+              HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/actuator/health || true)
+              
+              if [ "$HTTP_STATUS" -eq 200 ]; then
+                # 상태 코드가 200이면, 응답 본문에서 "UP" 상태를 확인
+                BODY=$(curl -s http://localhost:8080/actuator/health)
+                if echo "$BODY" | grep -q '"status":"UP"'; then
+                  echo "✅ Health check successful! Status: $HTTP_STATUS"
+                  sudo docker image prune -f
+                  exit 0 # 성공! 즉시 스크립트 정상 종료
+                else
+                  echo "Attempt $i: Status is 200, but application is not UP. Body: $BODY. Retrying in 5 seconds..."
+                fi
+              else
+                echo "Attempt $i: Health check failed with HTTP status $HTTP_STATUS. Retrying in 5 seconds..."
               fi
-              echo "Attempt $i: Health check failed. Retrying in 5 seconds..."
               sleep 5
             done
 
             # 헬스체크 최종 실패 시
             echo "❌ Health check failed after all attempts."
             echo "--- Container Logs ---"
-            # [수정] 컨테이너 이름을 정확하게 지정
             sudo docker logs thatzfit-api
             exit 1 # 스크립트를 실패 처리하여 GitHub Actions를 중단
 
