@@ -107,7 +107,7 @@ public class ImageUploadUtil {
             return imageUrl;
 
         } catch (Exception e) {
-            log.error("[ImageUploadUtil] S3 업로드 실패 - fileName={}, error={}", file.getOriginalFilename(), e.getMessage());
+            log.error("[ImageUploadUtil] S3 업로드 실패 - fileName={}, error={}", file.getOriginalFilename(), e.getMessage(), e);
             throw new RuntimeException("S3 업로드 중 오류가 발생했습니다.", e);
         }
     }
@@ -138,7 +138,7 @@ public class ImageUploadUtil {
             log.info("[ImageUploadUtil] 이미지 업로드 성공(byte[]) - imageUrl={}", imageUrl);
             return imageUrl;
         } catch (Exception e) {
-            log.error("[ImageUploadUtil] S3 업로드 실패(byte[]) - error={}", e.getMessage());
+            log.error("[ImageUploadUtil] S3 업로드 실패(byte[]) - error={}", e.getMessage(), e);
             throw new RuntimeException("S3 업로드 중 오류가 발생했습니다.", e);
         }
     }
