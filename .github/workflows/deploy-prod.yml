@@ -23,7 +23,6 @@ jobs:
           # application-prod.yml 생성  
           echo '${{ secrets.APPLICATION_PROD_YML }}' > src/main/resources/application-prod.yml
 
-
       # 3. AWS 자격 증명 설정
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -37,18 +36,18 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      # 5. Docker 이미지 빌드 및 ECR에 푸시
+      # 5. Docker 이미지 빌드 및 ECR에 푸시 (고유 태그만 사용)
       - name: Build, tag, and push ThatzFit API image
         id: build-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: thatzfit-api
+          ECR_REPOSITORY: attentionplease/thatzfit-api
           IMAGE_TAG: ${{ github.sha }}
         run: |
+          # 고유한 커밋 해시 태그로만 이미지를 빌드합니다.
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
+          # 해당 고유 태그 하나만 푸시합니다.
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
       # 6. EC2에 접속하여 ThatzFit API 배포
@@ -59,6 +58,9 @@ jobs:
           username: ec2-user
           key: ${{ secrets.API_EC2_PRIVATE_KEY }}
           script: |
+            # 명령어 실패 시 즉시 스크립트 중단
+            set -e
+
             # ECR 로그인
             aws ecr get-login-password --region ap-northeast-2 | sudo docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}
             
@@ -77,19 +79,29 @@ jobs:
               --log-driver=awslogs \
               --log-opt awslogs-region=ap-northeast-2 \
               --log-opt awslogs-group="/aws/ec2/thatzfit-api" \
-              --log-opt awslogs-stream-prefix="thatzfit-api" \
               --log-opt awslogs-create-group=true \
               ${{ steps.build-image.outputs.image }}
             
             # 헬스체크 확인
-            echo "Waiting for ThatzFit API to start..."
-            sleep 30
-            curl -f http://localhost:8080/api/health || echo "Health check failed"
-            
-            # 사용하지 않는 Docker 이미지 정리
-            sudo docker image prune -f 
+            echo "Waiting for API server to start..."
+            for i in {1..12}; do
+              if curl -s http://localhost:8080/actuator/health | grep -q '"status":"UP"'; then
+                echo "✅ Health check successful!"
+                sudo docker image prune -f
+                exit 0
+              fi
+              echo "Attempt $i: Health check failed. Retrying in 5 seconds..."
+              sleep 5
+            done
 
-    # Slack 알림
+            # 헬스체크 최종 실패 시
+            echo "❌ Health check failed after all attempts."
+            echo "--- Container Logs ---"
+            # [수정] 컨테이너 이름을 정확하게 지정
+            sudo docker logs thatzfit-api
+            exit 1 # 스크립트를 실패 처리하여 GitHub Actions를 중단
+
+  # Slack 알림
   notify-slack:
     needs: build-and-deploy
     runs-on: ubuntu-latest
