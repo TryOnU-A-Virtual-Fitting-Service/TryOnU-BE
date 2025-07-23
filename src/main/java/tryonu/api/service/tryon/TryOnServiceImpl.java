@@ -15,7 +15,6 @@ import tryonu.api.domain.Cloth;
 import tryonu.api.repository.fittingmodel.FittingModelRepository;   
 import tryonu.api.repository.tryonresult.TryOnResultRepository;
 import tryonu.api.repository.cloth.ClothRepository;
-import tryonu.api.common.util.BackgroundRemovalUtil;
 import tryonu.api.common.util.VirtualFittingUtil;
 import tryonu.api.common.util.ImageUploadUtil;
 import tryonu.api.common.util.CategoryPredictionUtil;
@@ -38,7 +37,6 @@ import java.util.Arrays;
 public class TryOnServiceImpl implements TryOnService {
 
     private final VirtualFittingUtil virtualFittingUtil;
-    private final BackgroundRemovalUtil backgroundRemovalUtil;
     private final ImageUploadUtil imageUploadUtil;
     private final CategoryPredictionUtil categoryPredictionUtil;
     private final FittingModelRepository fittingModelRepository;
@@ -103,14 +101,11 @@ public class TryOnServiceImpl implements TryOnService {
             clothRepository.save(cloth);
 
             // 피팅 결과 저장
-            byte[] backgroundRemovedImage = backgroundRemovalUtil.removeBackground(resultImageUrl);
-            String backgroundRemovedImageUrl = imageUploadUtil.uploadTryOnResultImage(backgroundRemovedImage);
-            
-            TryOnResult tryOnResult = tryOnConverter.toTryOnResultEntity(cloth, fittingModel, backgroundRemovedImageUrl);
+            TryOnResult tryOnResult = tryOnConverter.toTryOnResultEntity(cloth, fittingModel, resultImageUrl);
             tryOnResultRepository.save(tryOnResult);
 
             // 피팅 모델 상태 업데이트
-            fittingModel.updateImageUrl(backgroundRemovedImageUrl);
+            fittingModel.updateImageUrl(resultImageUrl);
             FittingModel updatedFittingModel = fittingModelRepository.save(fittingModel);
             
             return tryOnConverter.toTryOnResponse(updatedFittingModel.getImageUrl());

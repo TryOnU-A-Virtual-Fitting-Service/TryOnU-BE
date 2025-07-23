@@ -166,7 +166,7 @@ public class ImageUploadUtil {
     /**
      * 트라이온 결과 이미지를 업로드합니다.
      */
-    public String uploadTryOnResult(MultipartFile file) {
+    public String uploadTryOnResultImage(MultipartFile file) {
         return uploadToS3(file, tryonResultFolder);
     }
     public String uploadTryOnResultImage(byte[] image) {
