@@ -16,6 +16,7 @@ import tryonu.api.common.exception.enums.ErrorCode;
 @RequiredArgsConstructor
 public class CategoryPredictionUtil {
     private final WebClient categoryPredictionWebClient;
+    private final WebClient imageDownloadWebClient;
 
     /**
      * 카테고리 예측 API 호출 (MultipartFile → CategoryPredictionResponse)
@@ -41,7 +42,7 @@ public class CategoryPredictionUtil {
     public CategoryPredictionResponse predictCategory(String imageUrl) {
         try {
             // 1. URL에서 이미지 다운로드
-            byte[] imageBytes = WebClient.create()
+            byte[] imageBytes = imageDownloadWebClient
                     .get()
                     .uri(imageUrl)
                     .retrieve()
