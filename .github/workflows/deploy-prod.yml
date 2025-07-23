@@ -77,17 +77,22 @@ jobs:
               --log-driver=awslogs \
               --log-opt awslogs-region=ap-northeast-2 \
               --log-opt awslogs-group="/aws/ec2/thatzfit-api" \
-              --log-opt awslogs-stream-prefix="thatzfit-api" \
               --log-opt awslogs-create-group=true \
               ${{ steps.build-image.outputs.image }}
             
             # 헬스체크 확인
-            echo "Waiting for ThatzFit API to start..."
-            sleep 30
-            curl -f http://localhost:8080/api/health || echo "Health check failed"
-            
-            # 사용하지 않는 Docker 이미지 정리
-            sudo docker image prune -f 
+            echo "Waiting for API server to start..."
+            for i in {1..12}; do
+              # Spring Actuator의 /health 엔드포인트를 호출하여 "UP" 상태인지 확인
+              if curl -s http://localhost:8080/actuator/health | grep -q '"status":"UP"'; then
+                echo "✅ Health check successful!"
+                # 사용하지 않는 Docker 이미지 정리 후 정상 종료
+                sudo docker image prune -f
+                exit 0
+              fi
+              echo "Attempt $i: Health check failed. Retrying in 5 seconds..."
+              sleep 5
+            done
 
     # Slack 알림
   notify-slack:
