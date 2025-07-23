@@ -1,0 +1,62 @@
+# IDE 설정 파일
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# 빌드 결과물 (빌드 스테이지에서 생성됨)
+build/
+target/
+out/
+.gradle/
+
+# 로그 파일
+logs/
+*.log
+
+# 임시 파일
+*.tmp
+*.swp
+*.swo
+*~
+
+# OS 파일
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Git 정보
+.git/
+.gitignore
+
+# Docker 관련
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# 문서
+README*.md
+*.md
+docs/
+
+# 테스트 보고서
+**/test-results/
+**/coverage/
+
+# Node.js (프론트엔드가 있는 경우)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 환경 설정 파일 (민감 정보 포함)
+.env
+.env.local
+.env.*.local
+
+# Spring Boot 개발 도구
+.devtools/
+
+# 기타 불필요한 파일
+*.orig 
