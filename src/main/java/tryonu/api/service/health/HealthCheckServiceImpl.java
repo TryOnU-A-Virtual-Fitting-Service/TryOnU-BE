@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import tryonu.api.dto.responses.HealthCheckResponse;
+import tryonu.api.converter.HealthCheckConverter;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -16,6 +17,7 @@ import java.time.temporal.ChronoUnit;
 @RequiredArgsConstructor
 public class HealthCheckServiceImpl implements HealthCheckService {
     
+    private final HealthCheckConverter healthCheckConverter;
     private final LocalDateTime startTime = LocalDateTime.now();
     
     @Override
@@ -25,11 +27,7 @@ public class HealthCheckServiceImpl implements HealthCheckService {
         LocalDateTime now = LocalDateTime.now();
         long uptimeSeconds = ChronoUnit.SECONDS.between(startTime, now);
         
-        HealthCheckResponse response = new HealthCheckResponse(
-            "UP",
-            now,
-            uptimeSeconds
-        );
+        HealthCheckResponse response = healthCheckConverter.toHealthCheckResponse("UP", now, uptimeSeconds);
         
         log.info("✅ [HealthCheck] 상태 확인 완료 - status={}, uptime={}초", response.status(), response.uptime());
         

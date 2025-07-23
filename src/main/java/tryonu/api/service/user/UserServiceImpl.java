@@ -18,6 +18,7 @@ import tryonu.api.common.enums.Gender;
 import tryonu.api.converter.DefaultModelConverter;
 import tryonu.api.converter.FittingModelConverter;
 import tryonu.api.common.auth.SecurityUtils;
+import tryonu.api.converter.UserConverter;
 
 import java.util.List;
 import java.util.Optional;
@@ -37,6 +38,7 @@ public class UserServiceImpl implements UserService {
 
     private final DefaultModelConverter defaultModelConverter;  
     private final FittingModelConverter fittingModelConverter;
+    private final UserConverter userConverter;
 
     @Override
     @Transactional
@@ -89,7 +91,7 @@ public class UserServiceImpl implements UserService {
         List<FittingModelDto> fittingModels = fittingModelRepository.findFittingModelsByUserIdOrderByIdDesc(userId);
         List<DefaultModelDto> defaultModels = defaultModelRepository.findDefaultModelsByUserIdOrderByIdDesc(userId);
         log.info("[UserService] {} - userId: {}, fittingModels: {}, defaultModels: {}", logContext, userId, fittingModels.size(), defaultModels.size());
-        return new UserInfoResponse(fittingModels, defaultModels);
+        return userConverter.toUserInfoResponse(fittingModels, defaultModels);
     }
 
 

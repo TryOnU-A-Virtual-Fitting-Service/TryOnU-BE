@@ -29,8 +29,7 @@ public class FittingModelServiceImpl implements FittingModelService {
         // 피팅모델 저장
         FittingModel savedFittingModel = fittingModelRepository.save(fittingModel);
         
-        // 임시로 더미 데이터 반환
-        return new AddFittingModelResponse(savedFittingModel.getId(), savedFittingModel.getImageUrl());
+        return fittingModelConverter.toAddFittingModelResponse(savedFittingModel);
     }
 
 }

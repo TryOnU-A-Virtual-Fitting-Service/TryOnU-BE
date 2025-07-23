@@ -18,15 +18,15 @@ import org.springframework.web.multipart.MultipartFile;
 import lombok.RequiredArgsConstructor;
 import tryonu.api.dto.responses.DefaultModelResponse;
 import org.springframework.validation.annotation.Validated;
-import jakarta.validation.constraints.NotNull;
-import tryonu.api.common.exception.CustomException;
-import tryonu.api.common.exception.enums.ErrorCode;
+import tryonu.api.common.validation.NotEmptyFile;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 @RequiredArgsConstructor
 @RestController
 @Tag(name = "기본 모델 API", description = "기본 모델 관련 API")
 @Validated
 @RequestMapping("/default-model")
+@SecurityRequirement(name = "DeviceId")
 public class DefaultModelController {
 
     private final DefaultModelService defaultModelService;
@@ -46,11 +46,8 @@ public class DefaultModelController {
     })
     @PostMapping(value = "", consumes = "multipart/form-data")
     public ApiResponseWrapper<DefaultModelResponse> uploadDefaultModel(
-            @RequestParam("file") @NotNull MultipartFile file
+            @NotEmptyFile @RequestParam("file") MultipartFile file
     ) {
-        if (file.isEmpty()) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST, "업로드할 파일이 비어있습니다.");
-        }
         DefaultModelResponse response = defaultModelService.uploadDefaultModel(file);
         return ApiResponseWrapper.ofSuccess(response);
     }

@@ -9,6 +9,8 @@ import tryonu.api.common.wrapper.ApiResponseWrapper;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 import tryonu.api.common.exception.enums.ErrorCode;
+import org.springframework.core.io.buffer.DataBufferLimitException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 
 import java.util.Map;
 
@@ -91,5 +93,27 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponseWrapper<Void>> handleNoResourceFoundException(NoResourceFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
             .body(ApiResponseWrapper.ofFailure(ErrorCode.RESOURCE_NOT_FOUND.getCode(), ErrorCode.RESOURCE_NOT_FOUND.getMessage()));
+    }
+
+    /**
+     * 이미지 응답 크기 초과 처리
+     */
+    @ExceptionHandler(DataBufferLimitException.class)
+    public ResponseEntity<ApiResponseWrapper<?>> handleDataBufferLimitException(DataBufferLimitException ex) {
+        log.error("이미지 응답 크기 초과: {}", ex.getMessage());
+        return ResponseEntity
+            .status(ErrorCode.IMAGE_TOO_LARGE.getHttpStatus())
+            .body(ApiResponseWrapper.ofFailure(ErrorCode.IMAGE_TOO_LARGE.getCode(), ErrorCode.IMAGE_TOO_LARGE.getMessage()));
+    }
+
+    /**
+     * 지원하지 않는 Content-Type 예외 처리
+     */
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<ApiResponseWrapper<?>> handleHttpMediaTypeNotSupportedException(HttpMediaTypeNotSupportedException ex) {
+        log.error("지원하지 않는 Content-Type: {}", ex.getContentType());
+        return ResponseEntity
+            .status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
+            .body(ApiResponseWrapper.ofFailure("UNSUPPORTED_MEDIA_TYPE", "지원하지 않는 Content-Type입니다. multipart/form-data로 요청해 주세요."));
     }
 } 
