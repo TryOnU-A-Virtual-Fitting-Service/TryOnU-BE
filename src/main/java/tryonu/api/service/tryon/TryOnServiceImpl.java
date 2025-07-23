@@ -115,12 +115,9 @@ public class TryOnServiceImpl implements TryOnService {
             
             return tryOnConverter.toTryOnResponse(updatedFittingModel.getImageUrl());
         } else {
-            log.error("[TryOnService] 가상 피팅 실패 - fittingModelId={}, error={}", 
-                    fittingModelId, finalStatus.error());
-            throw new CustomException(
-                ErrorCode.VIRTUAL_FITTING_FAILED, 
-                finalStatus.error() != null ? finalStatus.error().message() : "알 수 없는 오류"
-            );
+            // fashn.ai API 에러 구체적 로깅 및 처리
+            handleVirtualFittingError(fittingModelId, finalStatus);
+            throw new RuntimeException("This should never be reached"); // handleVirtualFittingError always throws
         }
     }
 
@@ -132,6 +129,56 @@ public class TryOnServiceImpl implements TryOnService {
             throw new CustomException(ErrorCode.INVALID_REQUEST, 
                     "액세서리와 신발은 가상피팅에서 지원하지 않습니다. (감지된 카테고리: " + className + ")");
         }
+    }
+
+    /**
+     * fashn.ai API 에러를 구체적으로 로깅하고 적절한 예외로 변환
+     */
+    private void handleVirtualFittingError(Long fittingModelId, VirtualFittingStatusResponse finalStatus) {
+        if (finalStatus.error() == null) {
+            log.error("[TryOnService] 가상 피팅 실패 - fittingModelId={}, status={}, error=null", 
+                    fittingModelId, finalStatus.status());
+            throw new CustomException(ErrorCode.VIRTUAL_FITTING_FAILED, "가상피팅에 실패했습니다.");
+        }
+
+        String errorName = finalStatus.error().name();
+        String errorMessage = finalStatus.error().message();
+        
+        // 구체적인 에러 로깅
+        log.error("[TryOnService] fashn.ai API 가상 피팅 실패 - fittingModelId={}, status={}, errorName={}, errorMessage={}", 
+                fittingModelId, finalStatus.status(), errorName, errorMessage);
+
+        // 에러 타입별 처리 및 적절한 ErrorCode 선택
+        ErrorCode errorCode = switch (errorName) {
+            case "ImageLoadError" -> {
+                log.error("[TryOnService] 이미지 로드 실패 - 이미지 URL 접근성 또는 형식 문제: {}", errorMessage);
+                yield ErrorCode.IMAGE_LOAD_ERROR;
+            }
+            case "ContentModerationError" -> {
+                log.error("[TryOnService] 콘텐츠 모더레이션 실패 - 부적절한 콘텐츠 감지: {}", errorMessage);
+                yield ErrorCode.CONTENT_MODERATION_ERROR;
+            }
+            case "PhotoTypeError" -> {
+                log.error("[TryOnService] 이미지 타입 감지 실패 - garment_photo_type 자동 감지 불가: {}", errorMessage);
+                yield ErrorCode.PHOTO_TYPE_ERROR;
+            }
+            case "PoseError" -> {
+                log.error("[TryOnService] 자세 감지 실패 - 모델 또는 의류 이미지에서 자세 인식 불가: {}", errorMessage);
+                yield ErrorCode.POSE_ERROR;
+            }
+            case "PipelineError" -> {
+                log.error("[TryOnService] 파이프라인 처리 실패 - 예상치 못한 내부 에러: {}", errorMessage);
+                yield ErrorCode.PIPELINE_ERROR;
+            }
+            default -> {
+                log.error("[TryOnService] 알 수 없는 fashn.ai API 에러 - errorName={}, errorMessage={}", errorName, errorMessage);
+                yield ErrorCode.VIRTUAL_FITTING_FAILED;
+            }
+        };
+
+        // 구체적인 에러 메시지와 함께 예외 발생
+        String detailedMessage = String.format("%s (fashn.ai 에러: %s)", errorCode.getMessage(), errorMessage);
+        throw new CustomException(errorCode, detailedMessage);
     }
 
     /**

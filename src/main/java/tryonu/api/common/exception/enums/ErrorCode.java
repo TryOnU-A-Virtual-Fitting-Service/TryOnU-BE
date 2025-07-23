@@ -33,6 +33,13 @@ public enum ErrorCode {
     VIRTUAL_FITTING_TIMEOUT("VF004", "가상피팅 처리 시간이 초과되었습니다.", HttpStatus.REQUEST_TIMEOUT),
     VIRTUAL_FITTING_API_ERROR("VF005", "가상피팅 API 호출에 실패했습니다.", HttpStatus.BAD_GATEWAY),
     
+    // fashn.ai API 구체적 에러들
+    IMAGE_LOAD_ERROR("VF006", "이미지 로드에 실패했습니다.", HttpStatus.BAD_REQUEST),
+    CONTENT_MODERATION_ERROR("VF007", "부적절한 콘텐츠가 감지되었습니다.", HttpStatus.BAD_REQUEST), 
+    PHOTO_TYPE_ERROR("VF008", "의류 이미지 타입을 자동 감지할 수 없습니다.", HttpStatus.BAD_REQUEST),
+    POSE_ERROR("VF009", "모델 또는 의류 이미지에서 자세를 감지할 수 없습니다.", HttpStatus.BAD_REQUEST),
+    PIPELINE_ERROR("VF010", "가상피팅 파이프라인 처리 중 예상치 못한 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    
     // 공통 에러
     INVALID_REQUEST("COM001", "잘못된 요청입니다.", HttpStatus.BAD_REQUEST),
     INTERNAL_SERVER_ERROR("COM002", "서버 내부 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
