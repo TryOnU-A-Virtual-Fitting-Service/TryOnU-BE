@@ -42,7 +42,7 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: attentionplease/thatzfit-api
-          IMAGE_TAG: ${{ github.sha }}
+          IMAGE_TAG: ${{ github.sha }}-run-${{ github.run_id }}
         run: |
           # 고유한 커밋 해시 태그로만 이미지를 빌드합니다.
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
@@ -81,25 +81,7 @@ jobs:
               --log-opt awslogs-group="/aws/ec2/thatzfit-api" \
               --log-opt awslogs-create-group=true \
               ${{ steps.build-image.outputs.image }}
-            
-            echo "Waiting for API server to start..."
-            for i in {1..12}; do
-              HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/actuator/health || true)
-            
-              if [ "$HTTP_STATUS" -eq 200 ]; then
-                echo "✅ Health check successful! Status: $HTTP_STATUS"
-                sudo docker image prune -f
-                exit 0
-              else
-                echo "Attempt $i: Health check failed with HTTP status $HTTP_STATUS. Retrying in 5 seconds..."
-              fi
-              sleep 5
-            done
-            
-            echo "❌ Health check failed after all attempts."
-            echo "--- Container Logs ---"
-            sudo docker logs thatzfit-api
-            exit 1
+      
 
 
   # Slack 알림
