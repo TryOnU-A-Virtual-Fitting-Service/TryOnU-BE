@@ -14,11 +14,11 @@ public class TryOnResultConverter {
     /**
      * VirtualFittingRequest 객체 생성
      */
-    public VirtualFittingRequest toVirtualFittingRequest(String fittingModelImageUrl, String clothImageUrl) {
+    public VirtualFittingRequest toVirtualFittingRequest(String defaultModelImageUrl, String clothImageUrl) {
         return new VirtualFittingRequest(
                 "tryon-v1.6",
                 new VirtualFittingRequest.VirtualFittingInputs(
-                        fittingModelImageUrl,  // model_image - 모델 이미지 URL
+                        defaultModelImageUrl,  // model_image - 모델 이미지 URL
                         clothImageUrl,         // garment_image - 의류 이미지 URL 
                         null,                  // category - null (기본값 사용)
                         null,                  // mode - null (기본값 사용)
@@ -45,7 +45,7 @@ public class TryOnResultConverter {
      */
     public TryOnResult toTryOnResultEntity(Cloth cloth, DefaultModel defaultModel, String backgroundRemovedImageUrl) {
         return TryOnResult.builder()
-                .user(defaultModel.getUser())  // FittingModel에서 User 가져오기
+                .user(defaultModel.getUser())  // DefaultModel에서 User 가져오기
                 .cloth(cloth)
                 .defaultModel(defaultModel)
                 .imageUrl(backgroundRemovedImageUrl)

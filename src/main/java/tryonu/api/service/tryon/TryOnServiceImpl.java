@@ -10,9 +10,9 @@ import tryonu.api.dto.requests.VirtualFittingRequest;
 import tryonu.api.dto.responses.TryOnResponse;
 import tryonu.api.dto.responses.VirtualFittingResponse;
 import tryonu.api.dto.responses.VirtualFittingStatusResponse;
-import tryonu.api.domain.FittingModel;
 import tryonu.api.domain.Cloth;
-import tryonu.api.repository.fittingmodel.FittingModelRepository;   
+import tryonu.api.domain.DefaultModel;
+import tryonu.api.repository.defaultmodel.DefaultModelRepository;
 import tryonu.api.repository.tryonresult.TryOnResultRepository;
 import tryonu.api.repository.cloth.ClothRepository;
 import tryonu.api.common.util.VirtualFittingUtil;
@@ -23,7 +23,7 @@ import tryonu.api.dto.responses.CategoryPredictionResponse;
 import tryonu.api.common.exception.CustomException;
 import tryonu.api.common.exception.enums.ErrorCode;
 import tryonu.api.domain.TryOnResult;
-import tryonu.api.converter.TryOnConverter;
+import tryonu.api.converter.TryOnResultConverter;
 import tryonu.api.common.enums.Category;
 
 import java.util.Arrays;
@@ -41,10 +41,10 @@ public class TryOnServiceImpl implements TryOnService {
     private final MemoryTracker memoryTracker;
     private final ImageUploadUtil imageUploadUtil;
     private final CategoryPredictionUtil categoryPredictionUtil;
-    private final FittingModelRepository fittingModelRepository;
+    private final DefaultModelRepository defaultModelRepository;
     private final TryOnResultRepository tryOnResultRepository;
     private final ClothRepository clothRepository;
-    private final TryOnConverter tryOnConverter;
+    private final TryOnResultConverter tryOnResultConverter;
 
 
     @Value("${virtual-fitting.polling.max-wait-time-ms:60000}")  // 기본 1분
@@ -56,8 +56,8 @@ public class TryOnServiceImpl implements TryOnService {
     
 
     @Override
-    public TryOnResponse tryOn(Long fittingModelId, String productPageUrl, MultipartFile file) {
-        log.info("[TryOnService] 가상 피팅 시작 - fittingModelId={}", fittingModelId);
+    public TryOnResponse tryOn(Long defaultModelId, String productPageUrl, MultipartFile file) {
+        log.info("[TryOnService] 가상 피팅 시작 - defaultModelId={}", defaultModelId);
         
         // 전체 가상 피팅 프로세스 메모리 추적 시작
         String fileSizeStr = String.format("%.1fMB", file.getSize() / 1024.0 / 1024.0);
@@ -67,21 +67,19 @@ public class TryOnServiceImpl implements TryOnService {
         try {
             // 의류 이미지 카테고리 예측
         CategoryPredictionResponse categoryPredictionResponse = categoryPredictionUtil.predictCategory(file);
-        log.info("[TryOnService] 카테고리 예측 완료 - className={}, confidence={}", 
-                categoryPredictionResponse.className(), categoryPredictionResponse.confidence());
+        log.info("[TryOnService] 카테고리 예측 완료 - className={}, confidence={}", categoryPredictionResponse.className(), categoryPredictionResponse.confidence());
         
         // 지원하지 않는 카테고리 검증
         validateSupportedCategory(categoryPredictionResponse.className());
 
-        // 모델 조회
-        FittingModel fittingModel = fittingModelRepository.findByIdAndIsDeletedFalseOrThrow(fittingModelId);
-        String fittingModelImageUrl = fittingModel.getImageUrl();
-
         // 의류 이미지 업로드
         String clothImageUrl = imageUploadUtil.uploadClothImage(file);
 
+        // 모델 조회
+        DefaultModel defaultModel = defaultModelRepository.findByIdAndIsDeletedFalseOrThrow(defaultModelId);
+
         // 가상 피팅 API 요청 생성
-        VirtualFittingRequest virtualFittingRequest = tryOnConverter.toVirtualFittingRequest(fittingModelImageUrl, clothImageUrl);
+        VirtualFittingRequest virtualFittingRequest = tryOnResultConverter.toVirtualFittingRequest(defaultModel.getImageUrl(), clothImageUrl);
 
         // 가상 피팅 실행 (폴링 방식)
         VirtualFittingResponse virtualFittingResponse = virtualFittingUtil.runVirtualFitting(virtualFittingRequest);
@@ -93,40 +91,34 @@ public class TryOnServiceImpl implements TryOnService {
         if ("completed".equals(finalStatus.status())) {
             // 안전한 결과 추출 - null/empty 체크
             if (finalStatus.output() == null || finalStatus.output().isEmpty()) {
-                log.error("[TryOnService] 가상 피팅 완료되었으나 결과 이미지가 없음 - fittingModelId={}, output={}", 
-                        fittingModelId, finalStatus.output());
+                log.error("[TryOnService] 가상 피팅 완료되었으나 결과 이미지가 없음 - defaultModelId={}, output={}", defaultModelId, finalStatus.output());
                 throw new CustomException(ErrorCode.VIRTUAL_FITTING_FAILED, "가상피팅이 완료되었으나 결과 이미지를 받지 못했습니다.");
             }
             
             String resultImageUrl = finalStatus.output().get(0);  // 첫 번째 결과 이미지
 
-            log.info("[TryOnService] 가상 피팅 성공 - fittingModelId={}, resultUrl={}", 
-                    fittingModelId, resultImageUrl);
+            log.info("[TryOnService] 가상 피팅 성공 - defaultModelId={}, resultUrl={}", defaultModelId, resultImageUrl);
 
             // 의류 저장 - 안전한 카테고리 변환
             Category category = parseCategory(categoryPredictionResponse.className());
-            Cloth cloth = tryOnConverter.toClothEntity(clothImageUrl, productPageUrl, category);
+            Cloth cloth = tryOnResultConverter.toClothEntity(clothImageUrl, productPageUrl, category);
             clothRepository.save(cloth);
 
             // 피팅 결과 저장
-            TryOnResult tryOnResult = tryOnConverter.toTryOnResultEntity(cloth, fittingModel, resultImageUrl);
+            TryOnResult tryOnResult = tryOnResultConverter.toTryOnResultEntity(cloth, defaultModel, resultImageUrl);
             tryOnResultRepository.save(tryOnResult);
-
-            // 피팅 모델 상태 업데이트
-            fittingModel.updateImageUrl(resultImageUrl);
-            FittingModel updatedFittingModel = fittingModelRepository.save(fittingModel);
             
             // 메모리 추적 종료 (성공)
             memoryTracker.endTracking("VirtualFitting-Process", true);
             memoryTracker.logCurrentMemoryStatus("가상 피팅 프로세스 완료");
             
-            return tryOnConverter.toTryOnResponse(updatedFittingModel.getImageUrl());
+            return tryOnResultConverter.toTryOnResponse(tryOnResult.getImageUrl());
         } else {
             // 메모리 추적 종료 (실패)
             memoryTracker.endTracking("VirtualFitting-Process", false);
             
             // fashn.ai API 에러 구체적 로깅 및 처리
-            handleVirtualFittingError(fittingModelId, finalStatus);
+            handleVirtualFittingError(defaultModelId, finalStatus);
             throw new RuntimeException("This should never be reached"); // handleVirtualFittingError always throws
         }
         } catch (Exception e) {
@@ -150,10 +142,9 @@ public class TryOnServiceImpl implements TryOnService {
     /**
      * fashn.ai API 에러를 구체적으로 로깅하고 적절한 예외로 변환
      */
-    private void handleVirtualFittingError(Long fittingModelId, VirtualFittingStatusResponse finalStatus) {
+    private void handleVirtualFittingError(Long defaultModelId, VirtualFittingStatusResponse finalStatus) {
         if (finalStatus.error() == null) {
-            log.error("[TryOnService] 가상 피팅 실패 - fittingModelId={}, status={}, error=null", 
-                    fittingModelId, finalStatus.status());
+            log.error("[TryOnService] 가상 피팅 실패 - defaultModelId={}, status={}, error=null", defaultModelId, finalStatus.status());
             throw new CustomException(ErrorCode.VIRTUAL_FITTING_FAILED, "가상피팅에 실패했습니다.");
         }
 
@@ -161,8 +152,7 @@ public class TryOnServiceImpl implements TryOnService {
         String errorMessage = finalStatus.error().message();
         
         // 구체적인 에러 로깅
-        log.error("[TryOnService] fashn.ai API 가상 피팅 실패 - fittingModelId={}, status={}, errorName={}, errorMessage={}", 
-                fittingModelId, finalStatus.status(), errorName, errorMessage);
+        log.error("[TryOnService] fashn.ai API 가상 피팅 실패 - defaultModelId={}, status={}, errorName={}, errorMessage={}", defaultModelId, finalStatus.status(), errorName, errorMessage);
 
         // 에러 타입별 처리 및 적절한 ErrorCode 선택
         ErrorCode errorCode = switch (errorName) {

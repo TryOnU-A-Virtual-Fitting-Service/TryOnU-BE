@@ -30,7 +30,7 @@ public interface JpaTryOnResultRepository extends JpaRepository<TryOnResult, Lon
      * 사용자 ID로 피팅 결과와 연결된 상세 정보 조회
      */
     @Query("SELECT t FROM TryOnResult t " +
-           "LEFT JOIN FETCH t.fittingModel f " +
+           "LEFT JOIN FETCH t.defaultModel dm " +
            "LEFT JOIN FETCH t.cloth c " +
            "WHERE t.user.id = :userId")
     List<TryOnResult> findByUserIdWithDetails(@Param("userId") Long userId);
@@ -39,7 +39,7 @@ public interface JpaTryOnResultRepository extends JpaRepository<TryOnResult, Lon
      * 사용자 ID로 삭제되지 않은 피팅 결과와 연결된 상세 정보 조회
      */
     @Query("SELECT t FROM TryOnResult t " +
-           "LEFT JOIN FETCH t.fittingModel f " +
+           "LEFT JOIN FETCH t.defaultModel dm " +
            "LEFT JOIN FETCH t.cloth c " +
            "WHERE t.user.id = :userId AND t.isDeleted = false")
     List<TryOnResult> findByUserIdWithDetailsAndIsDeletedFalse(@Param("userId") Long userId);
