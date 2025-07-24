@@ -27,7 +27,7 @@ public class TryOnResult extends BaseEntity {
     DefaultModel defaultModel;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cloth_id", nullable = true) // 기본 모델로 생성된 결과일 경우 null
+    @JoinColumn(name = "cloth_id", nullable = true)
     Cloth cloth;
 
     @Column(name = "size_advice", nullable = true, columnDefinition = "TEXT") // 사이즈 정보 생성 실패할 경우 null
@@ -35,6 +35,9 @@ public class TryOnResult extends BaseEntity {
 
     @Column(name = "image_url", nullable = false, columnDefinition = "TEXT")
     String imageUrl;
+
+    @Column(name = "virtual_fitting_id", nullable = true)
+    String virtualFittingId; // 가상 피팅 API 응답 ID
 
     @Column(name = "is_deleted", nullable = false)
     @Builder.Default

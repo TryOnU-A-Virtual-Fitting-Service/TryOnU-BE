@@ -105,7 +105,7 @@ public class TryOnServiceImpl implements TryOnService {
             clothRepository.save(cloth);
 
             // 피팅 결과 저장
-            TryOnResult tryOnResult = tryOnResultConverter.toTryOnResultEntity(cloth, defaultModel, resultImageUrl);
+            TryOnResult tryOnResult = tryOnResultConverter.toTryOnResultEntity(cloth, defaultModel, resultImageUrl, virtualFittingResponse.id());
             tryOnResultRepository.save(tryOnResult);
             
             // 메모리 추적 종료 (성공)

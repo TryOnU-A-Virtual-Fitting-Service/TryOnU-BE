@@ -43,12 +43,13 @@ public class TryOnResultConverter {
     /**
      * TryOnResult 엔티티 생성
      */
-    public TryOnResult toTryOnResultEntity(Cloth cloth, DefaultModel defaultModel, String backgroundRemovedImageUrl) {
+    public TryOnResult toTryOnResultEntity(Cloth cloth, DefaultModel defaultModel, String backgroundRemovedImageUrl, String virtualFittingId) {
         return TryOnResult.builder()
                 .user(defaultModel.getUser())  // DefaultModel에서 User 가져오기
                 .cloth(cloth)
                 .defaultModel(defaultModel)
                 .imageUrl(backgroundRemovedImageUrl)
+                .virtualFittingId(virtualFittingId)  // 가상 피팅 API 응답 ID
                 .sizeAdvice(null)
                 .build();
     }
