@@ -77,6 +77,9 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/health",                // 헬스 체크 엔드포인트 (무조건 허용)
                     "/actuator/health",       // 스프링 액추에이터 헬스 체크 (무조건 허용)
+                    "/actuator/memory",       // 메모리 모니터링 엔드포인트 (디버깅용)
+                    "/actuator/gc",           // GC 정보 엔드포인트 (디버깅용)
+                    "/actuator/metrics/**",   // 메트릭스 엔드포인트 (모니터링용)
                     "/swagger-ui/**",         // Swagger UI 리소스 (API 문서화용, 무조건 허용)
                     "/swagger-ui.html",       // Swagger UI 진입점 (무조건 허용)
                     "/api-docs/**",           // Swagger API 문서 엔드포인트 (무조건 허용)

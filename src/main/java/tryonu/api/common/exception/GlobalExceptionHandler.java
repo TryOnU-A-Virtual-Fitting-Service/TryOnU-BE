@@ -56,6 +56,38 @@ public class GlobalExceptionHandler {
     }
     
     /**
+     * 메모리 부족 예외 처리 (OutOfMemoryError)
+     */
+    @ExceptionHandler(OutOfMemoryError.class)
+    public ResponseEntity<ApiResponseWrapper<Void>> handleOutOfMemoryError(OutOfMemoryError e) {
+        // 메모리 상태 정보 수집
+        Runtime runtime = Runtime.getRuntime();
+        long maxMemory = runtime.maxMemory() / 1024 / 1024; // MB
+        long totalMemory = runtime.totalMemory() / 1024 / 1024; // MB
+        long freeMemory = runtime.freeMemory() / 1024 / 1024; // MB
+        long usedMemory = totalMemory - freeMemory; // MB
+        
+        log.error("💥 [GlobalExceptionHandler] OutOfMemoryError 발생 - " +
+                "메모리 상태: used={}MB, total={}MB, max={}MB, free={}MB, " +
+                "에러타입: {}", 
+                usedMemory, totalMemory, maxMemory, freeMemory, e.getMessage(), e);
+        
+        // 강제 GC 실행 시도 (주의: 프로덕션에서는 권장하지 않지만 긴급 상황)
+        try {
+            System.gc();
+            log.warn("⚠️ [GlobalExceptionHandler] 긴급 GC 실행 완료");
+        } catch (Exception gcException) {
+            log.error("❌ [GlobalExceptionHandler] GC 실행 실패", gcException);
+        }
+        
+        ApiResponseWrapper<Void> response = ApiResponseWrapper.ofFailure(
+            "OUT_OF_MEMORY_ERROR",
+            "서버 메모리 부족으로 요청을 처리할 수 없습니다. 잠시 후 다시 시도해 주세요."
+        );
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(response);
+    }
+
+    /**
      * 예상치 못한 예외 처리
      * 
      * @param e 발생한 예외
