@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import tryonu.api.dto.requests.VirtualFittingRequest;
@@ -11,8 +12,8 @@ import tryonu.api.dto.responses.TryOnResponse;
 import tryonu.api.dto.responses.VirtualFittingResponse;
 import tryonu.api.dto.responses.VirtualFittingStatusResponse;
 import tryonu.api.domain.Cloth;
-import tryonu.api.domain.DefaultModel;
-import tryonu.api.repository.defaultmodel.DefaultModelRepository;
+import tryonu.api.domain.User;
+import tryonu.api.repository.user.UserRepository;
 import tryonu.api.repository.tryonresult.TryOnResultRepository;
 import tryonu.api.repository.cloth.ClothRepository;
 import tryonu.api.common.util.VirtualFittingUtil;
@@ -41,7 +42,7 @@ public class TryOnServiceImpl implements TryOnService {
     private final MemoryTracker memoryTracker;
     private final ImageUploadUtil imageUploadUtil;
     private final CategoryPredictionUtil categoryPredictionUtil;
-    private final DefaultModelRepository defaultModelRepository;
+    private final UserRepository userRepository;
     private final TryOnResultRepository tryOnResultRepository;
     private final ClothRepository clothRepository;
     private final TryOnResultConverter tryOnResultConverter;
@@ -56,8 +57,8 @@ public class TryOnServiceImpl implements TryOnService {
     
 
     @Override
-    public TryOnResponse tryOn(Long defaultModelId, String productPageUrl, MultipartFile file) {
-        log.info("[TryOnService] 가상 피팅 시작 - defaultModelId={}", defaultModelId);
+    public TryOnResponse tryOn(String modelUrl, String productPageUrl, MultipartFile file) {
+        log.info("[TryOnService] 가상 피팅 시작 - modelUrl={}", modelUrl);
         
         // 전체 가상 피팅 프로세스 메모리 추적 시작
         String fileSizeStr = String.format("%.1fMB", file.getSize() / 1024.0 / 1024.0);
@@ -75,11 +76,12 @@ public class TryOnServiceImpl implements TryOnService {
         // 의류 이미지 업로드
         String clothImageUrl = imageUploadUtil.uploadClothImage(file);
 
-        // 모델 조회
-        DefaultModel defaultModel = defaultModelRepository.findByIdAndIsDeletedFalseOrThrow(defaultModelId);
+        // 현재 인증된 사용자 조회
+        String deviceId = SecurityContextHolder.getContext().getAuthentication().getName();
+        User currentUser = userRepository.findByDeviceIdAndIsDeletedFalseOrThrow(deviceId);
 
         // 가상 피팅 API 요청 생성
-        VirtualFittingRequest virtualFittingRequest = tryOnResultConverter.toVirtualFittingRequest(defaultModel.getImageUrl(), clothImageUrl);
+        VirtualFittingRequest virtualFittingRequest = tryOnResultConverter.toVirtualFittingRequest(modelUrl, clothImageUrl);
 
         // 가상 피팅 실행 (폴링 방식)
         VirtualFittingResponse virtualFittingResponse = virtualFittingUtil.runVirtualFitting(virtualFittingRequest);
@@ -91,13 +93,13 @@ public class TryOnServiceImpl implements TryOnService {
         if ("completed".equals(finalStatus.status())) {
             // 안전한 결과 추출 - null/empty 체크
             if (finalStatus.output() == null || finalStatus.output().isEmpty()) {
-                log.error("[TryOnService] 가상 피팅 완료되었으나 결과 이미지가 없음 - defaultModelId={}, output={}", defaultModelId, finalStatus.output());
+                log.error("[TryOnService] 가상 피팅 완료되었으나 결과 이미지가 없음 - modelUrl={}, output={}", modelUrl, finalStatus.output());
                 throw new CustomException(ErrorCode.VIRTUAL_FITTING_FAILED, "가상피팅이 완료되었으나 결과 이미지를 받지 못했습니다.");
             }
             
             String resultImageUrl = finalStatus.output().get(0);  // 첫 번째 결과 이미지
 
-            log.info("[TryOnService] 가상 피팅 성공 - defaultModelId={}, resultUrl={}", defaultModelId, resultImageUrl);
+            log.info("[TryOnService] 가상 피팅 성공 - modelUrl={}, resultUrl={}", modelUrl, resultImageUrl);
 
             // 의류 저장 - 안전한 카테고리 변환
             Category category = parseCategory(categoryPredictionResponse.className());
@@ -105,7 +107,7 @@ public class TryOnServiceImpl implements TryOnService {
             clothRepository.save(cloth);
 
             // 피팅 결과 저장
-            TryOnResult tryOnResult = tryOnResultConverter.toTryOnResultEntity(cloth, defaultModel, resultImageUrl, virtualFittingResponse.id());
+            TryOnResult tryOnResult = tryOnResultConverter.toTryOnResultEntity(cloth, currentUser, modelUrl, resultImageUrl, virtualFittingResponse.id());
             tryOnResultRepository.save(tryOnResult);
             
             // 메모리 추적 종료 (성공)
@@ -118,7 +120,7 @@ public class TryOnServiceImpl implements TryOnService {
             memoryTracker.endTracking("VirtualFitting-Process", false);
             
             // fashn.ai API 에러 구체적 로깅 및 처리
-            handleVirtualFittingError(defaultModelId, finalStatus);
+            handleVirtualFittingError(modelUrl, finalStatus);
             throw new RuntimeException("This should never be reached"); // handleVirtualFittingError always throws
         }
         } catch (Exception e) {
@@ -142,9 +144,9 @@ public class TryOnServiceImpl implements TryOnService {
     /**
      * fashn.ai API 에러를 구체적으로 로깅하고 적절한 예외로 변환
      */
-    private void handleVirtualFittingError(Long defaultModelId, VirtualFittingStatusResponse finalStatus) {
+    private void handleVirtualFittingError(String modelUrl, VirtualFittingStatusResponse finalStatus) {
         if (finalStatus.error() == null) {
-            log.error("[TryOnService] 가상 피팅 실패 - defaultModelId={}, status={}, error=null", defaultModelId, finalStatus.status());
+            log.error("[TryOnService] 가상 피팅 실패 - modelUrl={}, status={}, error=null", modelUrl, finalStatus.status());
             throw new CustomException(ErrorCode.VIRTUAL_FITTING_FAILED, "가상피팅에 실패했습니다.");
         }
 
@@ -152,7 +154,7 @@ public class TryOnServiceImpl implements TryOnService {
         String errorMessage = finalStatus.error().message();
         
         // 구체적인 에러 로깅
-        log.error("[TryOnService] fashn.ai API 가상 피팅 실패 - defaultModelId={}, status={}, errorName={}, errorMessage={}", defaultModelId, finalStatus.status(), errorName, errorMessage);
+        log.error("[TryOnService] fashn.ai API 가상 피팅 실패 - modelUrl={}, status={}, errorName={}, errorMessage={}", modelUrl, finalStatus.status(), errorName, errorMessage);
 
         // 에러 타입별 처리 및 적절한 ErrorCode 선택
         ErrorCode errorCode = switch (errorName) {
