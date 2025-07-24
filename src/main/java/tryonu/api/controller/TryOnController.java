@@ -6,6 +6,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.NotBlank;
+import org.hibernate.validator.constraints.URL;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -30,7 +32,7 @@ public class TryOnController {
                      "- modelUrl: 모델 이미지의 URL (쿼리 파라미터)\n" +
                      "- productPageUrl: 상품 상세 페이지 URL (쿼리 파라미터, 선택)\n" +
                      "- file: 의류 이미지 파일 (multipart/form-data)\n" +
-                     "\n실무에서는 파일 업로드 API에서 메타데이터(모델URL, 상품URL 등)는 쿼리 파라미터로, 이미지는 file 파트로 분리하는 것이 표준적입니다."
+                     "\n파일 업로드 API에서 메타데이터(모델URL, 상품URL 등)는 쿼리 파라미터로, 이미지는 file 파트로 분리."
     )
     @ApiResponses({ 
         @ApiResponse(responseCode = "200", description = "가상 피팅 성공"), 
@@ -39,10 +41,10 @@ public class TryOnController {
     @PostMapping(value = "/fitting", consumes = "multipart/form-data")
     public ApiResponseWrapper<TryOnResponse> tryOnWithImage(
         @Parameter(description = "모델 이미지의 URL", required = true, example = "https://example.com/model.jpg") 
-        @RequestParam String modelUrl,
+        @RequestParam @NotBlank(message = "모델 이미지 URL은 필수입니다") @URL(message = "올바른 URL 형식이어야 합니다") String modelUrl,
         
         @Parameter(description = "상품 상세 페이지 URL (선택)", example = "https://example.com/product/123") 
-        @RequestParam(required = false) String productPageUrl,
+        @RequestParam(required = false) @URL(message = "올바른 URL 형식이어야 합니다") String productPageUrl,
         
         @Parameter(description = "의류 이미지 파일 (10MB 이하, jpg/png/webp)", required = true) 
         @RequestParam("file") @NotEmptyFile MultipartFile file
