@@ -24,7 +24,7 @@ public class OpenApiConfig {
     
     @Value("${app.swagger.servers.staging-http}")
     private String stagingHttpUrl;
-    
+        
     @Value("${app.swagger.servers.staging-https}")
     private String stagingHttpsUrl;
     
@@ -48,11 +48,8 @@ public class OpenApiConfig {
                         .version("1.0.0")
                         .contact(new Contact()
                                 .name("ThatzFit Team")
-                                .email("dev@thatzfit.com")))
+                                .email("tryonu.team@gmail.com")))
                 .servers(List.of(
-                        new Server()
-                                .url(stagingHttpUrl + contextPath)
-                                .description("스테이징 서버 (HTTP)"),
                         new Server()
                                 .url(stagingHttpsUrl + contextPath)
                                 .description("스테이징 서버 (HTTPS)"),
