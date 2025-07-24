@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import tryonu.api.common.exception.CustomException;
 import tryonu.api.common.exception.enums.ErrorCode;
 import tryonu.api.domain.TryOnResult;
+import tryonu.api.dto.responses.TryOnResultDto;
 
 import java.util.List;
 
@@ -55,5 +56,12 @@ public class TryOnResultRepositoryAdapter implements TryOnResultRepository {
         tryOnResult.setIsDeleted(true);
         jpaTryOnResultRepository.save(tryOnResult);
         log.debug("[TryOnResultRepositoryAdapter] 피팅 결과 소프트 삭제 성공 - tryOnResultId: {}", tryOnResult.getId());
+    }
+    
+    @Override
+    public List<TryOnResultDto> findTryOnResultsByUserIdOrderByIdDesc(@NonNull Long userId) {
+        List<TryOnResultDto> tryOnResults = jpaTryOnResultRepository.findTryOnResultsByUserIdOrderByIdDesc(userId);
+        log.debug("[TryOnResultRepositoryAdapter] 사용자별 피팅 결과 DTO 조회 - userId: {}, count: {}", userId, tryOnResults.size());
+        return tryOnResults;
     }
 } 

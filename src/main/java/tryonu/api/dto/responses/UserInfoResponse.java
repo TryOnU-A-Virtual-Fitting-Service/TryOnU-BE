@@ -8,11 +8,11 @@ import java.util.List;
  */
 @Schema(description = "유저 정보 조회 응답")
 public record UserInfoResponse(
-    
-    @Schema(description = "피팅 모델 리스트", example = "[{\"fittingModelId\": 10, \"fittingModelUrl\": \"https://example.com/fitting-model.jpg\"}]")
-    List<FittingModelDto> fittingModels,
-    
+
     @Schema(description = "기본 모델 리스트", example = "[{\"defaultModelId\": 5, \"defaultModelUrl\": \"https://example.com/default-model.jpg\"}]")
-    List<DefaultModelDto> defaultModels
+    List<DefaultModelDto> defaultModels,
+
+    @Schema(description = "피팅 결과 리스트", example = "[{\"tryOnResultId\": 10, \"tryOnResultUrl\": \"https://example.com/try-on-result.jpg\"}]")
+    List<TryOnResultDto> tryOnResults
     
 ) {} 
