@@ -21,15 +21,10 @@ public class OpenApiConfig {
 
     @Value("${server.servlet.context-path:/api}")
     private String contextPath;
-    
-    @Value("${app.swagger.servers.staging-http}")
-    private String stagingHttpUrl;
-        
+
     @Value("${app.swagger.servers.staging-https}")
     private String stagingHttpsUrl;
-    
-    @Value("${app.swagger.servers.local}")
-    private String localUrl;
+
 
     /**
      * OpenAPI 설정
@@ -52,10 +47,7 @@ public class OpenApiConfig {
                 .servers(List.of(
                         new Server()
                                 .url(stagingHttpsUrl + contextPath)
-                                .description("스테이징 서버 (HTTPS)"),
-                        new Server()
-                                .url(localUrl + contextPath)
-                                .description("로컬 개발 서버")
+                                .description("스테이징 서버 (HTTPS)")
                 ));
     }
 } 

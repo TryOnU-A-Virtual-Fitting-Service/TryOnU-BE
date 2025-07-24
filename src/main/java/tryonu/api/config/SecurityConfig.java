@@ -35,8 +35,8 @@ public class SecurityConfig {
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
     
-    @Value("${app.cors.allowed-origins}")
-    private String[] allowedOrigins;
+    @Value("${app.cors.allowed-origin-patterns}")
+    private String allowedOriginPatterns;
 
     /**
      * Security Filter Chain 설정
@@ -120,8 +120,8 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         
         // 허용할 오리진 설정 (설정 파일에서 주입받은 값 사용)
-        // Note: Spring 내부에서 중복 제거 및 최적화 처리됨
-        configuration.setAllowedOriginPatterns(Arrays.asList(allowedOrigins));
+        // 콤마로 구분된 문자열을 List로 변환
+        configuration.setAllowedOriginPatterns(Arrays.asList(allowedOriginPatterns.split(",")));
         
         // 허용할 HTTP 메서드 (고유한 값들로 구성)
         configuration.setAllowedMethods(List.of(
