@@ -108,14 +108,14 @@
     <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE"/>
     <logger name="org.apache.http" level="WARN"/>
     
-    <!-- AWS SDK 로깅 최적화 - 메모리 누수 방지 -->
+    <!-- 외부 라이브러리 로깅 최적화 - 성능 개선 및 노이즈 감소 -->
     <logger name="software.amazon.awssdk" level="ERROR"/>
     <logger name="software.amazon.awssdk.request" level="ERROR"/>
     <logger name="software.amazon.awssdk.core" level="ERROR"/>
     <logger name="software.amazon.awssdk.services.s3" level="ERROR"/>
     <logger name="software.amazon.awssdk.checksums" level="ERROR"/>
     
-    <!-- WebClient/Netty 로깅 최적화 -->
+    <!-- WebClient/Netty 로깅 최적화 - 네트워크 상세 로그 비활성화 -->
     <logger name="reactor.netty" level="WARN"/>
     <logger name="org.springframework.web.reactive" level="WARN"/>
 </configuration> 

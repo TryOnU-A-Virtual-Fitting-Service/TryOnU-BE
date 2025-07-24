@@ -28,6 +28,7 @@ import tryonu.api.common.exception.enums.ErrorCode;
 @Component
 public class ImageUploadUtil {
     private final S3Client s3Client;
+    private final MemoryTracker memoryTracker;
 
     @Value("${aws.s3.bucket-name}")
     private String bucketName;
@@ -79,6 +80,11 @@ public class ImageUploadUtil {
      */
     public String uploadToS3(MultipartFile file, String folderPath) {
         log.info("[ImageUploadUtil] 이미지 업로드 시작 - fileName={}, folderPath={}", file.getOriginalFilename(), folderPath);
+        
+        // 메모리 추적 시작
+        String fileSizeStr = String.format("%.1fMB", file.getSize() / 1024.0 / 1024.0);
+        memoryTracker.startTracking("S3Upload-MultipartFile", fileSizeStr);
+        memoryTracker.logCurrentMemoryStatus("S3 업로드 시작");
 
         // 파일 검증 (확장자, Content-Type 포함)
         validateFile(file);
@@ -104,10 +110,19 @@ public class ImageUploadUtil {
             String imageUrl = cloudfrontDomain + "/" + s3Key;
 
             log.info("[ImageUploadUtil] 이미지 업로드 성공 - imageUrl={}", imageUrl);
+            
+            // 메모리 추적 종료 (성공)
+            memoryTracker.endTracking("S3Upload-MultipartFile", true);
+            memoryTracker.logCurrentMemoryStatus("S3 업로드 완료");
+            
             return imageUrl;
 
         } catch (Exception e) {
             log.error("[ImageUploadUtil] S3 업로드 실패 - fileName={}, error={}", file.getOriginalFilename(), e.getMessage(), e);
+            
+            // 메모리 추적 종료 (실패)
+            memoryTracker.endTracking("S3Upload-MultipartFile", false);
+            
             throw new RuntimeException("S3 업로드 중 오류가 발생했습니다.", e);
         }
     }
@@ -121,6 +136,11 @@ public class ImageUploadUtil {
      * @return 업로드된 이미지의 S3 URL
      */
     public String uploadToS3(byte[] image, String folderPath, String contentType) {
+        // 메모리 추적 시작
+        String imageSizeStr = String.format("%.1fMB", image.length / 1024.0 / 1024.0);
+        memoryTracker.startTracking("S3Upload-ByteArray", imageSizeStr);
+        memoryTracker.logCurrentMemoryStatus("S3 byte[] 업로드 시작");
+        
         try {
             String fileName = generateFileName("image.png");
             String s3Key = folderPath + "/" + fileName;
@@ -136,9 +156,18 @@ public class ImageUploadUtil {
 
             String imageUrl = cloudfrontDomain + "/" + s3Key;
             log.info("[ImageUploadUtil] 이미지 업로드 성공(byte[]) - imageUrl={}", imageUrl);
+            
+            // 메모리 추적 종료 (성공)
+            memoryTracker.endTracking("S3Upload-ByteArray", true);
+            memoryTracker.logCurrentMemoryStatus("S3 byte[] 업로드 완료");
+            
             return imageUrl;
         } catch (Exception e) {
             log.error("[ImageUploadUtil] S3 업로드 실패(byte[]) - error={}", e.getMessage(), e);
+            
+            // 메모리 추적 종료 (실패)
+            memoryTracker.endTracking("S3Upload-ByteArray", false);
+            
             throw new RuntimeException("S3 업로드 중 오류가 발생했습니다.", e);
         }
     }
