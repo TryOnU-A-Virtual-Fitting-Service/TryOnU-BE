@@ -43,6 +43,9 @@ dependencies {
     // AWS SDK v2 BOM for unified version management
     implementation 'software.amazon.awssdk:s3'
     
+    // CloudWatch 메트릭 연동
+    implementation 'io.micrometer:micrometer-registry-cloudwatch:1.12.5'    
+    
     // API 문서화
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.0'
     

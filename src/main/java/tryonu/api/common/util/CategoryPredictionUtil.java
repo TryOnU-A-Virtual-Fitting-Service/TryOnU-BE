@@ -17,6 +17,7 @@ import tryonu.api.common.exception.enums.ErrorCode;
 public class CategoryPredictionUtil {
     private final WebClient categoryPredictionWebClient;
     private final WebClient imageDownloadWebClient;
+    private final MemoryTracker memoryTracker;
 
     /**
      * 카테고리 예측 API 호출 (MultipartFile → CategoryPredictionResponse)

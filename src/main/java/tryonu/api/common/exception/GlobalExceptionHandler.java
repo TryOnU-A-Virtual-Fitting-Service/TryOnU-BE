@@ -11,6 +11,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 import tryonu.api.common.exception.enums.ErrorCode;
 import org.springframework.core.io.buffer.DataBufferLimitException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 
 import java.util.Map;
 
@@ -54,6 +55,38 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
     
+    /**
+     * 메모리 부족 예외 처리 (OutOfMemoryError)
+     */
+    @ExceptionHandler(OutOfMemoryError.class)
+    public ResponseEntity<ApiResponseWrapper<Void>> handleOutOfMemoryError(OutOfMemoryError e) {
+        // 메모리 상태 정보 수집
+        Runtime runtime = Runtime.getRuntime();
+        long maxMemory = runtime.maxMemory() / 1024 / 1024; // MB
+        long totalMemory = runtime.totalMemory() / 1024 / 1024; // MB
+        long freeMemory = runtime.freeMemory() / 1024 / 1024; // MB
+        long usedMemory = totalMemory - freeMemory; // MB
+        
+        log.error("💥 [GlobalExceptionHandler] OutOfMemoryError 발생 - " +
+                "메모리 상태: used={}MB, total={}MB, max={}MB, free={}MB, " +
+                "에러타입: {}", 
+                usedMemory, totalMemory, maxMemory, freeMemory, e.getMessage(), e);
+        
+        // 강제 GC 실행 시도 (주의: 프로덕션에서는 권장하지 않지만 긴급 상황)
+        try {
+            System.gc();
+            log.warn("⚠️ [GlobalExceptionHandler] 긴급 GC 실행 완료");
+        } catch (Exception gcException) {
+            log.error("❌ [GlobalExceptionHandler] GC 실행 실패", gcException);
+        }
+        
+        ApiResponseWrapper<Void> response = ApiResponseWrapper.ofFailure(
+            "OUT_OF_MEMORY_ERROR",
+            "서버 메모리 부족으로 요청을 처리할 수 없습니다. 잠시 후 다시 시도해 주세요."
+        );
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(response);
+    }
+
     /**
      * 예상치 못한 예외 처리
      * 
@@ -115,5 +148,20 @@ public class GlobalExceptionHandler {
         return ResponseEntity
             .status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
             .body(ApiResponseWrapper.ofFailure("UNSUPPORTED_MEDIA_TYPE", "지원하지 않는 Content-Type입니다. multipart/form-data로 요청해 주세요."));
+    }
+
+    /**
+     * 지원하지 않는 HTTP 메서드 예외 처리
+     */
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ApiResponseWrapper<?>> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException ex) {
+        String method = ex.getMethod();
+        String supportedMethods = String.join(", ", ex.getSupportedMethods());
+        log.warn("🚫 [GlobalExceptionHandler] 지원하지 않는 HTTP 메서드: method={}, supportedMethods={}", method, supportedMethods);
+        
+        String message = String.format("'%s' 메서드는 지원하지 않습니다. 지원하는 메서드: %s", method, supportedMethods);
+        return ResponseEntity
+            .status(ErrorCode.METHOD_NOT_ALLOWED.getHttpStatus())
+            .body(ApiResponseWrapper.ofFailure(ErrorCode.METHOD_NOT_ALLOWED.getCode(), message));
     }
 } 

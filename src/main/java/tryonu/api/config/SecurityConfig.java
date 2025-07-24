@@ -2,6 +2,7 @@ package tryonu.api.config;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -10,9 +11,15 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import tryonu.api.common.auth.DeviceIdAuthenticationFilter;
 import tryonu.api.common.auth.CustomAuthenticationEntryPoint;
 import tryonu.api.common.auth.CustomAccessDeniedHandler;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Spring Security 설정
@@ -27,6 +34,9 @@ public class SecurityConfig {
     private final DeviceIdAuthenticationFilter deviceIdAuthenticationFilter;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
+    
+    @Value("${app.cors.allowed-origin-patterns}")
+    private String allowedOriginPatterns;
 
     /**
      * Security Filter Chain 설정
@@ -43,6 +53,9 @@ public class SecurityConfig {
         http
             // CSRF 비활성화 (API 서버이므로)
             .csrf(AbstractHttpConfigurer::disable)
+            
+            // CORS 설정 추가 (Swagger UI에서 API 호출을 위해)
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             
             // HTTP Basic 인증 비활성화
             .httpBasic(AbstractHttpConfigurer::disable)
@@ -64,6 +77,9 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/health",                // 헬스 체크 엔드포인트 (무조건 허용)
                     "/actuator/health",       // 스프링 액추에이터 헬스 체크 (무조건 허용)
+                    "/actuator/memory",       // 메모리 모니터링 엔드포인트 (디버깅용)
+                    "/actuator/gc",           // GC 정보 엔드포인트 (디버깅용)
+                    "/actuator/metrics/**",   // 메트릭스 엔드포인트 (모니터링용)
                     "/swagger-ui/**",         // Swagger UI 리소스 (API 문서화용, 무조건 허용)
                     "/swagger-ui.html",       // Swagger UI 진입점 (무조건 허용)
                     "/api-docs/**",           // Swagger API 문서 엔드포인트 (무조건 허용)
@@ -89,5 +105,43 @@ public class SecurityConfig {
         log.info("✅ [SecurityConfig] Spring Security 설정 완료 - 헬스체크, Swagger UI, API 엔드포인트 인증 해제");
         
         return http.build();
+    }
+
+    /**
+     * CORS 설정
+     * Swagger UI에서 API 호출을 위한 CORS 정책 설정
+     * 
+     * @return CorsConfigurationSource CORS 설정 정보
+     */
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        log.info("🌐 [SecurityConfig] CORS 설정 초기화");
+        
+        CorsConfiguration configuration = new CorsConfiguration();
+        
+        // 허용할 오리진 설정 (설정 파일에서 주입받은 값 사용)
+        // 콤마로 구분된 문자열을 List로 변환
+        configuration.setAllowedOriginPatterns(Arrays.asList(allowedOriginPatterns.split(",")));
+        
+        // 허용할 HTTP 메서드 (고유한 값들로 구성)
+        configuration.setAllowedMethods(List.of(
+            "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
+        ));
+        
+        // 허용할 헤더
+        configuration.setAllowedHeaders(List.of("*"));
+        
+        // 인증 정보 포함 허용
+        configuration.setAllowCredentials(true);
+        
+        // Preflight 요청 캐시 시간 (1시간)
+        configuration.setMaxAge(3600L);
+        
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        
+        log.info("✅ [SecurityConfig] CORS 설정 완료 - Swagger UI API 호출 허용");
+        
+        return source;
     }
 } 
