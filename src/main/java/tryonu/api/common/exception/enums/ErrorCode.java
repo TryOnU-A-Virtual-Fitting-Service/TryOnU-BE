@@ -46,7 +46,8 @@ public enum ErrorCode {
     UNAUTHORIZED("COM003", "인증이 필요합니다.", HttpStatus.UNAUTHORIZED),
     FORBIDDEN("COM004", "접근 권한이 없습니다.", HttpStatus.FORBIDDEN),
     RESOURCE_NOT_FOUND("COM005", "요청하신 리소스를 찾을 수 없습니다.(url 체크 필요)", HttpStatus.NOT_FOUND),
-    UNEXPECTED_ERROR("COM006", "예상치 못한 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    METHOD_NOT_ALLOWED("COM006", "지원하지 않는 HTTP 메서드입니다.", HttpStatus.METHOD_NOT_ALLOWED),
+    UNEXPECTED_ERROR("COM007", "예상치 못한 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     
     // 파일 업로드 관련 에러
     IMAGE_TOO_LARGE("FILE001", "이미지 크기가 너무 큽니다. 10MB 이하로 업로드 해주세요.", HttpStatus.BAD_REQUEST),

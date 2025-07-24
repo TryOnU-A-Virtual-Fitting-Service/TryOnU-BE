@@ -11,6 +11,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 import tryonu.api.common.exception.enums.ErrorCode;
 import org.springframework.core.io.buffer.DataBufferLimitException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 
 import java.util.Map;
 
@@ -115,5 +116,20 @@ public class GlobalExceptionHandler {
         return ResponseEntity
             .status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
             .body(ApiResponseWrapper.ofFailure("UNSUPPORTED_MEDIA_TYPE", "지원하지 않는 Content-Type입니다. multipart/form-data로 요청해 주세요."));
+    }
+
+    /**
+     * 지원하지 않는 HTTP 메서드 예외 처리
+     */
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ApiResponseWrapper<?>> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException ex) {
+        String method = ex.getMethod();
+        String supportedMethods = String.join(", ", ex.getSupportedMethods());
+        log.warn("🚫 [GlobalExceptionHandler] 지원하지 않는 HTTP 메서드: method={}, supportedMethods={}", method, supportedMethods);
+        
+        String message = String.format("'%s' 메서드는 지원하지 않습니다. 지원하는 메서드: %s", method, supportedMethods);
+        return ResponseEntity
+            .status(ErrorCode.METHOD_NOT_ALLOWED.getHttpStatus())
+            .body(ApiResponseWrapper.ofFailure(ErrorCode.METHOD_NOT_ALLOWED.getCode(), message));
     }
 } 
