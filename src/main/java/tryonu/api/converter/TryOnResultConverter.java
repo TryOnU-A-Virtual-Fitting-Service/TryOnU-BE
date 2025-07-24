@@ -4,12 +4,12 @@ import org.springframework.stereotype.Component;
 import tryonu.api.dto.requests.VirtualFittingRequest;
 import tryonu.api.dto.responses.TryOnResponse;
 import tryonu.api.domain.Cloth;
-import tryonu.api.domain.FittingModel;
 import tryonu.api.domain.TryOnResult;
 import tryonu.api.common.enums.Category;
+import tryonu.api.domain.DefaultModel;
 
 @Component
-public class TryOnConverter {
+public class TryOnResultConverter {
 
     /**
      * VirtualFittingRequest 객체 생성
@@ -43,11 +43,11 @@ public class TryOnConverter {
     /**
      * TryOnResult 엔티티 생성
      */
-    public TryOnResult toTryOnResultEntity(Cloth cloth, FittingModel fittingModel, String backgroundRemovedImageUrl) {
+    public TryOnResult toTryOnResultEntity(Cloth cloth, DefaultModel defaultModel, String backgroundRemovedImageUrl) {
         return TryOnResult.builder()
-                .user(fittingModel.getUser())  // FittingModel에서 User 가져오기
+                .user(defaultModel.getUser())  // FittingModel에서 User 가져오기
                 .cloth(cloth)
-                .fittingModel(fittingModel)
+                .defaultModel(defaultModel)
                 .imageUrl(backgroundRemovedImageUrl)
                 .sizeAdvice(null)
                 .build();

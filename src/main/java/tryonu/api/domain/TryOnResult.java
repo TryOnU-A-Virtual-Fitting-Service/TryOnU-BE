@@ -7,7 +7,7 @@ import lombok.*;
 @Table(name = "try_on_results", indexes = {
     @Index(name = "idx_try_on_results_is_deleted", columnList = "is_deleted"),
     @Index(name = "idx_try_on_results_user_id", columnList = "user_id"),
-    @Index(name = "idx_try_on_results_fitting_model_id", columnList = "fitting_model_id")
+    @Index(name = "idx_try_on_results_default_model_id", columnList = "default_model_id")
 })
 @NoArgsConstructor
 @AllArgsConstructor
@@ -23,8 +23,8 @@ public class TryOnResult extends BaseEntity {
     User user; // 외래키 관계로 설정
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "fitting_model_id", nullable = false)
-    FittingModel fittingModel;
+    @JoinColumn(name = "default_model_id", nullable = false)
+    DefaultModel defaultModel;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cloth_id", nullable = true) // 기본 모델로 생성된 결과일 경우 null

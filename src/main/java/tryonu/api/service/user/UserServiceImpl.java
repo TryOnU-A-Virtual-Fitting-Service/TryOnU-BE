@@ -7,16 +7,14 @@ import org.springframework.transaction.annotation.Transactional;
 import tryonu.api.domain.User;
 import tryonu.api.dto.requests.UserInitRequest;
 import tryonu.api.dto.responses.UserInfoResponse;
-import tryonu.api.dto.responses.FittingModelDto;
 import tryonu.api.dto.responses.DefaultModelDto;
+import tryonu.api.dto.responses.TryOnResultDto;
 import tryonu.api.repository.defaultmodel.DefaultModelRepository;
-import tryonu.api.repository.fittingmodel.FittingModelRepository;
+import tryonu.api.repository.tryonresult.TryOnResultRepository;
 import tryonu.api.repository.user.UserRepository;
 import tryonu.api.domain.DefaultModel;
-import tryonu.api.domain.FittingModel;
 import tryonu.api.common.enums.Gender;
 import tryonu.api.converter.DefaultModelConverter;
-import tryonu.api.converter.FittingModelConverter;
 import tryonu.api.common.auth.SecurityUtils;
 import tryonu.api.converter.UserConverter;
 
@@ -34,10 +32,8 @@ public class UserServiceImpl implements UserService {
     
     private final UserRepository userRepository;
     private final DefaultModelRepository defaultModelRepository;
-    private final FittingModelRepository fittingModelRepository;
-
+    private final TryOnResultRepository tryOnResultRepository;
     private final DefaultModelConverter defaultModelConverter;  
-    private final FittingModelConverter fittingModelConverter;
     private final UserConverter userConverter;
 
     @Override
@@ -62,9 +58,8 @@ public class UserServiceImpl implements UserService {
             for (Gender gender : Gender.values()) {
                 DefaultModel defaultModel = defaultModelConverter.createDefaultModel(user, gender);
                 defaultModelRepository.save(defaultModel);
-                FittingModel fittingModel = fittingModelConverter.createFittingModel(user, gender);
-                fittingModelRepository.save(fittingModel);
             }
+
             
             log.info("[UserService] 새 사용자 생성 완료: userId={}, deviceId={}", user.getId(), request.deviceId());
         }
@@ -88,10 +83,9 @@ public class UserServiceImpl implements UserService {
      * @return UserInfoResponse
      */
     private UserInfoResponse buildUserInfoResponse(Long userId, String logContext) {
-        List<FittingModelDto> fittingModels = fittingModelRepository.findFittingModelsByUserIdOrderByIdDesc(userId);
         List<DefaultModelDto> defaultModels = defaultModelRepository.findDefaultModelsByUserIdOrderByIdDesc(userId);
-        log.info("[UserService] {} - userId: {}, fittingModels: {}, defaultModels: {}", logContext, userId, fittingModels.size(), defaultModels.size());
-        return userConverter.toUserInfoResponse(fittingModels, defaultModels);
+        List<TryOnResultDto> tryOnResults = tryOnResultRepository.findTryOnResultsByUserIdOrderByIdDesc(userId);
+        return userConverter.toUserInfoResponse(defaultModels, tryOnResults);
     }
 
 

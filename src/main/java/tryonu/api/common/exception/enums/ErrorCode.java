@@ -16,10 +16,7 @@ public enum ErrorCode {
     
     // Cloth 관련 에러
     CLOTH_NOT_FOUND("C001", "의류를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
-    
-    // FittingModel 관련 에러
-    FITTING_MODEL_NOT_FOUND("F001", "피팅 모델을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
-    
+        
     // DefaultModel 관련 에러
     DEFAULT_MODEL_NOT_FOUND("D001", "기본 모델을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     

@@ -2,6 +2,7 @@ package tryonu.api.repository.tryonresult;
 
 import org.springframework.lang.NonNull;
 import tryonu.api.domain.TryOnResult;
+import tryonu.api.dto.responses.TryOnResultDto;
 
 import java.util.List;
 
@@ -32,4 +33,9 @@ public interface TryOnResultRepository {
      * 피팅 결과 소프트 삭제 (예외처리 포함)
      */
     void softDelete(@NonNull TryOnResult tryOnResult);
+    
+    /**
+     * 사용자별 피팅 결과 목록 조회 (id 내림차순 정렬)
+     */
+    List<TryOnResultDto> findTryOnResultsByUserIdOrderByIdDesc(@NonNull Long userId);
 } 
