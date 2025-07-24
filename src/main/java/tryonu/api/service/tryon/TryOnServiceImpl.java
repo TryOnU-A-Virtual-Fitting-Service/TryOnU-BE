@@ -112,7 +112,7 @@ public class TryOnServiceImpl implements TryOnService {
             memoryTracker.endTracking("VirtualFitting-Process", true);
             memoryTracker.logCurrentMemoryStatus("가상 피팅 프로세스 완료");
             
-            return tryOnResultConverter.toTryOnResponse(tryOnResult.getImageUrl());
+            return tryOnResultConverter.toTryOnResponse(tryOnResult);
         } else {
             // 메모리 추적 종료 (실패)
             memoryTracker.endTracking("VirtualFitting-Process", false);

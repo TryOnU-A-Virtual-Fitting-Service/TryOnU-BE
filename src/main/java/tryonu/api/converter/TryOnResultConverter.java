@@ -57,7 +57,7 @@ public class TryOnResultConverter {
     /**
      * TryOnResponse 생성
      */
-    public TryOnResponse toTryOnResponse(String resultImageUrl) {
-        return new TryOnResponse(resultImageUrl);
+    public TryOnResponse toTryOnResponse(TryOnResult tryOnResult) {
+        return new TryOnResponse(tryOnResult.getId(), tryOnResult.getImageUrl());
     }
 } 
