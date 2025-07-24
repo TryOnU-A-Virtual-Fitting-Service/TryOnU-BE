@@ -24,14 +24,10 @@ RUN mkdir -p /app/logs && chown -R app:app /app
 USER app
 EXPOSE 8080
 
-# 2GB RAM EC2 최적화 JVM 설정 - 힙 메모리 확대
+# 2GB RAM EC2 최적화 JVM 설정 - Java 21 호환 GC 로깅
 ENV JAVA_OPTS="-Xms256m -Xmx768m -XX:+UseG1GC -XX:+UseContainerSupport \
 -XX:MaxMetaspaceSize=256m -XX:CompressedClassSpaceSize=64m \
--XX:MaxDirectMemorySize=150m -XX:+PrintGCDetails -XX:+PrintGCTimeStamps \
+-XX:MaxDirectMemorySize=150m -Xlog:gc*:gc.log:time \
 -XX:+UseStringDeduplication -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/app/logs/"
-
-# ThatzFit API 헬스체크 설정
-HEALTHCHECK --interval=10s --timeout=15s --start-period=90s --retries=10 \
-    CMD curl -s http://localhost:8080/api/actuator/health | grep -q '"status":"UP"' || exit 1
 
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -Dspring.profiles.active=prod -jar app.jar"] 
