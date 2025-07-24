@@ -6,7 +6,7 @@ import tryonu.api.dto.responses.TryOnResponse;
 import tryonu.api.domain.Cloth;
 import tryonu.api.domain.TryOnResult;
 import tryonu.api.common.enums.Category;
-import tryonu.api.domain.DefaultModel;
+import tryonu.api.domain.User;
 
 @Component
 public class TryOnResultConverter {
@@ -40,16 +40,18 @@ public class TryOnResultConverter {
                 .build();
     }
 
+
+
     /**
-     * TryOnResult 엔티티 생성
+     * TryOnResult 엔티티 생성 (modelUrl 직접 사용)
      */
-    public TryOnResult toTryOnResultEntity(Cloth cloth, DefaultModel defaultModel, String backgroundRemovedImageUrl, String virtualFittingId) {
+    public TryOnResult toTryOnResultEntity(Cloth cloth, User user, String modelUrl, String resultImageUrl, String virtualFittingId) {
         return TryOnResult.builder()
-                .user(defaultModel.getUser())  // DefaultModel에서 User 가져오기
+                .user(user)
                 .cloth(cloth)
-                .defaultModel(defaultModel)
-                .imageUrl(backgroundRemovedImageUrl)
-                .virtualFittingId(virtualFittingId)  // 가상 피팅 API 응답 ID
+                .modelUrl(modelUrl)
+                .imageUrl(resultImageUrl)
+                .virtualFittingId(virtualFittingId)
                 .sizeAdvice(null)
                 .build();
     }
@@ -57,7 +59,7 @@ public class TryOnResultConverter {
     /**
      * TryOnResponse 생성
      */
-    public TryOnResponse toTryOnResponse(String resultImageUrl) {
-        return new TryOnResponse(resultImageUrl);
+    public TryOnResponse toTryOnResponse(TryOnResult tryOnResult) {
+        return new TryOnResponse(tryOnResult.getId(), tryOnResult.getImageUrl());
     }
 } 

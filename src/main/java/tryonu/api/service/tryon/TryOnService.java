@@ -11,10 +11,10 @@ public interface TryOnService {
     /**
      * 가상 피팅 실행
      *
-     * @param defaultModelId 기본 모델 ID
+     * @param modelUrl 모델 이미지 URL
      * @param productPageUrl 상품 페이지 URL
      * @param file 의류 이미지 파일
      * @return 가상 피팅 결과
      */
-    TryOnResponse tryOn(Long defaultModelId, String productPageUrl, MultipartFile file);
+    TryOnResponse tryOn(String modelUrl, String productPageUrl, MultipartFile file);
 } 
