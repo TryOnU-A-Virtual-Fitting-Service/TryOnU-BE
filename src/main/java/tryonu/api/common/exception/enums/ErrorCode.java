@@ -23,6 +23,9 @@ public enum ErrorCode {
     // TryOnResult 관련 에러
     TRY_ON_RESULT_NOT_FOUND("T001", "피팅 결과를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     
+    // Company 관련 에러
+    COMPANY_NOT_FOUND("CP001", "요청한 회사를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    
     // 가상피팅 관련 에러
     VIRTUAL_FITTING_FAILED("VF001", "가상피팅 처리 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     CATEGORY_PREDICTION_FAILED("VF002", "의류 카테고리 예측에 실패했습니다.", HttpStatus.BAD_REQUEST),

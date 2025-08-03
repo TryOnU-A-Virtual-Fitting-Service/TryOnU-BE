@@ -1,0 +1,91 @@
+package tryonu.api.service.company;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import tryonu.api.common.exception.CustomException;
+import tryonu.api.common.exception.enums.ErrorCode;
+import tryonu.api.converter.CompanyConverter;
+import tryonu.api.domain.Company;
+import tryonu.api.dto.responses.AssetResponse;
+import tryonu.api.repository.company.CompanyRepository;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+
+/**
+ * 회사 관련 비즈니스 로직을 처리하는 서비스 구현체
+ */
+@Slf4j
+@Service
+@RequiredArgsConstructor    
+@Transactional(readOnly = true) 
+public class CompanyServiceImpl implements CompanyService {
+    
+    private final CompanyRepository companyRepository;
+    private final CompanyConverter companyConverter;
+
+    @Override
+    public AssetResponse getAssetResponseByUrl(@NonNull String url) {
+        log.info("[CompanyService] URL로 애셋 응답 조회 시작 - url: {}", url);
+        
+        String domain = extractDomainFromUrl(url);
+        Company company = companyRepository.findByDomainAndIsActiveTrueOrThrow(domain);
+        
+        log.info("[CompanyService] URL로 애셋 응답 조회 완료 - url: {}, domain: {}", url, domain);
+        return companyConverter.getAssetUrl(company);
+    }
+    
+    
+    /**
+     * URL에서 도메인을 추출하는 메서드
+     * 
+     * @param url 전체 URL
+     * @return 정제된 도메인 (www. 제거)
+     */
+    private String extractDomainFromUrl(@NonNull String url) {
+        try {
+            URI uri = new URI(url);
+            String host = uri.getHost();
+            
+            if (host == null) {
+                log.error("[CompanyService] URL에서 도메인 추출 실패 - 잘못된 URL 형식: {}", url);
+                throw new CustomException(ErrorCode.INVALID_REQUEST, "잘못된 URL 형식입니다.");
+            }
+            
+            // www. 및 서브도메인 제거
+            String cleanDomain = extractMainDomain(host);
+            log.debug("[CompanyService] 도메인 추출 성공 - url: {}, host: {}, cleanDomain: {}", url, host, cleanDomain);
+            
+            return cleanDomain;
+            
+        } catch (URISyntaxException e) {
+            log.error("[CompanyService] URL 파싱 실패 - url: {}, error: {}", url, e.getMessage());
+            throw new CustomException(ErrorCode.INVALID_REQUEST, "잘못된 URL 형식입니다.");
+        }
+    }
+    
+    /**
+     * 호스트에서 메인 도메인을 추출하는 메서드
+     * 서브도메인과 www.를 제거하여 메인 도메인만 반환
+     * 
+     * @param host 호스트 문자열 (예: m.a-bly.com, www.musinsa.com)
+     * @return 메인 도메인 (예: a-bly.com, musinsa.com)
+     */
+    private String extractMainDomain(String host) {
+        // www. 제거
+        String domain = host.replaceFirst("^www\\.", "");
+        
+        // 서브도메인 제거 (첫 번째 점 이전 부분 제거)
+        String[] parts = domain.split("\\.");
+        if (parts.length > 2) {
+            // 3개 이상의 부분이 있으면 서브도메인이 있는 것
+            // 예: m.a-bly.com → [m, a-bly, com] → a-bly.com
+            return String.join(".", parts[1], parts[2]);
+        }
+        
+        return domain;
+    }
+}
