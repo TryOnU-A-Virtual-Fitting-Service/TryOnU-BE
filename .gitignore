@@ -166,3 +166,6 @@ application-local.yml
 application-dev.yml
 application-test.yml
 application-prod.yml
+
+src/main/resources/data-dev.sql
+src/main/resources/data-prod.sql
