@@ -1,6 +1,7 @@
 package tryonu.api.service.company;
 
 import org.springframework.lang.NonNull;
+import tryonu.api.dto.responses.AssetResponse;
 
 /**
  * 회사 관련 비즈니스 로직을 처리하는 서비스 인터페이스
@@ -8,18 +9,13 @@ import org.springframework.lang.NonNull;
 public interface CompanyService {
 
     /**
-     * 회사명으로 로고 URL 조회
+     * 전체 URL로 애셋 응답 조회
+     * URL에서 도메인을 추출하여 해당 회사의 애셋 응답을 반환
      * 
-     * @param companyName 회사명 (예: musinsa, spao, zigzag, ably)
-     * @return 로고 CDN URL
+     * @param url 전체 URL (예: https://www.musinsa.com/main/musinsa/recommend?gf=A)
+     * @return AssetResponse
      */
-    String getLogoUrl(@NonNull String companyName);
+    AssetResponse getAssetResponseByUrl(@NonNull String url);
     
-    /**
-     * 회사명으로 활성화된 회사 존재 여부 확인
-     * 
-     * @param companyName 회사명
-     * @return 존재 여부
-     */
-    boolean isActiveCompany(@NonNull String companyName);
+
 }

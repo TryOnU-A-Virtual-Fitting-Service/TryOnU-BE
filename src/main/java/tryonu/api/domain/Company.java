@@ -30,6 +30,13 @@ public class Company extends BaseEntity {
     private String companyName;
     
     /**
+     * 회사 도메인 (고유키로 사용)
+     * 예: musinsa.com, spao.com, zigzag.kr, ably.co.kr
+     */
+    @Column(name = "domain", nullable = false, unique = true, length = 100)
+    private String domain;
+    
+    /**
      * 회사 표시명
      * 예: 무신사, 스파오, 지그재그, 에이블리
      */
@@ -57,22 +64,27 @@ public class Company extends BaseEntity {
 
     
     @Builder
-    public Company(String companyName, String displayName, String logoUrl, String description, Boolean isActive) {
+    public Company(String companyName, String domain, String displayName, String logoUrl, String description, Boolean isActive) {
         this.companyName = companyName;
+        this.domain = domain;
         this.displayName = displayName;
         this.logoUrl = logoUrl;
         this.description = description;
-        this.isActive = isActive;
+        this.isActive = isActive != null ? isActive : true;
     }
     
     /**
      * 회사 정보 업데이트
      * 
+     * @param domain 도메인
      * @param displayName 표시명
      * @param logoUrl 로고 URL
      * @param description 설명
      */
-    public void updateCompanyInfo(String displayName, String logoUrl, String description) {
+    public void updateCompanyInfo(String domain, String displayName, String logoUrl, String description) {
+        if (domain != null) {
+            this.domain = domain;
+        }
         if (displayName != null) {
             this.displayName = displayName;
         }

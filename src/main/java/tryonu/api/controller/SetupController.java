@@ -8,7 +8,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import tryonu.api.common.wrapper.ApiResponseWrapper;
-import tryonu.api.dto.responses.LogoResponse;
+import tryonu.api.dto.responses.AssetResponse;
 import tryonu.api.service.company.CompanyService;
 
 /**
@@ -16,36 +16,40 @@ import tryonu.api.service.company.CompanyService;
  */
 @Tag(name = "셋업 API", description = "프론트엔드 초기 설정 및 리소스 조회 관련 API")
 @RestController
-@RequestMapping("/api/setup")
+@RequestMapping("/setup")
 @RequiredArgsConstructor
 public class SetupController {
 
     private final CompanyService companyService;
 
     /**
-     * 회사 로고 URL 조회
+     * 회사 애셋 URL 조회
      * 
-     * @param logo 회사명 (예: musinsa, spao, zigzag, ably)
-     * @return 로고 이미지 CDN URL
+     * @param url 현재 페이지의 전체 URL
+     * @return 애셋 이미지 CDN URL
      */
     @Operation(
-        summary = "회사 로고 URL 조회",
-        description = "회사명을 통해 해당 회사의 로고 이미지 CDN URL을 조회합니다. " +
-                     "지원하는 회사: musinsa, spao, zigzag, ably. " +
-                     "프론트엔드에서 이 URL을 사용하여 직접 CDN에서 이미지를 로드할 수 있습니다."
+        summary = "회사 애셋 조회",
+        description = "현재 페이지의 전체 URL에서 도메인을 추출하여 해당 회사의 애셋 CDN URL을 조회합니다. " +
+                     "현재는 로고 이미지를 제공하며, 향후 다른 애셋도 추가될 예정입니다. " +
+                     "지원하는 도메인: musinsa.com, spao.com, zigzag.kr, ably.co.kr. " +
+                     "프론트엔드에서 window.location.href로 현재 URL을 전송하면 자동으로 도메인을 파싱합니다."
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "로고 URL 조회 성공"),
-        @ApiResponse(responseCode = "400", description = "잘못된 요청 - logo 파라미터 누락"),
-        @ApiResponse(responseCode = "404", description = "요청한 회사를 찾을 수 없음")
+        @ApiResponse(responseCode = "200", description = "애셋 URL 조회 성공"),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청 - url 파라미터 누락 또는 잘못된 URL 형식"),
+        @ApiResponse(responseCode = "404", description = "요청한 도메인에 해당하는 회사를 찾을 수 없음")
     })
     @GetMapping
-    public ApiResponseWrapper<LogoResponse> getLogo(
-        @Parameter(description = "회사명", example = "musinsa", required = true)
-        @RequestParam("logo") String logo
+    public ApiResponseWrapper<AssetResponse> getAsset(
+        @Parameter(
+            description = "현재 페이지의 전체 URL", 
+            example = "https://www.musinsa.com/main/musinsa/recommend?gf=A", 
+            required = true
+        )
+        @RequestParam("url") String url
     ) {
-        String logoUrl = companyService.getLogoUrl(logo);
-        LogoResponse response = new LogoResponse(logo, logoUrl);
-        return ApiResponseWrapper.ofSuccess(response);
+        AssetResponse assetResponse = companyService.getAssetResponseByUrl(url);
+        return ApiResponseWrapper.ofSuccess(assetResponse);
     }
 }
