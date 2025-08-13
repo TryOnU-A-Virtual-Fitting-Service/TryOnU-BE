@@ -42,6 +42,7 @@ public class ApiErrorEventListener {
         boolean is5xx = e.httpStatus() >= 500;
         String headerText = is5xx ? "🚨 API 에러 발생" : "⚠️ 클라이언트 에러 발생 (4xx)";
         String pathWithQuery = e.requestPath() + (e.queryString() != null ? ("?" + e.queryString()) : "");
+        String queryStringValue = (e.queryString() == null || e.queryString().isBlank()) ? "null" : e.queryString();
 
         Map<String, Object> header = Map.of(
                 "type", "header",
@@ -66,7 +67,8 @@ public class ApiErrorEventListener {
                         Map.of("type", "mrkdwn", "text", "*🔢 Status Code*\n`" + e.httpStatus() + "`"),
                         Map.of("type", "mrkdwn", "text", "*🏷️ Error Code*\n`" + e.errorCode() + "`"),
                         Map.of("type", "mrkdwn", "text", "*📍 Path*\n`" + pathWithQuery + "`"),
-                        Map.of("type", "mrkdwn", "text", "*▶️ Method*\n`" + e.httpMethod() + "`")
+                        Map.of("type", "mrkdwn", "text", "*▶️ Method*\n`" + e.httpMethod() + "`"),
+                        Map.of("type", "mrkdwn", "text", "*🔎 Query*\n`" + queryStringValue + "`")
                 )
         );
 
@@ -79,9 +81,10 @@ public class ApiErrorEventListener {
                 )
         );
 
-        Map<String, Object> bodyBlock = (e.requestBody() == null || e.requestBody().isBlank()) ? null : Map.of(
+        String bodyText = (e.requestBody() == null || e.requestBody().isBlank()) ? "null" : truncate(e.requestBody(), 1800);
+        Map<String, Object> bodyBlock = Map.of(
                 "type", "section",
-                "text", Map.of("type", "mrkdwn", "text", "*🧾 Request Body*\n```" + truncate(e.requestBody(), 1800) + "```")
+                "text", Map.of("type", "mrkdwn", "text", "*🧾 Request Body*\n```" + bodyText + "```")
         );
 
         Map<String, Object> stackBlock = (e.stackTrace() == null || e.stackTrace().isBlank()) ? null : Map.of(
@@ -89,14 +92,10 @@ public class ApiErrorEventListener {
                 "text", Map.of("type", "mrkdwn", "text", "*🧵 Stack Trace*\n```" + truncate(e.stackTrace(), 2500) + "```")
         );
 
-        if (bodyBlock != null && stackBlock != null) {
-            return Map.of("blocks", List.of(header, message, fields, divider, context, bodyBlock, stackBlock));
-        } else if (bodyBlock != null) {
-            return Map.of("blocks", List.of(header, message, fields, divider, context, bodyBlock));
-        } else if (stackBlock != null) {
+        if (stackBlock != null) {
             return Map.of("blocks", List.of(header, message, fields, divider, context, stackBlock));
         }
-        return Map.of("blocks", List.of(header, message, fields, divider, context));
+        return Map.of("blocks", List.of(header, message, fields, divider, context, bodyBlock));
     }
 
     private String truncate(String s, int max) {

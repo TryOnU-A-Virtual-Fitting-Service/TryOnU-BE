@@ -151,7 +151,8 @@ public class GlobalExceptionHandler {
      * 정적 리소스 요청 404 (NoResourceFoundException) 처리
      */
     @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<ApiResponseWrapper<Void>> handleNoResourceFoundException(NoResourceFoundException ex) {
+    public ResponseEntity<ApiResponseWrapper<Void>> handleNoResourceFoundException(NoResourceFoundException ex, HttpServletRequest request) {
+        apiErrorPublisher.publish(request, HttpStatus.NOT_FOUND.value(), ErrorCode.RESOURCE_NOT_FOUND.getCode(), ErrorCode.RESOURCE_NOT_FOUND.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
             .body(ApiResponseWrapper.ofFailure(ErrorCode.RESOURCE_NOT_FOUND.getCode(), ErrorCode.RESOURCE_NOT_FOUND.getMessage()));
     }

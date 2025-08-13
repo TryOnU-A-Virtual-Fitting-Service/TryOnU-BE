@@ -88,8 +88,18 @@ public class ApiErrorPublisher {
         try {
             if (request instanceof ContentCachingRequestWrapper wrapper) {
                 byte[] buf = wrapper.getContentAsByteArray();
+                if (buf.length == 0) {
+                    // 아직 읽히지 않았다면 InputStream에서 한 번 읽어 캐시되도록 유도
+                    buf = wrapper.getInputStream().readAllBytes();
+                }
                 if (buf.length > 0) {
                     return new String(buf, wrapper.getCharacterEncoding());
+                }
+            } else {
+                // 캐싱 래퍼가 아닌 경우에도 최소한 본문을 한번 읽어 문자열화 (주의: 이후 체인에선 사용 불가)
+                byte[] buf = request.getInputStream().readAllBytes();
+                if (buf.length > 0) {
+                    return new String(buf, request.getCharacterEncoding() != null ? request.getCharacterEncoding() : "UTF-8");
                 }
             }
         } catch (Exception ignored) {}

@@ -29,7 +29,12 @@ public class RequestBodyCachingFilter extends OncePerRequestFilter {
                 ? (ContentCachingRequestWrapper) request
                 : new ContentCachingRequestWrapper(request);
 
-        filterChain.doFilter(wrappedRequest, response);
+        try {
+            filterChain.doFilter(wrappedRequest, response);
+        } finally {
+            // 강제 캐시 로딩: 아직 읽히지 않은 경우 getContentAsByteArray() 호출로 내부 버퍼 초기화
+            wrappedRequest.getContentAsByteArray();
+        }
     }
 }
 
