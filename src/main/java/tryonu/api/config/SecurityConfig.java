@@ -81,6 +81,7 @@ public class SecurityConfig {
                     "/actuator/gc",           // GC 정보 엔드포인트 (디버깅용)
                     "/actuator/metrics/**",   // 메트릭스 엔드포인트 (모니터링용)
                     "/monitoring/**",         // 모니터링 전용 API (메모리 등)
+                    "/test-errors/**",        // 에러 테스트 전용 엔드포인트 (화이트리스트)
                     "/swagger-ui/**",         // Swagger UI 리소스 (API 문서화용, 무조건 허용)
                     "/swagger-ui.html",       // Swagger UI 진입점 (무조건 허용)
                     "/api-docs/**",           // Swagger API 문서 엔드포인트 (무조건 허용)
