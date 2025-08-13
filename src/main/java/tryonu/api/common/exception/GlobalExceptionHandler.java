@@ -12,6 +12,9 @@ import tryonu.api.common.exception.enums.ErrorCode;
 import org.springframework.core.io.buffer.DataBufferLimitException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import tryonu.api.common.event.ApiErrorPublisher;
 
 import java.util.Map;
 
@@ -21,7 +24,9 @@ import java.util.Map;
  */
 @Slf4j
 @RestControllerAdvice
+@RequiredArgsConstructor
 public class GlobalExceptionHandler {
+    private final ApiErrorPublisher apiErrorPublisher;
     
     /**
      * 커스텀 예외 처리
@@ -29,13 +34,14 @@ public class GlobalExceptionHandler {
      * @return 에러 응답
      */
     @ExceptionHandler(CustomException.class)
-    public ResponseEntity<ApiResponseWrapper<Void>> handleCustomException(CustomException ex) {
+    public ResponseEntity<ApiResponseWrapper<Void>> handleCustomException(CustomException ex, HttpServletRequest request) {
         log.error("❗ [GlobalExceptionHandler] 커스텀 예외 발생: code={}, message={}", ex.getErrorCode().getCode(), ex.getMessage());
         HttpStatus status = ex.getErrorCode().getHttpStatus();
         ApiResponseWrapper<Void> response = ApiResponseWrapper.ofFailure(
             ex.getErrorCode().getCode(),
             ex.getMessage()
         );
+        apiErrorPublisher.publish(request, status.value(), ex.getErrorCode().getCode(), ex.getMessage());
         return ResponseEntity.status(status).body(response);
     }
 
@@ -46,12 +52,13 @@ public class GlobalExceptionHandler {
      * @return 에러 응답
      */
     @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ApiResponseWrapper<Void>> handleRuntimeException(RuntimeException e) {
+    public ResponseEntity<ApiResponseWrapper<Void>> handleRuntimeException(RuntimeException e, HttpServletRequest request) {
         log.error("⚠️ [GlobalExceptionHandler] 런타임 예외 발생", e);
         ApiResponseWrapper<Void> response = ApiResponseWrapper.ofFailure(
             ErrorCode.INTERNAL_SERVER_ERROR.getCode(),
             ErrorCode.INTERNAL_SERVER_ERROR.getMessage()
         );
+        apiErrorPublisher.publish(request, HttpStatus.INTERNAL_SERVER_ERROR.value(), ErrorCode.INTERNAL_SERVER_ERROR.getCode(), e.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
     
@@ -59,7 +66,7 @@ public class GlobalExceptionHandler {
      * 메모리 부족 예외 처리 (OutOfMemoryError)
      */
     @ExceptionHandler(OutOfMemoryError.class)
-    public ResponseEntity<ApiResponseWrapper<Void>> handleOutOfMemoryError(OutOfMemoryError e) {
+    public ResponseEntity<ApiResponseWrapper<Void>> handleOutOfMemoryError(OutOfMemoryError e, HttpServletRequest request) {
         // 메모리 상태 정보 수집
         Runtime runtime = Runtime.getRuntime();
         long maxMemory = runtime.maxMemory() / 1024 / 1024; // MB
@@ -84,6 +91,7 @@ public class GlobalExceptionHandler {
             "OUT_OF_MEMORY_ERROR",
             "서버 메모리 부족으로 요청을 처리할 수 없습니다. 잠시 후 다시 시도해 주세요."
         );
+        apiErrorPublisher.publish(request, HttpStatus.SERVICE_UNAVAILABLE.value(), "OUT_OF_MEMORY_ERROR", e.getMessage());
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(response);
     }
 
@@ -94,12 +102,13 @@ public class GlobalExceptionHandler {
      * @return 에러 응답
      */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponseWrapper<Void>> handleException(Exception e) {
+    public ResponseEntity<ApiResponseWrapper<Void>> handleException(Exception e, HttpServletRequest request) {
         log.error("🚨 [GlobalExceptionHandler] 예상치 못한 예외 발생", e);
         ApiResponseWrapper<Void> response = ApiResponseWrapper.ofFailure(
             ErrorCode.UNEXPECTED_ERROR.getCode(),
             ErrorCode.UNEXPECTED_ERROR.getMessage()
         );
+        apiErrorPublisher.publish(request, HttpStatus.INTERNAL_SERVER_ERROR.value(), ErrorCode.UNEXPECTED_ERROR.getCode(), e.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 
@@ -107,13 +116,14 @@ public class GlobalExceptionHandler {
      * @Valid 검증 실패 (RequestBody 등) 처리
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponseWrapper<Void>> handleValidationException(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ApiResponseWrapper<Void>> handleValidationException(MethodArgumentNotValidException ex, HttpServletRequest request) {
         Map<String, String> errors = ex.getBindingResult().getFieldErrors().stream()
             .collect(java.util.stream.Collectors.toMap(
                 org.springframework.validation.FieldError::getField,
                 org.springframework.validation.FieldError::getDefaultMessage,
                 (msg1, msg2) -> msg1 // 필드 중복 시 첫 번째 메시지 사용
             ));
+        apiErrorPublisher.publish(request, HttpStatus.BAD_REQUEST.value(), ErrorCode.INVALID_REQUEST.getCode(), "Validation failed");
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
             .body(ApiResponseWrapper.ofValidationFailure(ErrorCode.INVALID_REQUEST.getCode(), "요청값이 올바르지 않습니다.", errors));
@@ -132,8 +142,9 @@ public class GlobalExceptionHandler {
      * 이미지 응답 크기 초과 처리
      */
     @ExceptionHandler(DataBufferLimitException.class)
-    public ResponseEntity<ApiResponseWrapper<?>> handleDataBufferLimitException(DataBufferLimitException ex) {
+    public ResponseEntity<ApiResponseWrapper<?>> handleDataBufferLimitException(DataBufferLimitException ex, HttpServletRequest request) {
         log.error("이미지 응답 크기 초과: {}", ex.getMessage());
+        apiErrorPublisher.publish(request, ErrorCode.IMAGE_TOO_LARGE.getHttpStatus().value(), ErrorCode.IMAGE_TOO_LARGE.getCode(), ex.getMessage());
         return ResponseEntity
             .status(ErrorCode.IMAGE_TOO_LARGE.getHttpStatus())
             .body(ApiResponseWrapper.ofFailure(ErrorCode.IMAGE_TOO_LARGE.getCode(), ErrorCode.IMAGE_TOO_LARGE.getMessage()));
@@ -143,8 +154,9 @@ public class GlobalExceptionHandler {
      * 지원하지 않는 Content-Type 예외 처리
      */
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
-    public ResponseEntity<ApiResponseWrapper<?>> handleHttpMediaTypeNotSupportedException(HttpMediaTypeNotSupportedException ex) {
+    public ResponseEntity<ApiResponseWrapper<?>> handleHttpMediaTypeNotSupportedException(HttpMediaTypeNotSupportedException ex, HttpServletRequest request) {
         log.error("지원하지 않는 Content-Type: {}", ex.getContentType());
+        apiErrorPublisher.publish(request, HttpStatus.UNSUPPORTED_MEDIA_TYPE.value(), "UNSUPPORTED_MEDIA_TYPE", ex.getMessage());
         return ResponseEntity
             .status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
             .body(ApiResponseWrapper.ofFailure("UNSUPPORTED_MEDIA_TYPE", "지원하지 않는 Content-Type입니다. multipart/form-data로 요청해 주세요."));
@@ -154,12 +166,13 @@ public class GlobalExceptionHandler {
      * 지원하지 않는 HTTP 메서드 예외 처리
      */
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    public ResponseEntity<ApiResponseWrapper<?>> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException ex) {
+    public ResponseEntity<ApiResponseWrapper<?>> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException ex, HttpServletRequest request) {
         String method = ex.getMethod();
         String supportedMethods = String.join(", ", ex.getSupportedMethods());
         log.warn("🚫 [GlobalExceptionHandler] 지원하지 않는 HTTP 메서드: method={}, supportedMethods={}", method, supportedMethods);
         
         String message = String.format("'%s' 메서드는 지원하지 않습니다. 지원하는 메서드: %s", method, supportedMethods);
+        apiErrorPublisher.publish(request, ErrorCode.METHOD_NOT_ALLOWED.getHttpStatus().value(), ErrorCode.METHOD_NOT_ALLOWED.getCode(), message);
         return ResponseEntity
             .status(ErrorCode.METHOD_NOT_ALLOWED.getHttpStatus())
             .body(ApiResponseWrapper.ofFailure(ErrorCode.METHOD_NOT_ALLOWED.getCode(), message));

@@ -78,14 +78,14 @@
             <appender-ref ref="FILE"/>
         </logger>
 
-        <!-- HTTP 요청 로그 (API 모니터링용) -->
-        <logger name="org.springframework.web" level="INFO" additivity="false">
+        <!-- HTTP 요청 로그 (노이즈 축소) -->
+        <logger name="org.springframework.web" level="WARN" additivity="false">
             <appender-ref ref="CONSOLE_JSON"/>
             <appender-ref ref="FILE"/>
         </logger>
 
-        <!-- HTTP 서블릿 로그 (API 완료 로그용) -->
-        <logger name="org.springframework.web.servlet.DispatcherServlet" level="INFO" additivity="false">
+        <!-- HTTP 서블릿 로그 (노이즈 축소) -->
+        <logger name="org.springframework.web.servlet.DispatcherServlet" level="WARN" additivity="false">
             <appender-ref ref="CONSOLE_JSON"/>
             <appender-ref ref="FILE"/>
         </logger>
@@ -104,8 +104,9 @@
     <!-- 특정 로거 레벨 설정 -->
     <logger name="com.zaxxer.hikari" level="WARN"/>
     <logger name="org.hibernate.validator" level="WARN"/>
-    <logger name="org.hibernate.SQL" level="TRACE"/>
-    <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE"/>
+    <!-- SQL 로깅 노이즈 축소 -->
+    <logger name="org.hibernate.SQL" level="WARN"/>
+    <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="WARN"/>
     <logger name="org.apache.http" level="WARN"/>
     
     <!-- 외부 라이브러리 로깅 최적화 - 성능 개선 및 노이즈 감소 -->
