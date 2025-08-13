@@ -39,7 +39,7 @@ public class ErrorTestController {
     @Operation(summary = "OutOfMemoryError 발생", description = "OOM 에러 핸들링 및 슬랙 알림 테스트")
     public ApiResponseWrapper<Void> throwOom() {
         log.info("[ErrorTestController] /oom 호출");
-        throw new OutOfMemoryError("테스트용 OOM");
+        throw new CustomException(ErrorCode.OUT_OF_MEMORY_ERROR, ErrorCode.OUT_OF_MEMORY_ERROR.getMessage());
     }
 
     @GetMapping("/validation")

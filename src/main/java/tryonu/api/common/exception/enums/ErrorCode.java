@@ -53,7 +53,8 @@ public enum ErrorCode {
     IMAGE_TOO_LARGE("FILE001", "이미지 크기가 너무 큽니다. 10MB 이하로 업로드 해주세요.", HttpStatus.BAD_REQUEST),
     
     // 인프라 관련 에러
-    S3_CLIENT_CREATION_FAILED("INF001", "S3 클라이언트 생성에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+    S3_CLIENT_CREATION_FAILED("INF001", "S3 클라이언트 생성에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    OUT_OF_MEMORY_ERROR("INF002", "서버 메모리 부족으로 요청을 처리할 수 없습니다. 잠시 후 다시 시도해 주세요.", HttpStatus.SERVICE_UNAVAILABLE);
     
     private final String code;
     private final String message;
