@@ -93,7 +93,7 @@ public class ApiErrorEventListener {
         );
 
         if (stackBlock != null) {
-            return Map.of("blocks", List.of(header, message, fields, divider, context, stackBlock));
+            return Map.of("blocks", List.of(header, message, fields, divider, context, bodyBlock, stackBlock));
         }
         return Map.of("blocks", List.of(header, message, fields, divider, context, bodyBlock));
     }

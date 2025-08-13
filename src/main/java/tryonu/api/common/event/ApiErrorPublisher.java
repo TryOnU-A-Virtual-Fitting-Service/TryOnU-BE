@@ -4,7 +4,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.ContentCachingRequestWrapper;
 
 import java.time.Instant;
 import java.io.PrintWriter;
@@ -85,25 +84,34 @@ public class ApiErrorPublisher {
     }
 
     private String extractBody(HttpServletRequest request) {
-        try {
-            if (request instanceof ContentCachingRequestWrapper wrapper) {
-                byte[] buf = wrapper.getContentAsByteArray();
-                if (buf.length == 0) {
-                    // 아직 읽히지 않았다면 InputStream에서 한 번 읽어 캐시되도록 유도
-                    buf = wrapper.getInputStream().readAllBytes();
-                }
-                if (buf.length > 0) {
-                    return new String(buf, wrapper.getCharacterEncoding());
-                }
-            } else {
-                // 캐싱 래퍼가 아닌 경우에도 최소한 본문을 한번 읽어 문자열화 (주의: 이후 체인에선 사용 불가)
-                byte[] buf = request.getInputStream().readAllBytes();
-                if (buf.length > 0) {
-                    return new String(buf, request.getCharacterEncoding() != null ? request.getCharacterEncoding() : "UTF-8");
+        try {            
+            // 지연 로딩된 요청 본문 확인 (우리 필터 방식)
+            @SuppressWarnings("unchecked")
+            java.util.function.Supplier<String> bodySupplier = 
+                (java.util.function.Supplier<String>) request.getAttribute("getRequestBody");
+
+            if (bodySupplier != null) {
+                String cachedBody = bodySupplier.get();
+                if (cachedBody != null && !cachedBody.trim().isEmpty()) {
+                    return cachedBody;
                 }
             }
-        } catch (Exception ignored) {}
-        return null;
+
+            // 캐싱된 본문이 없으면 메타 정보 반환
+            String contentType = request.getContentType();
+            StringBuilder sb = new StringBuilder();
+            sb.append("Content-Type: ").append(contentType != null ? contentType : "Unknown");
+            sb.append(", Content-Length: ").append(request.getContentLengthLong());
+
+            // 파라미터가 있다면 추가
+            if (!request.getParameterMap().isEmpty()) {
+                sb.append(", Parameters: ").append(request.getParameterMap().keySet());
+            }
+
+            return sb.toString();
+        } catch (Exception e) {
+            return "Failed to extract request body";
+        }
     }
 }
 
