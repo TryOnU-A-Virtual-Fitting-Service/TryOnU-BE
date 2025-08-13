@@ -44,6 +44,23 @@ public class DevSlackNotifier implements SlackNotifier {
                 .onErrorResume(e -> Mono.empty())
                 .subscribe();
     }
+
+    @Override
+    public void sendPayload(Map<String, Object> payload) {
+        if (!enabled) {
+            return;
+        }
+        slackWebClient
+                .post()
+                .uri(webhookUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(payload))
+                .retrieve()
+                .toBodilessEntity()
+                .doOnError(e -> log.warn("[DevSlackNotifier] 슬랙 전송 실패 - {}", e.getMessage()))
+                .onErrorResume(e -> Mono.empty())
+                .subscribe();
+    }
 }
 
 

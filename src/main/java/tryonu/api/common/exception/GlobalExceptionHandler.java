@@ -15,6 +15,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import tryonu.api.common.event.ApiErrorPublisher;
+import jakarta.validation.ConstraintViolationException;
 
 import java.util.Map;
 
@@ -46,6 +47,23 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * 메소드 파라미터 검증 실패 (@RequestParam, @PathVariable 등) 처리
+     */
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ApiResponseWrapper<Void>> handleConstraintViolation(ConstraintViolationException ex, HttpServletRequest request) {
+        Map<String, String> errors = ex.getConstraintViolations().stream()
+            .collect(java.util.stream.Collectors.toMap(
+                v -> v.getPropertyPath().toString(),
+                jakarta.validation.ConstraintViolation::getMessage,
+                (a, b) -> a
+            ));
+        apiErrorPublisher.publishWithValidationErrors(request, HttpStatus.BAD_REQUEST.value(), ErrorCode.INVALID_REQUEST.getCode(), "Constraint violation", errors);
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ApiResponseWrapper.ofValidationFailure(ErrorCode.INVALID_REQUEST.getCode(), "요청값이 올바르지 않습니다.", errors));
+    }
+
+    /**
      * 일반적인 런타임 예외 처리
      * 
      * @param e 발생한 예외
@@ -58,7 +76,7 @@ public class GlobalExceptionHandler {
             ErrorCode.INTERNAL_SERVER_ERROR.getCode(),
             ErrorCode.INTERNAL_SERVER_ERROR.getMessage()
         );
-        apiErrorPublisher.publish(request, HttpStatus.INTERNAL_SERVER_ERROR.value(), ErrorCode.INTERNAL_SERVER_ERROR.getCode(), e.getMessage());
+        apiErrorPublisher.publishWithThrowable(request, HttpStatus.INTERNAL_SERVER_ERROR.value(), ErrorCode.INTERNAL_SERVER_ERROR.getCode(), e.getMessage(), e);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
     
@@ -108,7 +126,7 @@ public class GlobalExceptionHandler {
             ErrorCode.UNEXPECTED_ERROR.getCode(),
             ErrorCode.UNEXPECTED_ERROR.getMessage()
         );
-        apiErrorPublisher.publish(request, HttpStatus.INTERNAL_SERVER_ERROR.value(), ErrorCode.UNEXPECTED_ERROR.getCode(), e.getMessage());
+        apiErrorPublisher.publishWithThrowable(request, HttpStatus.INTERNAL_SERVER_ERROR.value(), ErrorCode.UNEXPECTED_ERROR.getCode(), e.getMessage(), e);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 
@@ -123,7 +141,7 @@ public class GlobalExceptionHandler {
                 org.springframework.validation.FieldError::getDefaultMessage,
                 (msg1, msg2) -> msg1 // 필드 중복 시 첫 번째 메시지 사용
             ));
-        apiErrorPublisher.publish(request, HttpStatus.BAD_REQUEST.value(), ErrorCode.INVALID_REQUEST.getCode(), "Validation failed");
+        apiErrorPublisher.publishWithValidationErrors(request, HttpStatus.BAD_REQUEST.value(), ErrorCode.INVALID_REQUEST.getCode(), "Validation failed", errors);
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
             .body(ApiResponseWrapper.ofValidationFailure(ErrorCode.INVALID_REQUEST.getCode(), "요청값이 올바르지 않습니다.", errors));
@@ -156,10 +174,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
     public ResponseEntity<ApiResponseWrapper<?>> handleHttpMediaTypeNotSupportedException(HttpMediaTypeNotSupportedException ex, HttpServletRequest request) {
         log.error("지원하지 않는 Content-Type: {}", ex.getContentType());
-        apiErrorPublisher.publish(request, HttpStatus.UNSUPPORTED_MEDIA_TYPE.value(), "UNSUPPORTED_MEDIA_TYPE", ex.getMessage());
+        apiErrorPublisher.publish(request,
+                ErrorCode.UNSUPPORTED_MEDIA_TYPE.getHttpStatus().value(),
+                ErrorCode.UNSUPPORTED_MEDIA_TYPE.getCode(),
+                ErrorCode.UNSUPPORTED_MEDIA_TYPE.getMessage());
         return ResponseEntity
-            .status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
-            .body(ApiResponseWrapper.ofFailure("UNSUPPORTED_MEDIA_TYPE", "지원하지 않는 Content-Type입니다. multipart/form-data로 요청해 주세요."));
+            .status(ErrorCode.UNSUPPORTED_MEDIA_TYPE.getHttpStatus())
+            .body(ApiResponseWrapper.ofFailure(
+                    ErrorCode.UNSUPPORTED_MEDIA_TYPE.getCode(),
+                    ErrorCode.UNSUPPORTED_MEDIA_TYPE.getMessage()
+            ));
     }
 
     /**

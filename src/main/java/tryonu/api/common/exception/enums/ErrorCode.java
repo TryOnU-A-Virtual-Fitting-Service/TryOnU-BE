@@ -48,6 +48,7 @@ public enum ErrorCode {
     RESOURCE_NOT_FOUND("COM005", "요청하신 리소스를 찾을 수 없습니다.(url 체크 필요)", HttpStatus.NOT_FOUND),
     METHOD_NOT_ALLOWED("COM006", "지원하지 않는 HTTP 메서드입니다.", HttpStatus.METHOD_NOT_ALLOWED),
     UNEXPECTED_ERROR("COM007", "예상치 못한 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    UNSUPPORTED_MEDIA_TYPE("COM008", "지원하지 않는 Content-Type입니다. multipart/form-data로 요청해 주세요.", HttpStatus.UNSUPPORTED_MEDIA_TYPE),
     
     // 파일 업로드 관련 에러
     IMAGE_TOO_LARGE("FILE001", "이미지 크기가 너무 큽니다. 10MB 이하로 업로드 해주세요.", HttpStatus.BAD_REQUEST),

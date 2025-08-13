@@ -1,6 +1,7 @@
 package tryonu.api.common.event;
 
 import java.time.Instant;
+import java.util.Map;
 
 /**
  * API 에러 발생 이벤트
@@ -15,6 +16,9 @@ public record ApiErrorEvent(
     String queryString,
     String userAgent,
     String remoteAddr,
+    String requestBody,
+    String stackTrace,
+    Map<String, String> validationErrors,
     Instant occurredAt
 ) {}
 

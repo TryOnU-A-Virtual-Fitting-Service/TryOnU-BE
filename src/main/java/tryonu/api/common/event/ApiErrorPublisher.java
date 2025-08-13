@@ -4,8 +4,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.ContentCachingRequestWrapper;
 
 import java.time.Instant;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 @Component
 @RequiredArgsConstructor
@@ -14,6 +17,7 @@ public class ApiErrorPublisher {
     private final ApplicationEventPublisher publisher;
 
     public void publish(HttpServletRequest request, int httpStatus, String errorCode, String message) {
+        String requestBody = extractBody(request);
         ApiErrorEvent event = new ApiErrorEvent(
                 httpStatus,
                 errorCode,
@@ -23,9 +27,73 @@ public class ApiErrorPublisher {
                 request.getQueryString(),
                 request.getHeader("User-Agent"),
                 request.getRemoteAddr(),
+                requestBody,
+                null,
+                null,
                 Instant.now()
         );
         publisher.publishEvent(event);
+    }
+
+    public void publishWithValidationErrors(HttpServletRequest request, int httpStatus, String errorCode, String message, java.util.Map<String, String> validationErrors) {
+        String requestBody = extractBody(request);
+        ApiErrorEvent event = new ApiErrorEvent(
+                httpStatus,
+                errorCode,
+                message,
+                request.getMethod(),
+                request.getRequestURI(),
+                request.getQueryString(),
+                request.getHeader("User-Agent"),
+                request.getRemoteAddr(),
+                requestBody,
+                null,
+                validationErrors,
+                Instant.now()
+        );
+        publisher.publishEvent(event);
+    }
+
+    public void publishWithThrowable(HttpServletRequest request, int httpStatus, String errorCode, String message, Throwable t) {
+        String requestBody = extractBody(request);
+        String stacktrace = toStackTrace(t);
+        ApiErrorEvent event = new ApiErrorEvent(
+                httpStatus,
+                errorCode,
+                message,
+                request.getMethod(),
+                request.getRequestURI(),
+                request.getQueryString(),
+                request.getHeader("User-Agent"),
+                request.getRemoteAddr(),
+                requestBody,
+                stacktrace,
+                null,
+                Instant.now()
+        );
+        publisher.publishEvent(event);
+    }
+
+    private String toStackTrace(Throwable t) {
+        if (t == null) return null;
+        StringWriter sw = new StringWriter();
+        try (PrintWriter pw = new PrintWriter(sw)) {
+            t.printStackTrace(pw);
+            pw.flush();
+            return sw.toString();
+        }
+    }
+
+    private String extractBody(HttpServletRequest request) {
+        try {
+            if (request instanceof ContentCachingRequestWrapper wrapper) {
+                byte[] buf = wrapper.getContentAsByteArray();
+                if (buf.length > 0) {
+                    return new String(buf, wrapper.getCharacterEncoding());
+                }
+            }
+        } catch (Exception ignored) {}
+        return null;
     }
 }
 
