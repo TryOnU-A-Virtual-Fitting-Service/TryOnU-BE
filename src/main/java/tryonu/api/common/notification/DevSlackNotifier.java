@@ -22,7 +22,7 @@ public class DevSlackNotifier implements SlackNotifier {
         this.slackWebClient = slackWebClient;
     }
 
-    @Value("${monitoring.slack.webhook-url}")
+    @Value("${monitoring.slack.webhook-url:https://hooks.slack.com/services/default-webhook-url}")
     private String webhookUrl;
 
     @Value("${monitoring.slack.enabled:true}")
