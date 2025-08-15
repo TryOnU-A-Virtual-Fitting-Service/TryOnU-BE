@@ -77,7 +77,7 @@ public class ApiErrorEventListener {
         Map<String, Object> context = Map.of(
                 "type", "context",
                 "elements", List.of(
-                        Map.of("type", "mrkdwn", "text", "💻 *IP:* `" + e.remoteAddr() + "`   |   👤 *User-Agent:* `" + String.valueOf(e.userAgent()) + "`")
+                        Map.of("type", "mrkdwn", "text", "💻 *IP:* `" + e.remoteAddr() + "`   |   👤 *User-Agent:* `" + (e.userAgent() != null ? e.userAgent() : "N/A") + "`")
                 )
         );
 
