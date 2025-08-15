@@ -44,7 +44,7 @@ public class ApiErrorPublisher {
                 request.getRequestURI(),
                 request.getQueryString(),
                 request.getHeader("User-Agent"),
-                request.getRemoteAddr(),
+                resolveClientIp(request),
                 requestBody,
                 stacktrace,
                 validationErrors,
@@ -92,6 +92,16 @@ public class ApiErrorPublisher {
         } catch (Exception e) {
             return "Failed to extract request body";
         }
+    }
+
+    private String resolveClientIp(HttpServletRequest request) {
+        String xff = request.getHeader("X-Forwarded-For");
+        if (xff != null && !xff.isBlank()) {
+            int commaIndex = xff.indexOf(',');
+            return (commaIndex > -1 ? xff.substring(0, commaIndex) : xff).trim();
+        }
+        String realIp = request.getHeader("X-Real-IP");
+        return (realIp != null && !realIp.isBlank()) ? realIp.trim() : request.getRemoteAddr();
     }
 }
 
