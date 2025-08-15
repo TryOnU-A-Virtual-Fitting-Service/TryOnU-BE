@@ -63,13 +63,7 @@ public class RequestBodyCachingFilter implements Filter {
 
         CachedBodyHttpServletRequest(HttpServletRequest request, int cacheLimitBytes) throws IOException {
             super(request);
-            byte[] raw = StreamUtils.copyToByteArray(request.getInputStream());
-            if (raw.length > cacheLimitBytes) {
-                // 상한 적용
-                cachedBody = java.util.Arrays.copyOf(raw, cacheLimitBytes);
-            } else {
-                cachedBody = raw;
-            }
+            cachedBody = StreamUtils.copyToByteArray(request.getInputStream());
             // 문자열 형태 캐시도 함께 제공 (Publisher 호환)
             String bodyStr = new String(cachedBody, StandardCharsets.UTF_8);
             int max = 16 * 1024; // 16KB 전송 상한
