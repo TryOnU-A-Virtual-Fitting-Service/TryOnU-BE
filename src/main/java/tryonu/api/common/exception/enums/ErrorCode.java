@@ -43,17 +43,19 @@ public enum ErrorCode {
     // 공통 에러
     INVALID_REQUEST("COM001", "잘못된 요청입니다.", HttpStatus.BAD_REQUEST),
     INTERNAL_SERVER_ERROR("COM002", "서버 내부 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    UNAUTHORIZED("COM003", "인증이 필요합니다.", HttpStatus.UNAUTHORIZED),
+    UNAUTHORIZED("COM003", "인증이 필요합니다. 유효한 헤더를 제공해주세요.", HttpStatus.UNAUTHORIZED),
     FORBIDDEN("COM004", "접근 권한이 없습니다.", HttpStatus.FORBIDDEN),
     RESOURCE_NOT_FOUND("COM005", "요청하신 리소스를 찾을 수 없습니다.(url 체크 필요)", HttpStatus.NOT_FOUND),
     METHOD_NOT_ALLOWED("COM006", "지원하지 않는 HTTP 메서드입니다.", HttpStatus.METHOD_NOT_ALLOWED),
     UNEXPECTED_ERROR("COM007", "예상치 못한 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    UNSUPPORTED_MEDIA_TYPE("COM008", "지원하지 않는 Content-Type입니다. multipart/form-data로 요청해 주세요.", HttpStatus.UNSUPPORTED_MEDIA_TYPE),
     
     // 파일 업로드 관련 에러
     IMAGE_TOO_LARGE("FILE001", "이미지 크기가 너무 큽니다. 10MB 이하로 업로드 해주세요.", HttpStatus.BAD_REQUEST),
     
     // 인프라 관련 에러
-    S3_CLIENT_CREATION_FAILED("INF001", "S3 클라이언트 생성에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+    S3_CLIENT_CREATION_FAILED("INF001", "S3 클라이언트 생성에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    OUT_OF_MEMORY_ERROR("INF002", "서버 메모리 부족으로 요청을 처리할 수 없습니다. 잠시 후 다시 시도해 주세요.", HttpStatus.SERVICE_UNAVAILABLE);
     
     private final String code;
     private final String message;

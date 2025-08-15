@@ -11,6 +11,7 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 import tryonu.api.common.exception.enums.ErrorCode;
 import tryonu.api.common.wrapper.ApiResponseWrapper;
+import tryonu.api.common.event.ApiErrorPublisher;
 
 import java.io.IOException;
 
@@ -23,6 +24,7 @@ import java.io.IOException;
 public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     private final ObjectMapper objectMapper;
+    private final ApiErrorPublisher apiErrorPublisher;
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
@@ -35,12 +37,16 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");
 
+
         ApiResponseWrapper<Void> errorResponse = ApiResponseWrapper.ofFailure(
             ErrorCode.UNAUTHORIZED.getCode(),
-            "로그인이 필요합니다. 유효한 X-Device-Id 헤더를 제공해주세요."
+            ErrorCode.UNAUTHORIZED.getMessage()
         );
 
         String jsonResponse = objectMapper.writeValueAsString(errorResponse);
         response.getWriter().write(jsonResponse);
+
+        // Publish error event for Slack/monitoring
+        apiErrorPublisher.publish(request, HttpServletResponse.SC_UNAUTHORIZED, ErrorCode.UNAUTHORIZED.getCode(), ErrorCode.UNAUTHORIZED.getMessage());
     }
 } 

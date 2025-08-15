@@ -176,6 +176,19 @@ public class WebClientConfig {
                 .build();
     }
 
+    /**
+     * Slack Webhook 전송용 WebClient (가벼운 타임아웃)
+     */
+    @Bean(name = "slackWebClient")
+    public WebClient slackWebClient() {
+        return WebClient.builder()
+                .clientConnector(new ReactorClientHttpConnector(createFastHttpClient()))
+                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(2 * 1024 * 1024))
+                .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .build();
+    }
+
     private ExchangeFilterFunction logRequest() {
         return ExchangeFilterFunction.ofRequestProcessor(request -> {
             log.debug("Request: {} {}", request.method(), request.url());
