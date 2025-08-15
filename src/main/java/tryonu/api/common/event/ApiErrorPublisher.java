@@ -16,46 +16,26 @@ public class ApiErrorPublisher {
     private final ApplicationEventPublisher publisher;
 
     public void publish(HttpServletRequest request, int httpStatus, String errorCode, String message) {
-        String requestBody = extractBody(request);
-        ApiErrorEvent event = new ApiErrorEvent(
-                httpStatus,
-                errorCode,
-                message,
-                request.getMethod(),
-                request.getRequestURI(),
-                request.getQueryString(),
-                request.getHeader("User-Agent"),
-                request.getRemoteAddr(),
-                requestBody,
-                null,
-                null,
-                Instant.now()
-        );
-        publisher.publishEvent(event);
+        publishInternal(request, httpStatus, errorCode, message, null, null);
     }
 
     public void publishWithValidationErrors(HttpServletRequest request, int httpStatus, String errorCode, String message, java.util.Map<String, String> validationErrors) {
-        String requestBody = extractBody(request);
-        ApiErrorEvent event = new ApiErrorEvent(
-                httpStatus,
-                errorCode,
-                message,
-                request.getMethod(),
-                request.getRequestURI(),
-                request.getQueryString(),
-                request.getHeader("User-Agent"),
-                request.getRemoteAddr(),
-                requestBody,
-                null,
-                validationErrors,
-                Instant.now()
-        );
-        publisher.publishEvent(event);
+        publishInternal(request, httpStatus, errorCode, message, null, validationErrors);
     }
 
     public void publishWithThrowable(HttpServletRequest request, int httpStatus, String errorCode, String message, Throwable t) {
+        publishInternal(request, httpStatus, errorCode, message, toStackTrace(t), null);
+    }
+
+    private void publishInternal(
+            HttpServletRequest request,
+            int httpStatus,
+            String errorCode,
+            String message,
+            String stacktrace,
+            java.util.Map<String, String> validationErrors
+    ) {
         String requestBody = extractBody(request);
-        String stacktrace = toStackTrace(t);
         ApiErrorEvent event = new ApiErrorEvent(
                 httpStatus,
                 errorCode,
@@ -67,7 +47,7 @@ public class ApiErrorPublisher {
                 request.getRemoteAddr(),
                 requestBody,
                 stacktrace,
-                null,
+                validationErrors,
                 Instant.now()
         );
         publisher.publishEvent(event);
