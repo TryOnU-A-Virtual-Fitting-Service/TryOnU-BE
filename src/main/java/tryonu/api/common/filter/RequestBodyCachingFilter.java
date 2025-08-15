@@ -47,8 +47,8 @@ public class RequestBodyCachingFilter implements Filter {
             return false;
         }
 
-        // 길이 미상(-1)인 경우도 허용하되, 내부 복사 후 상한 적용
-        if (contentLength > bodyCacheLimitBytes) {
+        // 길이 미상(-1)인 경우는 위험하므로 제외
+        if (contentLength == -1 || contentLength > bodyCacheLimitBytes) {
             return false;
         }
         return true;
@@ -71,8 +71,7 @@ public class RequestBodyCachingFilter implements Filter {
                 cachedBody = raw;
             }
             // 문자열 형태 캐시도 함께 제공 (Publisher 호환)
-            String charset = request.getCharacterEncoding() != null ? request.getCharacterEncoding() : StandardCharsets.UTF_8.name();
-            String bodyStr = new String(cachedBody, java.nio.charset.Charset.forName(charset));
+            String bodyStr = new String(cachedBody, StandardCharsets.UTF_8);
             int max = 16 * 1024; // 16KB 전송 상한
             if (bodyStr.length() > max) {
                 bodyStr = bodyStr.substring(0, max);
