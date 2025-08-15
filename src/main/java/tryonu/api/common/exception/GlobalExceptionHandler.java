@@ -109,7 +109,7 @@ public class GlobalExceptionHandler {
             "OUT_OF_MEMORY_ERROR",
             "서버 메모리 부족으로 요청을 처리할 수 없습니다. 잠시 후 다시 시도해 주세요."
         );
-        apiErrorPublisher.publish(request, HttpStatus.SERVICE_UNAVAILABLE.value(), "OUT_OF_MEMORY_ERROR", e.getMessage());
+        apiErrorPublisher.publishWithThrowable(request, HttpStatus.SERVICE_UNAVAILABLE.value(), ErrorCode.OUT_OF_MEMORY_ERROR.getCode(), e.getMessage(), e);
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(response);
     }
 
