@@ -3,31 +3,34 @@ package tryonu.api.common.filter;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StreamUtils;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import java.util.function.Supplier;
 
 /**
  * HTTP 요청 본문을 캐싱하는 필터 (성능 최적화 적용)
  * - JSON 타입만 캐싱
- * - 1MB 상한
+ * - 상한은 설정값 기반 (기본 64KB)
  * - 지연 로딩으로 문자열 변환
  */
 @Component
 @Order(1)
 public class RequestBodyCachingFilter implements Filter {
 
-    private static final int MAX_CACHEABLE_SIZE = 1024 * 1024; // 1MB
+    @Value("${monitoring.request-body.cache-limit-bytes:65536}")
+    private int bodyCacheLimitBytes; // default 64KB
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         if (request instanceof HttpServletRequest httpRequest) {
             if (isCacheable(httpRequest)) {
-                CachedBodyHttpServletRequest cached = new CachedBodyHttpServletRequest(httpRequest);
+                CachedBodyHttpServletRequest cached = new CachedBodyHttpServletRequest(httpRequest, bodyCacheLimitBytes);
                 chain.doFilter(cached, response);
                 return;
             }
@@ -39,13 +42,13 @@ public class RequestBodyCachingFilter implements Filter {
         String contentType = request.getContentType();
         int contentLength = request.getContentLength();
 
-        boolean typeOk = contentType != null && contentType.toLowerCase().contains("application/json");
+        boolean typeOk = contentType != null && contentType.toLowerCase(Locale.ROOT).contains("application/json");
         if (!typeOk) {
             return false;
         }
 
         // 길이 미상(-1)인 경우도 허용하되, 내부 복사 후 상한 적용
-        if (contentLength > MAX_CACHEABLE_SIZE) {
+        if (contentLength > bodyCacheLimitBytes) {
             return false;
         }
         return true;
@@ -58,12 +61,12 @@ public class RequestBodyCachingFilter implements Filter {
         private final byte[] cachedBody;
         private String cachedBodyString;
 
-        CachedBodyHttpServletRequest(HttpServletRequest request) throws IOException {
+        CachedBodyHttpServletRequest(HttpServletRequest request, int cacheLimitBytes) throws IOException {
             super(request);
             byte[] raw = StreamUtils.copyToByteArray(request.getInputStream());
-            if (raw.length > MAX_CACHEABLE_SIZE) {
+            if (raw.length > cacheLimitBytes) {
                 // 상한 적용
-                cachedBody = java.util.Arrays.copyOf(raw, MAX_CACHEABLE_SIZE);
+                cachedBody = java.util.Arrays.copyOf(raw, cacheLimitBytes);
             } else {
                 cachedBody = raw;
             }
