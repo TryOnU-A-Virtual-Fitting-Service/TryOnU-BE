@@ -92,10 +92,19 @@ public class ApiErrorEventListener {
                 "text", Map.of("type", "mrkdwn", "text", "*🧵 Stack Trace*\n```" + truncate(e.stackTrace(), 2500) + "```")
         );
 
-        if (stackBlock != null) {
-            return Map.of("blocks", List.of(header, message, fields, divider, context, bodyBlock, stackBlock));
+        List<Map<String, Object>> blocks = new java.util.ArrayList<>();
+        blocks.add(header);
+        blocks.add(message);
+        blocks.add(fields);
+        blocks.add(divider);
+        blocks.add(context);
+        if (bodyBlock != null) {
+            blocks.add(bodyBlock);
         }
-        return Map.of("blocks", List.of(header, message, fields, divider, context, bodyBlock));
+        if (stackBlock != null) {
+            blocks.add(stackBlock);
+        }
+        return Map.of("blocks", blocks);
     }
 
     private String truncate(String s, int max) {
