@@ -29,11 +29,11 @@ public class DevSlackNotifier implements SlackNotifier {
     private boolean enabled;
 
     @Override
-    public void send(String text) {
+    public Mono<Void> send(String text) {
         if (!enabled) {
-            return;
+            return Mono.empty();
         }
-        slackWebClient
+        return slackWebClient
                 .post()
                 .uri(webhookUrl)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -41,16 +41,15 @@ public class DevSlackNotifier implements SlackNotifier {
                 .retrieve()
                 .toBodilessEntity()
                 .doOnError(e -> log.warn("[DevSlackNotifier] 슬랙 전송 실패 - {}", e.getMessage()))
-                .onErrorResume(e -> Mono.empty())
-                .subscribe();
+                .then();
     }
 
     @Override
-    public void sendPayload(Map<String, Object> payload) {
+    public Mono<Void> sendPayload(Map<String, Object> payload) {
         if (!enabled) {
-            return;
+            return Mono.empty();
         }
-        slackWebClient
+        return slackWebClient
                 .post()
                 .uri(webhookUrl)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -58,8 +57,7 @@ public class DevSlackNotifier implements SlackNotifier {
                 .retrieve()
                 .toBodilessEntity()
                 .doOnError(e -> log.warn("[DevSlackNotifier] 슬랙 전송 실패 - {}", e.getMessage()))
-                .onErrorResume(e -> Mono.empty())
-                .subscribe();
+                .then();
     }
 }
 

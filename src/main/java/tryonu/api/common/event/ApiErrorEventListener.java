@@ -32,7 +32,9 @@ public class ApiErrorEventListener {
 
         if ((is4xx && notify4xx) || (is5xx && notify5xx)) {
             Map<String, Object> payload = buildBlockKitPayload(event);
-            slackNotifier.sendPayload(payload);
+            slackNotifier.sendPayload(payload)
+                    .doOnError(e -> log.warn("[ApiErrorEventListener] 슬랙 전송 실패 - {}", e.getMessage()))
+                    .subscribe();
         } else {
             log.debug("[ApiErrorEventListener] 알림 건너뜀 status={}", status);
         }

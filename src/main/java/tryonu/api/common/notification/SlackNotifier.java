@@ -1,11 +1,12 @@
 package tryonu.api.common.notification;
 
 import java.util.Map;
+import reactor.core.publisher.Mono;
 
 public interface SlackNotifier {
 
-    void send(String text);
+    Mono<Void> send(String text);
 
-    void sendPayload(Map<String, Object> payload);
+    Mono<Void> sendPayload(Map<String, Object> payload);
 }
 
