@@ -17,6 +17,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import tryonu.api.common.auth.DeviceIdAuthenticationFilter;
 import tryonu.api.common.auth.CustomAuthenticationEntryPoint;
 import tryonu.api.common.auth.CustomAccessDeniedHandler;
+import org.springframework.core.env.Environment;
 
 import java.util.Arrays;
 import java.util.List;
@@ -34,6 +35,7 @@ public class SecurityConfig {
     private final DeviceIdAuthenticationFilter deviceIdAuthenticationFilter;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
+    private final Environment env;
     
     @Value("${app.cors.allowed-origin-patterns}")
     private String allowedOriginPatterns;
@@ -72,16 +74,10 @@ public class SecurityConfig {
             )
             
             // 요청별 권한 설정
-            .authorizeHttpRequests(authz -> authz
-                // 인증 없이 접근 가능한 엔드포인트 통합 설정
-                .requestMatchers(
+            .authorizeHttpRequests(authz -> {
+                List<String> publicEndpoints = new java.util.ArrayList<>(List.of(
                     "/health",                // 헬스 체크 엔드포인트 (무조건 허용)
                     "/actuator/health",       // 스프링 액추에이터 헬스 체크 (무조건 허용)
-                    "/actuator/memory",       // 메모리 모니터링 엔드포인트 (디버깅용)
-                    "/actuator/gc",           // GC 정보 엔드포인트 (디버깅용)
-                    "/actuator/metrics/**",   // 메트릭스 엔드포인트 (모니터링용)
-                    "/monitoring/**",         // 모니터링 전용 API (메모리 등)
-                    // "/test-errors/**",        // 에러 테스트 전용 엔드포인트
                     "/swagger-ui/**",         // Swagger UI 리소스 (API 문서화용, 무조건 허용)
                     "/swagger-ui.html",       // Swagger UI 진입점 (무조건 허용)
                     "/api-docs/**",           // Swagger API 문서 엔드포인트 (무조건 허용)
@@ -90,11 +86,22 @@ public class SecurityConfig {
                     "/setup",                 // 프론트엔드 애셋 로드 API (로고 등, 무조건 허용)
                     "/webhook/**",            // WebHook 엔드포인트 (외부 서비스 호출, 무조건 허용)
                     "/error"                  // 에러 페이지 (무조건 허용)
-                ).permitAll()
-                
-                // 그 외 모든 요청은 인증 필요
-                .anyRequest().authenticated()
-            )
+                ));
+
+                boolean isProd = Arrays.asList(env.getActiveProfiles()).contains("prod");
+                if (!isProd) {
+                    publicEndpoints.addAll(List.of(
+                        "/monitoring/**",         // 모니터링 전용 API (개발/스테이징에서만 허용)
+                        "/actuator/memory",       // 메모리 모니터링 엔드포인트
+                        "/actuator/gc",           // GC 정보 엔드포인트
+                        "/actuator/metrics/**"    // 메트릭스 엔드포인트
+                    ));
+                }
+
+                authz
+                    .requestMatchers(publicEndpoints.toArray(String[]::new)).permitAll()
+                    .anyRequest().authenticated();
+            })
             
             // 커스텀 인증 필터 추가 (권한 설정 후에 추가)
             .addFilterBefore(deviceIdAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
