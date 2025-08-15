@@ -98,7 +98,7 @@ public class RequestBodyCachingFilter implements Filter {
 
                 @Override
                 public void setReadListener(ReadListener readListener) {
-                    // not supported
+                    throw new IllegalStateException("ReadListener not supported in synchronous mode");
                 }
 
                 @Override
