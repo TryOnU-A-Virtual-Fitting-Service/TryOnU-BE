@@ -185,8 +185,7 @@ public class WebClientConfig {
                 .clientConnector(new ReactorClientHttpConnector(createFastHttpClient()))
                 .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(2 * 1024 * 1024))
                 .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
-                .filter(logRequest())
-                .filter(logResponse())
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .build();
     }
 
