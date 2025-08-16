@@ -5,6 +5,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.apache.commons.lang3.RandomStringUtils;
+
+import java.util.UUID;
 
 /**
  * 기업 정보를 관리하는 엔티티
@@ -20,82 +23,61 @@ public class Company extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "company_id")
-    private Long id;
+    Long id;
     
     /**
      * 회사명 (고유키로 사용)
      * 예: musinsa, spao, zigzag, ably
      */
     @Column(name = "company_name", nullable = false, unique = true, length = 50)
-    private String companyName;
+    String companyName;
     
     /**
      * 회사 도메인 (고유키로 사용)
      * 예: musinsa.com, spao.com, zigzag.kr, ably.co.kr
      */
     @Column(name = "domain", nullable = false, unique = true, length = 100)
-    private String domain;
+    String domain;
     
     /**
      * 회사 표시명
      * 예: 무신사, 스파오, 지그재그, 에이블리
      */
     @Column(name = "display_name", nullable = false, length = 100)
-    private String displayName;
+    String displayName;
     
     /**
      * 로고 이미지 CDN URL
      */
     @Column(name = "logo_url", nullable = false, length = 500)
-    private String logoUrl;
-    
-    /**
-     * 회사 설명
-     */
-    @Column(name = "description", columnDefinition = "TEXT")
-    private String description;
-    
+    String logoUrl;
+
     /**
      * 활성화 여부
      */
     @Column(name = "is_active", nullable = false)
-    private Boolean isActive;
+    Boolean isActive;
 
+    @Column(unique = true, nullable = false)
+    String pluginKey;
+
+    @Column(nullable = false)
+    String secretKey;
 
     
     @Builder
-    public Company(String companyName, String domain, String displayName, String logoUrl, String description, Boolean isActive) {
+    public Company(String companyName, String domain, String displayName, String logoUrl, Boolean isActive) {
         this.companyName = companyName;
         this.domain = domain;
         this.displayName = displayName;
         this.logoUrl = logoUrl;
-        this.description = description;
         this.isActive = isActive != null ? isActive : true;
+        this.pluginKey = "pk_" + UUID.randomUUID().toString().replace("-", "");
+        // 실제 프로덕션에서는 더 강력한 암호화 라이브러리 사용을 권장합니다.
+        this.secretKey = "sk_" + RandomStringUtils.randomAlphanumeric(32);
+
     }
-    
-    /**
-     * 회사 정보 업데이트
-     * 
-     * @param domain 도메인
-     * @param displayName 표시명
-     * @param logoUrl 로고 URL
-     * @param description 설명
-     */
-    public void updateCompanyInfo(String domain, String displayName, String logoUrl, String description) {
-        if (domain != null) {
-            this.domain = domain;
-        }
-        if (displayName != null) {
-            this.displayName = displayName;
-        }
-        if (logoUrl != null) {
-            this.logoUrl = logoUrl;
-        }
-        if (description != null) {
-            this.description = description;
-        }
-    }
-    
+
     /**
      * 회사 활성화
      */
