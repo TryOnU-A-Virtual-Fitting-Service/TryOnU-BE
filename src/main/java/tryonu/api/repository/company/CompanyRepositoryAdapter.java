@@ -31,4 +31,15 @@ public class CompanyRepositoryAdapter implements CompanyRepository {
                     String.format("도메인 '%s'에 해당하는 활성화된 회사를 찾을 수 없습니다.", domain));
             });
     }
+
+    @Override
+    public Company findByPluginKeyAndIsActiveTrueOrThrow(@NonNull String pluginKey) {
+        return jpaCompanyRepository.findByPluginKeyAndIsActiveTrue(pluginKey)
+                .orElseThrow(() -> {
+                    log.error("[CompanyRepositoryAdapter] 활성화된 회사를 찾을 수 없음 - pluginKey: {}", pluginKey);
+                    return new CustomException(ErrorCode.COMPANY_NOT_FOUND,
+                            String.format("PluginKey '%s'에 해당하는 활성화된 회사를 찾을 수 없습니다.", pluginKey));
+                });
+
+        }
 }

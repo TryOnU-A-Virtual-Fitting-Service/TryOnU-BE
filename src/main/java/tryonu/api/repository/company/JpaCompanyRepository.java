@@ -12,4 +12,6 @@ public interface JpaCompanyRepository extends JpaRepository<Company, Long> {
      * 도메인으로 활성화된 회사 조회
      */
     Optional<Company> findByDomainAndIsActiveTrue(@NonNull String domain);
+
+    Optional<Company> findByPluginKeyAndIsActiveTrue(@NonNull String pluginKey);
 }
