@@ -19,6 +19,7 @@ import tryonu.api.common.auth.SecurityUtils;
 import tryonu.api.converter.UserConverter;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 사용자 관련 비즈니스 로직을 처리하는 서비스 구현체
@@ -40,18 +41,19 @@ public class UserServiceImpl implements UserService {
     public UserInfoResponse initializeUser(UserInitRequest request) {
         log.info("[UserService] 익명 사용자 초기화 시작: uuid={}", request.uuid());
         
-        User user;
+        User user; 
         // 이미 존재하는 사용자인지 확인
-        if (userRepository.existsByUuidAndIsDeletedFalse(request.uuid())) { 
+        Optional<User> userOptional = userRepository.findByUuid(request.uuid());
+        if (userOptional.isPresent() && !userOptional.get().getIsDeleted()) { 
             // 이미 존재하는 사용자인 경우: 기존 사용자 정보 사용
-            user = userRepository.findByUuidAndIsDeletedFalseOrThrow(request.uuid());
+            user = userOptional.get();
             log.info("[UserService] 기존 사용자 발견: userId={}, uuid={}", user.getId(), request.uuid());
         } else {
             // 존재하지 않는 경우: 새로운 사용자 생성
-            User newUser = User.builder()
+            user = User.builder()
                     .uuid(request.uuid())
                     .build();
-            user = userRepository.save(newUser);
+            user = userRepository.save(user);
 
             for (Gender gender : Gender.values()) {
                 DefaultModel defaultModel = defaultModelConverter.createDefaultModel(user, gender);
