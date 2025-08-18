@@ -30,13 +30,10 @@ public class CompanyServiceImpl implements CompanyService {
     private final CompanyConverter companyConverter;
 
     @Override
-    public AssetResponse getAssetResponseByUrl(@NonNull String url) {
-        log.info("[CompanyService] URL로 애셋 응답 조회 시작 - url: {}", url);
-        
+    public AssetResponse getAssetResponseByUrl(@NonNull String url) {        
         String domain = extractDomainFromUrl(url);
         Company company = companyRepository.findByDomainAndIsActiveTrueOrThrow(domain);
         
-        log.info("[CompanyService] URL로 애셋 응답 조회 완료 - url: {}, domain: {}", url, domain);
         return companyConverter.getAssetUrl(company);
     }
     
@@ -58,9 +55,7 @@ public class CompanyServiceImpl implements CompanyService {
             }
             
             // www. 및 서브도메인 제거
-            String cleanDomain = extractMainDomain(host);
-            log.debug("[CompanyService] 도메인 추출 성공 - url: {}, host: {}, cleanDomain: {}", url, host, cleanDomain);
-            
+            String cleanDomain = extractMainDomain(host);            
             return cleanDomain;
             
         } catch (URISyntaxException e) {
@@ -128,5 +123,11 @@ public class CompanyServiceImpl implements CompanyService {
             log.warn("[CompanyService] 도메인 중복 - domain: {}", request.domain());
             throw new CustomException(ErrorCode.COMPANY_ALREADY_EXISTS, "이미 존재하는 도메인입니다.");
         }
+    }
+
+    @Override
+    public AssetResponse getAssetResponseByPluginKey(@NonNull String pluginKey) {
+            Company company = companyRepository.findByPluginKeyAndIsActiveTrueOrThrow(pluginKey);
+            return companyConverter.getAssetUrl(company);
     }
 }

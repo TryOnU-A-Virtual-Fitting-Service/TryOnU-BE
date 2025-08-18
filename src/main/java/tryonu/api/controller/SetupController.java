@@ -44,8 +44,8 @@ public class SetupController {
         @ApiResponse(responseCode = "400", description = "잘못된 요청 - url 파라미터 누락 또는 잘못된 URL 형식"),
         @ApiResponse(responseCode = "404", description = "요청한 도메인에 해당하는 회사를 찾을 수 없음")
     })
-    @GetMapping
-    public ApiResponseWrapper<AssetResponse> getAsset(
+    @GetMapping("/asset/domain")
+    public ApiResponseWrapper<AssetResponse> getAssetByDomain(
         @Parameter(
             description = "현재 페이지의 전체 URL", 
             example = "https://www.musinsa.com/main/musinsa/recommend?gf=A", 
@@ -84,5 +84,34 @@ public class SetupController {
     ) {
         CompanyResponse companyResponse = companyService.registerCompany(companyRequest);
         return ApiResponseWrapper.ofSuccess(companyResponse);
+    }
+
+    /**
+     * 플러그인 키로 회사 애셋 조회
+     * 
+     * @param pluginKey 플러그인 키
+     * @return 애셋 이미지 CDN URL
+     */
+    @Operation(
+        summary = "플러그인 키로 애셋 조회",
+        description = "플러그인 키를 사용하여 해당 회사의 애셋 CDN URL을 조회합니다. " +
+                     "현재는 로고 이미지를 제공하며, 향후 다른 애셋도 추가될 예정입니다."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "애셋 URL 조회 성공"),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청 - pluginKey 파라미터 누락"),
+        @ApiResponse(responseCode = "404", description = "플러그인 키에 해당하는 활성화된 회사를 찾을 수 없음")
+    })
+    @GetMapping("/asset/plugin")
+    public ApiResponseWrapper<AssetResponse> getAssetByPluginKey(
+        @Parameter(
+            description = "플러그인 키", 
+            example = "f1a1447f-3f20-421b-a8bb-304f35d07a54", 
+            required = true
+        )
+        @RequestParam("pluginKey") String pluginKey
+    ) {
+        AssetResponse assetResponse = companyService.getAssetResponseByPluginKey(pluginKey);
+        return ApiResponseWrapper.ofSuccess(assetResponse);
     }
 }

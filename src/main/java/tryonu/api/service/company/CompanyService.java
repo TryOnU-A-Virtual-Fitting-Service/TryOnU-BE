@@ -28,4 +28,12 @@ public interface CompanyService {
      */
     CompanyResponse registerCompany(@NonNull CompanyRequest request);
 
+    /**
+     * 플러그인 키로 애셋 응답 조회
+     * 
+     * @param pluginKey 플러그인 키
+     * @return AssetResponse
+     */
+    AssetResponse getAssetResponseByPluginKey(@NonNull String pluginKey);
+
 }
