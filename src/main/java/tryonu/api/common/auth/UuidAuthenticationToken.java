@@ -12,10 +12,10 @@ import java.util.Collection;
  * Spring Security의 Authentication 인터페이스를 구현하여 deviceId 기반 인증을 지원합니다.
  */
 @Getter
-public class DeviceIdAuthenticationToken extends AbstractAuthenticationToken {
+public class UuidAuthenticationToken extends AbstractAuthenticationToken {
 
     private final User user;
-    private final String deviceId;
+    private final String uuid;
 
     /**
      * 인증된 토큰 생성
@@ -23,10 +23,10 @@ public class DeviceIdAuthenticationToken extends AbstractAuthenticationToken {
      * @param user 인증된 사용자
      * @param authorities 권한 목록
      */
-    public DeviceIdAuthenticationToken(User user, Collection<? extends GrantedAuthority> authorities) {
+    public UuidAuthenticationToken(User user, Collection<? extends GrantedAuthority> authorities) {
         super(authorities);
         this.user = user;
-        this.deviceId = user.getDeviceId();
+        this.uuid = user.getUuid();
         setAuthenticated(true);
     }
 
@@ -35,21 +35,21 @@ public class DeviceIdAuthenticationToken extends AbstractAuthenticationToken {
      * 
      * @param deviceId 디바이스 ID
      */
-    public DeviceIdAuthenticationToken(String deviceId) {
+    public UuidAuthenticationToken(String uuid) {
         super(null);
         this.user = null;
-        this.deviceId = deviceId;
+        this.uuid = uuid;
         setAuthenticated(false);
     }
 
     @Override
     public Object getCredentials() {
-        return deviceId;
+        return uuid;
     }
 
     @Override
     public Object getPrincipal() {
-        return deviceId;
+        return uuid;
     }
 
     public User getUser() {

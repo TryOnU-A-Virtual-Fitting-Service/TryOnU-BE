@@ -10,7 +10,7 @@ import lombok.*;
 @Entity
 @Table(name = "users", indexes = {
     @Index(name = "idx_users_is_deleted", columnList = "is_deleted"),
-    @Index(name = "idx_users_device_id", columnList = "device_id")
+    @Index(name = "idx_users_uuid", columnList = "uuid")
 })
 @NoArgsConstructor
 @AllArgsConstructor
@@ -21,8 +21,8 @@ public class User extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    @Column(name = "device_id", unique = true, nullable = false)
-    String deviceId;
+    @Column(name = "uuid", unique = true, nullable = false)
+    String uuid;
 
     @Column(name = "is_deleted", nullable = false)
     @Setter

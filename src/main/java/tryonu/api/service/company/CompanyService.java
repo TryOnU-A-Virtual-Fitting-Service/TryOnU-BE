@@ -16,6 +16,5 @@ public interface CompanyService {
      * @return AssetResponse
      */
     AssetResponse getAssetResponseByUrl(@NonNull String url);
-    
 
 }

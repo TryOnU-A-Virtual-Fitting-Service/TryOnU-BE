@@ -19,7 +19,6 @@ import tryonu.api.common.auth.SecurityUtils;
 import tryonu.api.converter.UserConverter;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * 사용자 관련 비즈니스 로직을 처리하는 서비스 구현체
@@ -39,19 +38,18 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserInfoResponse initializeUser(UserInitRequest request) {
-        log.info("[UserService] 익명 사용자 초기화 시작: deviceId={}", request.deviceId());
+        log.info("[UserService] 익명 사용자 초기화 시작: uuid={}", request.uuid());
         
         User user;
         // 이미 존재하는 사용자인지 확인
-        Optional<User> existingUser = userRepository.findByDeviceId(request.deviceId());
-        if (existingUser.isPresent()) { 
+        if (userRepository.existsByUuidAndIsDeletedFalse(request.uuid())) { 
             // 이미 존재하는 사용자인 경우: 기존 사용자 정보 사용
-            user = existingUser.get();
-            log.info("[UserService] 기존 사용자 발견: userId={}, deviceId={}", user.getId(), request.deviceId());
+            user = userRepository.findByUuidAndIsDeletedFalseOrThrow(request.uuid());
+            log.info("[UserService] 기존 사용자 발견: userId={}, uuid={}", user.getId(), request.uuid());
         } else {
             // 존재하지 않는 경우: 새로운 사용자 생성
             User newUser = User.builder()
-                    .deviceId(request.deviceId())
+                    .uuid(request.uuid())
                     .build();
             user = userRepository.save(newUser);
 
@@ -61,7 +59,7 @@ public class UserServiceImpl implements UserService {
             }
 
             
-            log.info("[UserService] 새 사용자 생성 완료: userId={}, deviceId={}", user.getId(), request.deviceId());
+            log.info("[UserService] 새 사용자 생성 완료: userId={}, uuid={}", user.getId(), request.uuid());
         }
         
         return buildUserInfoResponse(user.getId(), "사용자 초기화 응답 생성 완료");
@@ -72,7 +70,7 @@ public class UserServiceImpl implements UserService {
     public UserInfoResponse getCurrentUserInfo() {
         // Security Filter에서 이미 인증된 사용자만 여기까지 올 수 있음
         User currentUser = SecurityUtils.getCurrentUser();
-        log.info("[UserService] 현재 사용자 정보 조회 시작 - userId: {}, deviceId: {}", currentUser.getId(), currentUser.getDeviceId());
+        log.info("[UserService] 현재 사용자 정보 조회 시작 - userId: {}, uuid: {}", currentUser.getId(), currentUser.getUuid());
         return buildUserInfoResponse(currentUser.getId(), "사용자 정보 조회 완료");
     }
 

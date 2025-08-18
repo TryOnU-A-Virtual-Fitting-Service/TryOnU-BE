@@ -30,12 +30,12 @@ import java.util.Optional;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class DeviceIdAuthenticationFilter extends OncePerRequestFilter {
+public class UuidAuthenticationFilter extends OncePerRequestFilter {
 
-    private static final String DEVICE_ID_HEADER = "X-Device-ID";
+    private static final String UUID_HEADER = "X-UUID";
     private final UserRepository userRepository;
 
-        // ✅ 필터를 적용하지 않을 경로 목록을 여기에 정의합니다.
+        // ✅ 필터를 적용하지 않을 경로 목록을 여기에 정의
         private final List<AntPathRequestMatcher> excludedPaths = Arrays.asList(
             new AntPathRequestMatcher("/health"),
             new AntPathRequestMatcher("/actuator/health"),
@@ -66,29 +66,29 @@ public class DeviceIdAuthenticationFilter extends OncePerRequestFilter {
         ) throws ServletException, IOException {
 
         
-        String deviceId = extractDeviceId(request);
+        String uuid = extractUuid(request);
         
-        if (StringUtils.hasText(deviceId)) {
-            log.debug("[DeviceIdAuthenticationFilter] deviceId 추출: {}", deviceId);
+        if (StringUtils.hasText(uuid)) {
+            log.debug("[UuidAuthenticationFilter] uuid 추출: {}", uuid);
             
             try {
-                // deviceId로 사용자 조회 - 예외 처리 개선
-                Optional<User> userOptional = userRepository.findByDeviceId(deviceId);
+                // uuid로 사용자 조회 - 예외 처리 개선
+                Optional<User> userOptional = userRepository.findByUuid(uuid);
                 if (userOptional.isPresent() && !userOptional.get().getIsDeleted()) {
                     User user = userOptional.get();
-                    log.debug("[DeviceIdAuthenticationFilter] 사용자 인증 성공: userId={}, deviceId={}", 
-                             user.getId(), deviceId);
+                    log.debug("[UuidAuthenticationFilter] 사용자 인증 성공: userId={}, uuid={}", 
+                             user.getId(), uuid);
                     
                     // SecurityContext에 인증 정보 설정
-                    DeviceIdAuthenticationToken authentication = new DeviceIdAuthenticationToken(user, Collections.emptyList());
+                    UuidAuthenticationToken authentication = new UuidAuthenticationToken(user, Collections.emptyList());
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 } else {
-                    log.warn("[DeviceIdAuthenticationFilter] 유효하지 않은 deviceId: {}", deviceId);
+                    log.warn("[UuidAuthenticationFilter] 유효하지 않은 uuid: {}", uuid);
                     // 인증 실패해도 필터는 계속 진행 - 컨트롤러에서 적절히 처리
                 }
                 
             } catch (Exception e) {
-                log.error("[DeviceIdAuthenticationFilter] 사용자 조회 중 예외 발생: deviceId={}, error={}", deviceId, e);
+                log.error("[UuidAuthenticationFilter] 사용자 조회 중 예외 발생: uuid={}, error={}", uuid, e);
                 // 예외가 발생해도 필터는 계속 진행 - 컨트롤러에서 적절히 처리
             }
         }
@@ -97,20 +97,20 @@ public class DeviceIdAuthenticationFilter extends OncePerRequestFilter {
     }
 
     /**
-     * 요청에서 deviceId를 추출합니다.
+     * 요청에서 uuid를 추출합니다.
      * 
      * @param request HTTP 요청
-     * @return deviceId (없으면 null)
+     * @return uuid (없으면 null)
      */
-    private String extractDeviceId(HttpServletRequest request) {
-        String deviceId = request.getHeader(DEVICE_ID_HEADER);
+    private String extractUuid(HttpServletRequest request) {
+        String uuid = request.getHeader(UUID_HEADER);
         
         // 헤더에 없으면 쿼리 파라미터에서 확인
-        if (!StringUtils.hasText(deviceId)) {
-            deviceId = request.getParameter("deviceId");
+        if (!StringUtils.hasText(uuid)) {
+            uuid = request.getParameter("uuid");
         }
         
-        return deviceId;
+        return uuid;
     }
 
 } 

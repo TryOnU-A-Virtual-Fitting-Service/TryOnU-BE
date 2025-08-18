@@ -1,5 +1,7 @@
 package tryonu.api.domain;
 
+import java.util.UUID;
+
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,11 +32,17 @@ public class Company extends BaseEntity {
     private String companyName;
     
     /**
-     * 회사 도메인 (고유키로 사용)
+     * 회사 도메인
      * 예: musinsa.com, spao.com, zigzag.kr, ably.co.kr
      */
     @Column(name = "domain", nullable = false, unique = true, length = 100)
     private String domain;
+
+    /**
+     * 고객사 식별자
+     */
+    @Column(name = "plugin_key", nullable = false, unique = true, length = 100)
+    private String pluginKey;
     
     /**
      * 회사 표시명
@@ -71,6 +79,7 @@ public class Company extends BaseEntity {
         this.logoUrl = logoUrl;
         this.description = description;
         this.isActive = isActive != null ? isActive : true;
+        this.pluginKey = UUID.randomUUID().toString();
     }
     
     /**

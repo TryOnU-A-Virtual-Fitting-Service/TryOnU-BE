@@ -77,8 +77,8 @@ public class TryOnServiceImpl implements TryOnService {
         String clothImageUrl = imageUploadUtil.uploadClothImage(file);
 
         // 현재 인증된 사용자 조회
-        String deviceId = SecurityContextHolder.getContext().getAuthentication().getName();
-        User currentUser = userRepository.findByDeviceIdAndIsDeletedFalseOrThrow(deviceId);
+        String uuid = SecurityContextHolder.getContext().getAuthentication().getName();
+        User currentUser = userRepository.findByUuidAndIsDeletedFalseOrThrow(uuid);
 
         // 가상 피팅 API 요청 생성
         VirtualFittingRequest virtualFittingRequest = tryOnResultConverter.toVirtualFittingRequest(modelUrl, clothImageUrl);
