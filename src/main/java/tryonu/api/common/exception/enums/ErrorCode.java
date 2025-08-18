@@ -25,6 +25,7 @@ public enum ErrorCode {
     
     // Company 관련 에러
     COMPANY_NOT_FOUND("CP001", "요청한 회사를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    COMPANY_ALREADY_EXISTS("CP002", "이미 존재하는 회사입니다.", HttpStatus.CONFLICT),
     
     // 가상피팅 관련 에러
     VIRTUAL_FITTING_FAILED("VF001", "가상피팅 처리 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),

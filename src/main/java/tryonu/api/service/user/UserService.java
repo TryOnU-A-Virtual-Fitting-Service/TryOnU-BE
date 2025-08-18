@@ -17,7 +17,7 @@ public interface UserService {
     UserInfoResponse initializeUser(UserInitRequest request);
     
     /**
-     * 현재 사용자 정보 조회 (X-Device-Id 헤더 기반)
+     * 현재 사용자 정보 조회 (X-UUID 헤더 기반)
      * 
      * @return 사용자 정보 응답 (기본 모델, 피팅 모델 포함)
      */

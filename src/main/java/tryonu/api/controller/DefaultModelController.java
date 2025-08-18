@@ -33,7 +33,7 @@ public class DefaultModelController {
 
     @Operation(
         summary = "기본 모델 업로드",
-        description = "X-Device-Id 헤더에서 deviceId를 추출하고, 업로드할 사진 파일을 받아 기본 모델 이미지를 등록합니다.",
+        description = "X-UUID 헤더에서 uuid를 추출하고, 업로드할 사진 파일을 받아 기본 모델 이미지를 등록합니다.",
         requestBody = @RequestBody(
             description = "업로드할 기본 모델 이미지 파일 (multipart/form-data)",
             required = true,
