@@ -20,7 +20,7 @@ import tryonu.api.service.user.UserService;
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
-@SecurityRequirement(name = "uuid")
+@SecurityRequirement(name = "X-UUID")
 public class UserController {
 
     private final UserService userService;

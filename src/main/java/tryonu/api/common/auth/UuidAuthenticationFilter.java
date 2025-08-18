@@ -24,8 +24,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * DeviceId 기반 인증 필터
- * 헤더에서 deviceId를 추출하여 사용자 인증을 처리합니다.
+ * Uuid 기반 인증 필터
+ * 헤더에서 uuid를 추출하여 사용자 인증을 처리합니다.
  */
 @Slf4j
 @Component

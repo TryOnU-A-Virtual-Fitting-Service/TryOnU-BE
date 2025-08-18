@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
     )
 )
 @SecurityScheme(
-    name = "DeviceId",
+    name = "X-UUID",
     type = SecuritySchemeType.APIKEY,
     in = io.swagger.v3.oas.annotations.enums.SecuritySchemeIn.HEADER,
     paramName = "X-UUID",

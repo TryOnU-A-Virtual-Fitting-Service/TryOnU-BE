@@ -5,7 +5,7 @@ import lombok.*;
 
 /**
  * 사용자 기본 정보 엔티티
- * 사용자의 핵심 식별 정보(deviceId)를 관리합니다.
+ * 사용자의 핵심 식별 정보(uuid)를 관리합니다.
  */
 @Entity
 @Table(name = "users", indexes = {

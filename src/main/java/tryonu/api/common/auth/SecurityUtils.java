@@ -72,9 +72,9 @@ public class SecurityUtils {
     }
 
     /**
-     * 현재 사용자의 deviceId를 반환합니다.
+     * 현재 사용자의 uuid를 반환합니다.
      * 
-     * @return 현재 사용자의 deviceId
+     * @return 현재 사용자의 uuid
      * @throws CustomException 인증되지 않은 경우
      */
     public static String getCurrentUuid() {

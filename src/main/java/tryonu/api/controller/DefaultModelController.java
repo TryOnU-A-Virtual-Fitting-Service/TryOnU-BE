@@ -26,7 +26,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 @Tag(name = "기본 모델 API", description = "기본 모델 관련 API")
 @Validated
 @RequestMapping("/default-model")
-@SecurityRequirement(name = "DeviceId")
+@SecurityRequirement(name = "X-UUID")
 public class DefaultModelController {
 
     private final DefaultModelService defaultModelService;
