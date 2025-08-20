@@ -28,4 +28,11 @@ public class User extends BaseEntity {
     @Setter
     @Builder.Default
     Boolean isDeleted = false;
+
+    /**
+     * 소프트 삭제된 사용자를 복구합니다.
+     */
+    public void restore() {
+        this.isDeleted = false;
+    }
 }
