@@ -22,7 +22,7 @@ import tryonu.api.common.validation.NotEmptyFile;
 @RequestMapping("/try-on")
 @RequiredArgsConstructor
 @Tag(name = "가상 피팅 API", description = "가상 피팅 관련 API")
-@SecurityRequirement(name = "DeviceId")
+@SecurityRequirement(name = "X-UUID")
 public class TryOnController {
     private final TryOnService tryOnService;
 

@@ -4,7 +4,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import tryonu.api.domain.Company;
+import tryonu.api.dto.requests.CompanyRequest;
 import tryonu.api.dto.responses.AssetResponse;
+import tryonu.api.dto.responses.CompanyResponse;
 
 /**
  * Company 엔티티와 관련된 변환 로직을 처리하는 컨버터
@@ -17,7 +19,6 @@ public class CompanyConverter {
      * 회사 정보와 애셋 타입에 따라 적절한 애셋 URL을 반환
      * 
      * @param company 회사 엔티티
-     * @param assetType 애셋 타입 (logo, icon, background 등)
      * @return 해당 타입의 애셋 URL
      */
     public AssetResponse getAssetUrl(@NonNull Company company) {
@@ -26,6 +27,45 @@ public class CompanyConverter {
         log.debug("[CompanyConverter] 애셋 URL 변환 완료 - assetUrl: {}", assetUrl);
 
         return new AssetResponse(company.getDomain(), assetUrl);    
+    }
+    
+    /**
+     * CompanyRequest를 Company 엔티티로 변환
+     * 
+     * @param request 회사 등록 요청 DTO
+     * @return Company 엔티티
+     */
+    public Company toEntity(@NonNull CompanyRequest request) {
+        log.debug("[CompanyConverter] CompanyRequest -> Company 엔티티 변환 시작 - companyName: {}", request.companyName());
+        
+        Company company = Company.builder()
+                .companyName(request.companyName())
+                .domain(request.domain())
+                .logoUrl(request.logoUrl())
+                .isActive(request.isActive())
+                .build();
+        
+        log.debug("[CompanyConverter] CompanyRequest -> Company 엔티티 변환 완료 - companyName: {}", request.companyName());
+        return company;
+    }
+    
+    /**
+     * Company 엔티티를 CompanyResponse로 변환
+     * 
+     * @param company 회사 엔티티
+     * @return CompanyResponse DTO
+     */
+    public CompanyResponse toResponse(@NonNull Company company) {
+        log.debug("[CompanyConverter] Company 엔티티 -> CompanyResponse 변환 시작 - companyName: {}", company.getCompanyName());
+        
+        CompanyResponse response = new CompanyResponse(
+                company.getCompanyName(),
+                company.getDomain(),
+                company.getPluginKey()
+        );
+        
+        log.debug("[CompanyConverter] Company 엔티티 -> CompanyResponse 변환 완료 - companyName: {}", company.getCompanyName());
+        return response;
     }
     
 }

@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import tryonu.api.dto.requests.VirtualFittingRequest;
@@ -13,7 +12,6 @@ import tryonu.api.dto.responses.VirtualFittingResponse;
 import tryonu.api.dto.responses.VirtualFittingStatusResponse;
 import tryonu.api.domain.Cloth;
 import tryonu.api.domain.User;
-import tryonu.api.repository.user.UserRepository;
 import tryonu.api.repository.tryonresult.TryOnResultRepository;
 import tryonu.api.repository.cloth.ClothRepository;
 import tryonu.api.common.util.VirtualFittingUtil;
@@ -26,6 +24,7 @@ import tryonu.api.common.exception.enums.ErrorCode;
 import tryonu.api.domain.TryOnResult;
 import tryonu.api.converter.TryOnResultConverter;
 import tryonu.api.common.enums.Category;
+import tryonu.api.common.auth.SecurityUtils;
 
 import java.util.Arrays;
 
@@ -42,7 +41,6 @@ public class TryOnServiceImpl implements TryOnService {
     private final MemoryTracker memoryTracker;
     private final ImageUploadUtil imageUploadUtil;
     private final CategoryPredictionUtil categoryPredictionUtil;
-    private final UserRepository userRepository;
     private final TryOnResultRepository tryOnResultRepository;
     private final ClothRepository clothRepository;
     private final TryOnResultConverter tryOnResultConverter;
@@ -76,9 +74,8 @@ public class TryOnServiceImpl implements TryOnService {
         // 의류 이미지 업로드
         String clothImageUrl = imageUploadUtil.uploadClothImage(file);
 
-        // 현재 인증된 사용자 조회
-        String deviceId = SecurityContextHolder.getContext().getAuthentication().getName();
-        User currentUser = userRepository.findByDeviceIdAndIsDeletedFalseOrThrow(deviceId);
+        // 현재 인증된 사용자 조회e
+        User currentUser = SecurityUtils.getCurrentUser();
 
         // 가상 피팅 API 요청 생성
         VirtualFittingRequest virtualFittingRequest = tryOnResultConverter.toVirtualFittingRequest(modelUrl, clothImageUrl);

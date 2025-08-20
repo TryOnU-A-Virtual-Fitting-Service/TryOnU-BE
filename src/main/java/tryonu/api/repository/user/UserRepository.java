@@ -20,17 +20,17 @@ public interface UserRepository {
     /**
      * 디바이스 ID로 사용자 조회
      */
-    Optional<User> findByDeviceId(@NonNull String deviceId);
+    Optional<User> findByUuid(@NonNull String uuid);
     
     /**
      * 디바이스 ID로 사용자 조회 (예외처리 포함)
      */
-    User findByDeviceIdAndIsDeletedFalseOrThrow(@NonNull String deviceId);
+    User findByUuidAndIsDeletedFalseOrThrow(@NonNull String uuid);
     
     /**
      * 디바이스 ID로 사용자 존재 여부 확인
      */
-    boolean existsByDeviceIdAndIsDeletedFalse(@NonNull String deviceId);
+    boolean existsByUuidAndIsDeletedFalse(@NonNull String uuid);
     
     /**
      * 사용자 소프트 삭제 (예외처리 포함)

@@ -9,7 +9,9 @@ import tryonu.api.common.exception.CustomException;
 import tryonu.api.common.exception.enums.ErrorCode;
 import tryonu.api.converter.CompanyConverter;
 import tryonu.api.domain.Company;
+import tryonu.api.dto.requests.CompanyRequest;
 import tryonu.api.dto.responses.AssetResponse;
+import tryonu.api.dto.responses.CompanyResponse;
 import tryonu.api.repository.company.CompanyRepository;
 
 import java.net.URI;
@@ -28,13 +30,10 @@ public class CompanyServiceImpl implements CompanyService {
     private final CompanyConverter companyConverter;
 
     @Override
-    public AssetResponse getAssetResponseByUrl(@NonNull String url) {
-        log.info("[CompanyService] URL로 애셋 응답 조회 시작 - url: {}", url);
-        
+    public AssetResponse getAssetResponseByUrl(@NonNull String url) {        
         String domain = extractDomainFromUrl(url);
         Company company = companyRepository.findByDomainAndIsActiveTrueOrThrow(domain);
         
-        log.info("[CompanyService] URL로 애셋 응답 조회 완료 - url: {}, domain: {}", url, domain);
         return companyConverter.getAssetUrl(company);
     }
     
@@ -56,9 +55,7 @@ public class CompanyServiceImpl implements CompanyService {
             }
             
             // www. 및 서브도메인 제거
-            String cleanDomain = extractMainDomain(host);
-            log.debug("[CompanyService] 도메인 추출 성공 - url: {}, host: {}, cleanDomain: {}", url, host, cleanDomain);
-            
+            String cleanDomain = extractMainDomain(host);            
             return cleanDomain;
             
         } catch (URISyntaxException e) {
@@ -87,5 +84,50 @@ public class CompanyServiceImpl implements CompanyService {
         }
         
         return domain;
+    }
+
+    @Override
+    @Transactional
+    public CompanyResponse registerCompany(@NonNull CompanyRequest request) {
+        log.info("[CompanyService] 회사 등록 시작 - companyName: {}, domain: {}", 
+                request.companyName(), request.domain());
+        
+        // 중복 검증
+        validateDuplicateCompany(request);
+        
+        // 엔티티 변환 및 저장
+        Company company = companyConverter.toEntity(request);
+        Company savedCompany = companyRepository.save(company);
+        
+        log.info("[CompanyService] 회사 등록 완료 - companyId: {}, companyName: {}, pluginKey: {}", 
+                savedCompany.getId(), savedCompany.getCompanyName(), savedCompany.getPluginKey());
+        
+        return companyConverter.toResponse(savedCompany);
+    }
+    
+    /**
+     * 회사 중복 검증
+     * 회사명, 도메인의 중복을 검사합니다.
+     * 
+     * @param request 회사 등록 요청
+     */
+    private void validateDuplicateCompany(@NonNull CompanyRequest request) {
+        // 회사명 중복 검증
+        if (companyRepository.existsByCompanyName(request.companyName())) {
+            log.warn("[CompanyService] 회사명 중복 - companyName: {}", request.companyName());
+            throw new CustomException(ErrorCode.COMPANY_ALREADY_EXISTS, "이미 존재하는 회사명입니다.");
+        }
+        
+        // 도메인 중복 검증
+        if (companyRepository.existsByDomain(request.domain())) {
+            log.warn("[CompanyService] 도메인 중복 - domain: {}", request.domain());
+            throw new CustomException(ErrorCode.COMPANY_ALREADY_EXISTS, "이미 존재하는 도메인입니다.");
+        }
+    }
+
+    @Override
+    public AssetResponse getAssetResponseByPluginKey(@NonNull String pluginKey) {
+            Company company = companyRepository.findByPluginKeyAndIsActiveTrueOrThrow(pluginKey);
+            return companyConverter.getAssetUrl(company);
     }
 }

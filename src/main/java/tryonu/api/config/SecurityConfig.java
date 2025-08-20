@@ -14,7 +14,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import tryonu.api.common.auth.DeviceIdAuthenticationFilter;
+import tryonu.api.common.auth.UuidAuthenticationFilter;
 import tryonu.api.common.auth.CustomAuthenticationEntryPoint;
 import tryonu.api.common.auth.CustomAccessDeniedHandler;
 import org.springframework.core.env.Environment;
@@ -32,7 +32,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final DeviceIdAuthenticationFilter deviceIdAuthenticationFilter;
+    private final UuidAuthenticationFilter uuidAuthenticationFilter;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
     private final Environment env;
@@ -104,7 +104,7 @@ public class SecurityConfig {
             })
             
             // 커스텀 인증 필터 추가 (권한 설정 후에 추가)
-            .addFilterBefore(deviceIdAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(uuidAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
             
             // 커스텀 예외 처리 핸들러 설정
             .exceptionHandling(exceptions -> exceptions

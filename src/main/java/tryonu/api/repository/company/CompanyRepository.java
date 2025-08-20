@@ -14,4 +14,19 @@ public interface CompanyRepository {
      * 도메인으로 활성화된 회사 조회 (예외처리 포함)
      */
     Company findByDomainAndIsActiveTrueOrThrow(@NonNull String domain);
+    
+    /**
+     * 플러그인 키로 활성화된 회사 조회 (예외처리 포함)
+     */
+    Company findByPluginKeyAndIsActiveTrueOrThrow(@NonNull String pluginKey);
+
+    /**
+     * 회사명 존재 여부 확인
+     */
+    boolean existsByCompanyName(@NonNull String companyName);
+    
+    /**
+     * 도메인 존재 여부 확인
+     */
+    boolean existsByDomain(@NonNull String domain);
 }

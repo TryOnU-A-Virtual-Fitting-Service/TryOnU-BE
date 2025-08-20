@@ -9,8 +9,8 @@ import jakarta.validation.constraints.NotBlank;
 @Schema(description = "익명 사용자 초기화 요청")
 public record UserInitRequest(
     
-    @Schema(description = "디바이스 ID", example = "device-12345")
-    @NotBlank(message = "디바이스 ID는 필수입니다.")
-    String deviceId
+    @Schema(description = "uuid", example = "123e4567-e89b-12d3-a456-426614174000")
+    @NotBlank(message = "uuid는 필수입니다.")
+    String uuid
     
 ) {} 

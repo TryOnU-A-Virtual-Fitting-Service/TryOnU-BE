@@ -20,7 +20,7 @@ import tryonu.api.service.user.UserService;
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
-@SecurityRequirement(name = "DeviceId")
+@SecurityRequirement(name = "X-UUID")
 public class UserController {
 
     private final UserService userService;
@@ -33,7 +33,7 @@ public class UserController {
      */
     @Operation(
         summary = "익명 사용자 초기화",
-        description = "deviceId를 사용하여 익명 사용자를 초기화합니다. " +
+        description = "uuid를 사용하여 익명 사용자를 초기화합니다. " +
                      "기존 사용자가 있으면 해당 정보를 반환하고, " +
                      "없으면 새로운 사용자를 생성합니다. " +
                      "응답에는 사용자의 기본 모델과 피팅 모델 목록이 id 내림차순으로 정렬되어 포함됩니다."
@@ -55,12 +55,12 @@ public class UserController {
      */
     @Operation(
         summary = "현재 사용자 정보 조회",
-        description = "X-Device-Id 헤더를 통해 현재 인증된 사용자의 정보를 조회합니다. " +
+        description = "X-UUID 헤더를 통해 현재 인증된 사용자의 정보를 조회합니다. " +
                      "응답에는 사용자의 기본 모델과 피팅 모델 목록이 id 내림차순으로 정렬되어 포함됩니다."
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "사용자 정보 조회 성공"),
-        @ApiResponse(responseCode = "401", description = "잘못된 X-Device-Id 헤더, 또는 인증되지 않은 사용자"),
+        @ApiResponse(responseCode = "401", description = "잘못된 X-UUID 헤더, 또는 인증되지 않은 사용자"),
     })
     @GetMapping("/me")
     public ApiResponseWrapper<UserInfoResponse> getCurrentUserInfo() {

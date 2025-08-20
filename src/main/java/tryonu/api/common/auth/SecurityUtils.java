@@ -33,7 +33,7 @@ public class SecurityUtils {
             throw new CustomException(ErrorCode.UNAUTHORIZED, "인증이 필요합니다.");
         }
         
-        if (authentication instanceof DeviceIdAuthenticationToken token) {
+        if (authentication instanceof UuidAuthenticationToken token) {
             User user = token.getUser();
             if (user == null) {
                 log.warn("[SecurityUtils] 인증 토큰에 사용자 정보가 없음");
@@ -72,13 +72,13 @@ public class SecurityUtils {
     }
 
     /**
-     * 현재 사용자의 deviceId를 반환합니다.
+     * 현재 사용자의 uuid를 반환합니다.
      * 
-     * @return 현재 사용자의 deviceId
+     * @return 현재 사용자의 uuid
      * @throws CustomException 인증되지 않은 경우
      */
-    public static String getCurrentDeviceId() {
-        return getCurrentUser().getDeviceId();
+    public static String getCurrentUuid() {
+        return getCurrentUser().getUuid();
     }
 
     /**
