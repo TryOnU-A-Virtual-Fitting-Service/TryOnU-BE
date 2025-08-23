@@ -55,9 +55,16 @@ public class DefaultModelRepositoryAdapter implements DefaultModelRepository {
     }
     
     @Override
-    public List<DefaultModelDto> findDefaultModelsByUserIdOrderByIdDesc(@NonNull Long userId) {
-        List<DefaultModelDto> defaultModels = jpaDefaultModelRepository.findDefaultModelsByUserIdOrderByIdDesc(userId);
-        log.debug("[DefaultModelRepositoryAdapter] 기본 모델 목록 조회 성공 (정렬) - userId: {}, count: {}", userId, defaultModels.size());
+    public List<DefaultModelDto> findDefaultModelsByUserIdOrderBySortOrder(@NonNull Long userId) {
+        List<DefaultModelDto> defaultModels = jpaDefaultModelRepository.findDefaultModelsByUserIdOrderBySortOrder(userId);
+        log.debug("[DefaultModelRepositoryAdapter] 기본 모델 목록 조회 성공 (sortOrder 정렬) - userId: {}, count: {}", userId, defaultModels.size());
+        return defaultModels;
+    }
+    
+    @Override
+    public List<DefaultModel> findAllByIdsAndUserIdAndIsDeletedFalse(@NonNull List<Long> ids, @NonNull Long userId) {
+        List<DefaultModel> defaultModels = jpaDefaultModelRepository.findAllByIdsAndUserIdAndIsDeletedFalse(ids, userId);
+        log.debug("[DefaultModelRepositoryAdapter] ID 목록으로 기본 모델 조회 - userId: {}, ids: {}, found: {}", userId, ids, defaultModels.size());
         return defaultModels;
     }
     
@@ -66,5 +73,19 @@ public class DefaultModelRepositoryAdapter implements DefaultModelRepository {
         defaultModel.setIsDeleted(true);
         jpaDefaultModelRepository.save(defaultModel);
         log.debug("[DefaultModelRepositoryAdapter] 기본 모델 소프트 삭제 성공 - defaultModelId: {}", defaultModel.getId());
+    }
+    
+    @Override
+    public List<DefaultModel> saveAll(@NonNull List<DefaultModel> defaultModels) {
+        List<DefaultModel> savedModels = jpaDefaultModelRepository.saveAll(defaultModels);
+        log.debug("[DefaultModelRepositoryAdapter] 기본 모델 일괄 저장 성공 - count: {}", savedModels.size());
+        return savedModels;
+    }
+    
+    @Override
+    public Integer findMaxSortOrderByUserId(@NonNull Long userId) {
+        Integer maxSortOrder = jpaDefaultModelRepository.findMaxSortOrderByUserId(userId);
+        log.debug("[DefaultModelRepositoryAdapter] 최대 sortOrder 조회 - userId: {}, maxSortOrder: {}", userId, maxSortOrder);
+        return maxSortOrder;
     }
 } 
