@@ -108,8 +108,7 @@ public class OpenApiConfig {
                         .url(prodHttpsUrl + contextPath)
                         .description("운영 서버 (HTTPS)")
                 );
-            case "local":
-            default:
+            default: // local 환경 및 기타 환경
                 return List.of(
                     new Server()
                         .url(localUrl + contextPath)
