@@ -8,12 +8,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 
 import java.util.List;
 
 /**
  * OpenAPI 3.0 및 Swagger UI 설정
  * API 문서화를 위한 Swagger 설정을 관리합니다.
+ * 환경별로 다른 서버 URL을 설정합니다.
  */
 @Slf4j
 @Configuration
@@ -25,16 +27,36 @@ public class OpenApiConfig {
     @Value("${app.swagger.servers.staging-https}")
     private String stagingHttpsUrl;
 
+    @Value("${app.swagger.servers.staging-http}")
+    private String stagingHttpUrl;
+
+    @Value("${app.swagger.servers.local:http://localhost:8080}")
+    private String localUrl;
+
+    private final Environment environment;
+
+    public OpenApiConfig(Environment environment) {
+        this.environment = environment;
+    }
 
     /**
      * OpenAPI 설정
-     * Swagger UI에서 사용할 API 문서 정보와 서버 URL을 설정합니다.
+     * Swagger UI에서 사용할 API 문서 정보와 서버 URL을 환경별로 설정합니다.
      * 
      * @return OpenAPI 설정 객체
      */
     @Bean
     public OpenAPI customOpenAPI() {
-        log.info("📚 [OpenApiConfig] OpenAPI 설정 초기화");
+        String activeProfile = getActiveProfile();
+        log.info("📚 [OpenApiConfig] OpenAPI 설정 초기화 - 환경: {}", activeProfile);
+
+        List<Server> servers = getServersByProfile(activeProfile);
+        
+        // 설정된 서버 정보 로깅
+        log.info("🌐 [OpenApiConfig] 환경별 서버 설정 완료:");
+        servers.forEach(server -> 
+            log.info("   - {}: {}", server.getDescription(), server.getUrl())
+        );
 
         return new OpenAPI()
                 .info(new Info()
@@ -44,10 +66,55 @@ public class OpenApiConfig {
                         .contact(new Contact()
                                 .name("ThatzFit Team")
                                 .email("tryonu.team@gmail.com")))
-                .servers(List.of(
-                        new Server()
-                                .url(stagingHttpsUrl + contextPath)
-                                .description("스테이징 서버 (HTTPS)")
-                ));
+                .servers(servers);
+    }
+
+    /**
+     * 현재 활성화된 프로파일을 가져옵니다.
+     * 
+     * @return 활성화된 프로파일명
+     */
+    private String getActiveProfile() {
+        String[] activeProfiles = environment.getActiveProfiles();
+        if (activeProfiles.length > 0) {
+            return activeProfiles[0];
+        }
+        return "local"; // 기본값
+    }
+
+    /**
+     * 프로파일별로 서버 목록을 설정합니다.
+     * 
+     * @param profile 활성화된 프로파일
+     * @return 서버 목록
+     */
+    private List<Server> getServersByProfile(String profile) {
+        switch (profile) {
+            case "dev":
+                return List.of(
+                    new Server()
+                        .url(stagingHttpsUrl + contextPath)
+                        .description("개발 서버 (HTTPS)"),
+                    new Server()
+                        .url(stagingHttpUrl + contextPath)
+                        .description("개발 서버 (HTTP)")
+                );
+            case "prod":
+                return List.of(
+                    new Server()
+                        .url("https://api.thatzfit.com" + contextPath)
+                        .description("운영 서버 (HTTPS)")
+                );
+            case "local":
+            default:
+                return List.of(
+                    new Server()
+                        .url(localUrl + contextPath)
+                        .description("로컬 개발 서버"),
+                    new Server()
+                        .url("http://localhost:3000" + contextPath)
+                        .description("로컬 프론트엔드 서버")
+                );
+        }
     }
 } 
