@@ -12,6 +12,11 @@ public record DefaultModelResponse(
     Long id,
     
     @Schema(description = "기본 모델 이미지 URL", example = "https://cdn.example.com/default-models/default-model-12345.jpg")
-    String imageUrl
+    String imageUrl,
     
+    @Schema(description = "모델 이름 (업로드 시 '커스텀 모델'로 설정)", example = "커스텀 모델")
+    String modelName,
+
+    @Schema(description = "정렬 순서 (자동 할당됨)", example = "3")
+    Integer sortOrder
 ) {} 

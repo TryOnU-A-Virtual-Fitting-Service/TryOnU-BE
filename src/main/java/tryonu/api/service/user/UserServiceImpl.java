@@ -21,6 +21,7 @@ import tryonu.api.dto.responses.SimpleUserResponse;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.ArrayList;
 
 /**
  * 사용자 관련 비즈니스 로직을 처리하는 서비스 구현체
@@ -56,16 +57,19 @@ public class UserServiceImpl implements UserService {
                     .build();
             user = userRepository.save(user);
 
+            // 기본 모델들을 배치로 생성하여 한 번에 저장
+            List<DefaultModel> initialModels = new ArrayList<>();
+            int initialSortOrder = 1;
             for (Gender gender : Gender.values()) {
-                DefaultModel defaultModel = defaultModelConverter.createDefaultModel(user, gender);
-                defaultModelRepository.save(defaultModel);
+                initialModels.add(defaultModelConverter.createDefaultModel(user, gender, initialSortOrder++));
             }
+            defaultModelRepository.saveAll(initialModels);
 
             
             log.info("[UserService] 새 사용자 생성 완료: userId={}, uuid={}", user.getId(), request.uuid());
         }
 
-        List<DefaultModelDto> defaultModels = defaultModelRepository.findDefaultModelsByUserIdOrderByIdDesc(user.getId());
+        List<DefaultModelDto> defaultModels = defaultModelRepository.findDefaultModelsByUserIdOrderBySortOrder(user.getId());
         List<TryOnResultDto> tryOnResults = tryOnResultRepository.findTryOnResultsByUserIdOrderByIdDesc(user.getId());
         return userConverter.toUserInfoResponse(defaultModels, tryOnResults);
     }
@@ -75,7 +79,7 @@ public class UserServiceImpl implements UserService {
     public UserInfoResponse getCurrentUserInfo() {
         // Security Filter에서 이미 인증된 사용자만 여기까지 올 수 있음
         Long currentUserId = SecurityUtils.getCurrentUserId();
-        List<DefaultModelDto> defaultModels = defaultModelRepository.findDefaultModelsByUserIdOrderByIdDesc(currentUserId);
+        List<DefaultModelDto> defaultModels = defaultModelRepository.findDefaultModelsByUserIdOrderBySortOrder(currentUserId);
         List<TryOnResultDto> tryOnResults = tryOnResultRepository.findTryOnResultsByUserIdOrderByIdDesc(currentUserId);
         return userConverter.toUserInfoResponse(defaultModels, tryOnResults);
     }

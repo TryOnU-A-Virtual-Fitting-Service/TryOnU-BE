@@ -17,17 +17,31 @@ import java.util.stream.Collectors;
 public class DefaultModelConverter {
     private final DefaultModelConfig defaultModelConfig;
 
-    public DefaultModel createDefaultModel(User user, Gender gender) {
+    public DefaultModel createDefaultModel(User user, Gender gender, Integer sortOrder) {
+        String modelName = gender == Gender.MALE ? "남자 모델" : "여자 모델";
         return DefaultModel.builder()
                 .user(user)
                 .imageUrl(defaultModelConfig.getDefaultModelUrl(gender))
+                .modelName(modelName)
+                .sortOrder(sortOrder != null ? sortOrder : 0)
                 .build();
     }
 
-    public DefaultModel createDefaultModel(User user, String imageUrl) {
+    public DefaultModel createDefaultModel(User user, String imageUrl, Integer sortOrder) {
         return DefaultModel.builder()
                 .user(user)
                 .imageUrl(imageUrl)
+                .modelName("커스텀 모델")
+                .sortOrder(sortOrder != null ? sortOrder : 0)
+                .build();
+    }
+
+    public DefaultModel createDefaultModel(User user, String imageUrl, String modelName, Integer sortOrder) {
+        return DefaultModel.builder()
+                .user(user)
+                .imageUrl(imageUrl)
+                .modelName(modelName)
+                .sortOrder(sortOrder != null ? sortOrder : 0)
                 .build();
     }
 
@@ -35,14 +49,14 @@ public class DefaultModelConverter {
      * DefaultModelResponse 생성
      */
     public DefaultModelResponse toDefaultModelResponse(DefaultModel defaultModel) {
-        return new DefaultModelResponse(defaultModel.getId(), defaultModel.getImageUrl());
+        return new DefaultModelResponse(defaultModel.getId(), defaultModel.getImageUrl(), defaultModel.getModelName(), defaultModel.getSortOrder());
     }
 
     /**
      * DefaultModelDto 생성
      */
     public DefaultModelDto toDefaultModelDto(DefaultModel defaultModel) {
-        return new DefaultModelDto(defaultModel.getId(), defaultModel.getImageUrl());
+        return new DefaultModelDto(defaultModel.getId(), defaultModel.getImageUrl(), defaultModel.getModelName(), defaultModel.getSortOrder());
     }
 
     /**

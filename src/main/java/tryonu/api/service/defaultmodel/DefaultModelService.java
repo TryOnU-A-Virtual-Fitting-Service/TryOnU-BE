@@ -1,6 +1,7 @@
 package tryonu.api.service.defaultmodel;
 
 import org.springframework.web.multipart.MultipartFile;
+import tryonu.api.dto.requests.DefaultModelBatchUpdateRequest;
 import tryonu.api.dto.responses.DefaultModelResponse;
 import tryonu.api.dto.responses.DefaultModelDto;
 
@@ -21,4 +22,11 @@ public interface DefaultModelService {
      * @return 현재 사용자의 기본 모델 목록
      */
     List<DefaultModelDto> getCurrentUserDefaultModels();
+    
+    /**
+     * 기본 모델 일괄 수정 (정렬 순서 변경, 삭제)
+     * 
+     * @param request 일괄 수정 요청
+     */
+    void batchUpdateDefaultModels(DefaultModelBatchUpdateRequest request);
 }

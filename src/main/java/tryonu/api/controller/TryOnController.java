@@ -85,7 +85,7 @@ public class TryOnController {
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = TryOnResultDto.class)))),
         @ApiResponse(responseCode = "401", description = "잘못된 X-UUID 헤더, 또는 인증되지 않은 사용자")
     })
-    @GetMapping("/results")
+    @GetMapping("/list")
     public ApiResponseWrapper<List<TryOnResultDto>> getCurrentUserTryOnResults() {
         List<TryOnResultDto> response = tryOnService.getCurrentUserTryOnResults();
         return ApiResponseWrapper.ofSuccess(response);
@@ -106,7 +106,7 @@ public class TryOnController {
                     content = @Content(schema = @Schema(implementation = UserInfoResponse.class))),
         @ApiResponse(responseCode = "401", description = "잘못된 X-UUID 헤더, 또는 인증되지 않은 사용자")
     })
-    @GetMapping("/with-default-models")
+    @GetMapping("/with-default-model/list")
     public ApiResponseWrapper<UserInfoResponse> getCurrentUserAllData() {
         UserInfoResponse response = tryOnService.getCurrentUserAllData();
         return ApiResponseWrapper.ofSuccess(response);
