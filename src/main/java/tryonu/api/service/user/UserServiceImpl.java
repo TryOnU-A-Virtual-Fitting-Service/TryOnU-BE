@@ -44,7 +44,7 @@ public class UserServiceImpl implements UserService {
         log.info("[UserService] 익명 사용자 초기화 시작: uuid={}", request.uuid());
         
         User user; 
-        // 이미 존재하는 사용자인지 확인
+        // 이미 존재하는 사용자인지 확인 (PESSIMISTIC_WRITE 락으로 동시성 제어)
         Optional<User> userOptional = userRepository.findByUuid(request.uuid());
         if (userOptional.isPresent() && !userOptional.get().getIsDeleted()) { 
             // 이미 존재하는 사용자인 경우: 기존 사용자 정보 사용
