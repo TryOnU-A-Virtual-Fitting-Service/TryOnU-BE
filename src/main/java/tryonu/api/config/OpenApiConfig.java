@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 
 import java.util.List;
 
@@ -73,16 +74,19 @@ public class OpenApiConfig {
     }
 
     /**
-     * 현재 활성화된 프로파일을 가져옵니다.
+     * 현재 활성화된 프로파일을 우선순위에 따라 가져옵니다.
+     * 우선순위: prod > staging > dev > local
      * 
      * @return 활성화된 프로파일명
      */
     private String getActiveProfile() {
-        String[] activeProfiles = environment.getActiveProfiles();
-        if (activeProfiles.length > 0) {
-            return activeProfiles[0];
+        if (environment.acceptsProfiles(Profiles.of("prod"))) {
+            return "prod";
         }
-        return "local"; // 기본값
+        if (environment.acceptsProfiles(Profiles.of("dev"))) {
+            return "dev";
+        }
+        return "local";
     }
 
     /**
