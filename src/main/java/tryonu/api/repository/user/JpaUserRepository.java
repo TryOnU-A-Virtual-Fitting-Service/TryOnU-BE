@@ -1,10 +1,8 @@
 package tryonu.api.repository.user;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Lock;
 import org.springframework.lang.NonNull;
 import tryonu.api.domain.User;
-import jakarta.persistence.LockModeType;
 
 import java.util.Optional;
 
@@ -26,8 +24,7 @@ public interface JpaUserRepository extends JpaRepository<User, Long> {
     boolean existsByUuidAndIsDeletedFalse(@NonNull String uuid);
 
     /**
-     * uuid로 사용자 조회 (동시성 제어를 위한 락 포함)
+     * uuid로 사용자 조회
      */
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<User> findByUuid(@NonNull String uuid);
 } 
