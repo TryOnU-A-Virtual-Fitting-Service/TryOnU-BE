@@ -106,7 +106,7 @@ public class TryOnController {
                     content = @Content(schema = @Schema(implementation = UserInfoResponse.class))),
         @ApiResponse(responseCode = "401", description = "잘못된 X-UUID 헤더, 또는 인증되지 않은 사용자")
     })
-    @GetMapping("/all")
+    @GetMapping("/with-default-models")
     public ApiResponseWrapper<UserInfoResponse> getCurrentUserAllData() {
         UserInfoResponse response = tryOnService.getCurrentUserAllData();
         return ApiResponseWrapper.ofSuccess(response);
