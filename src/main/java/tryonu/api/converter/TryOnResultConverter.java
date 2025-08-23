@@ -8,6 +8,7 @@ import tryonu.api.domain.TryOnResult;
 import tryonu.api.common.enums.Category;
 import tryonu.api.domain.User;
 
+
 @Component
 public class TryOnResultConverter {
 
@@ -39,8 +40,6 @@ public class TryOnResultConverter {
                 .productPageUrl(productPageUrl)
                 .build();
     }
-
-
 
     /**
      * TryOnResult 엔티티 생성 (modelUrl 직접 사용)

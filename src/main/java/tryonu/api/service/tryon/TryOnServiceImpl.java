@@ -25,8 +25,15 @@ import tryonu.api.domain.TryOnResult;
 import tryonu.api.converter.TryOnResultConverter;
 import tryonu.api.common.enums.Category;
 import tryonu.api.common.auth.SecurityUtils;
+import tryonu.api.dto.responses.TryOnResultDto;
+import tryonu.api.dto.responses.UserInfoResponse;
+import tryonu.api.repository.defaultmodel.DefaultModelRepository;
+import tryonu.api.converter.UserConverter;
+import tryonu.api.dto.responses.DefaultModelDto;
 
 import java.util.Arrays;
+import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
 
 /**
@@ -44,6 +51,8 @@ public class TryOnServiceImpl implements TryOnService {
     private final TryOnResultRepository tryOnResultRepository;
     private final ClothRepository clothRepository;
     private final TryOnResultConverter tryOnResultConverter;
+    private final DefaultModelRepository defaultModelRepository;
+    private final UserConverter userConverter;
 
 
     @Value("${virtual-fitting.polling.max-wait-time-ms:60000}")  // 기본 1분
@@ -205,5 +214,22 @@ public class TryOnServiceImpl implements TryOnService {
             log.error("[TryOnService] 카테고리가 null임 - className: {}", className);
             throw new CustomException(ErrorCode.INVALID_REQUEST, "의류 카테고리 정보가 없습니다.");
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TryOnResultDto> getCurrentUserTryOnResults() {
+        User currentUser = SecurityUtils.getCurrentUser();
+        List<TryOnResultDto> tryOnResults = tryOnResultRepository.findTryOnResultsByUserIdOrderByIdDesc(currentUser.getId());
+        return tryOnResults;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserInfoResponse getCurrentUserAllData() {
+        User currentUser = SecurityUtils.getCurrentUser();
+        List<DefaultModelDto> defaultModels = defaultModelRepository.findDefaultModelsByUserIdOrderByIdDesc(currentUser.getId());
+        List<TryOnResultDto> tryOnResults = tryOnResultRepository.findTryOnResultsByUserIdOrderByIdDesc(currentUser.getId());
+        return userConverter.toUserInfoResponse(defaultModels, tryOnResults);
     }
 } 
