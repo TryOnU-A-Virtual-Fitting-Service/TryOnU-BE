@@ -155,9 +155,8 @@ public class SecurityConfig {
             "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"
         ));
         
-        // 허용할 헤더 (프론트엔드에서 자주 사용하는 헤더들 포함)
+        // 허용할 헤더
         configuration.setAllowedHeaders(List.of(
-            "*",
             "Authorization",
             "Content-Type",
             "X-Requested-With",
