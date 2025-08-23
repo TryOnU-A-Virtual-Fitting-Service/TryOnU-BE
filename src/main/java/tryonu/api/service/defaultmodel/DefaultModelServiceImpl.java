@@ -18,6 +18,9 @@ import tryonu.api.common.util.BackgroundRemovalUtil;
 import tryonu.api.dto.responses.DefaultModelDto;
 
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -86,12 +89,13 @@ public class DefaultModelServiceImpl implements DefaultModelService {
                     String.format("사용자가 소유하지 않은 기본 모델입니다: %s", notFoundIds));
         }
         
+        // ID를 키로 하는 Map으로 변환하여 조회 성능 개선 (O(N^2) -> O(N))
+        Map<Long, DefaultModel> modelMap = existingModels.stream()
+                .collect(Collectors.toMap(DefaultModel::getId, Function.identity()));
+
         // 각 요청 항목에 대해 처리
         request.defaultModels().forEach(item -> {
-            DefaultModel model = existingModels.stream()
-                    .filter(m -> m.getId().equals(item.id()))
-                    .findFirst()
-                    .orElseThrow();
+            DefaultModel model = modelMap.get(item.id());
             
             switch (item.status()) {
                 case "UPDATE" -> {
