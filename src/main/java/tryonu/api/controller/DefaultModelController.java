@@ -9,6 +9,7 @@ import tryonu.api.service.defaultmodel.DefaultModelService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -71,7 +72,7 @@ public class DefaultModelController {
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "기본 모델 목록 조회 성공", 
-                    content = @Content(schema = @Schema(implementation = DefaultModelDto.class))),
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = DefaultModelDto.class)))),
         @ApiResponse(responseCode = "401", description = "잘못된 X-UUID 헤더, 또는 인증되지 않은 사용자")
     })
     @GetMapping("")

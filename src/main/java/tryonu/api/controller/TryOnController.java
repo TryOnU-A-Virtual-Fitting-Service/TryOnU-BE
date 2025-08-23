@@ -22,6 +22,7 @@ import tryonu.api.dto.responses.UserInfoResponse;
 import java.util.List;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 
 @Validated
 @RestController
@@ -81,7 +82,7 @@ public class TryOnController {
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "피팅 결과 목록 조회 성공", 
-                    content = @Content(schema = @Schema(implementation = TryOnResultDto.class))),
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = TryOnResultDto.class)))),
         @ApiResponse(responseCode = "401", description = "잘못된 X-UUID 헤더, 또는 인증되지 않은 사용자")
     })
     @GetMapping("/results")
@@ -105,7 +106,7 @@ public class TryOnController {
                     content = @Content(schema = @Schema(implementation = UserInfoResponse.class))),
         @ApiResponse(responseCode = "401", description = "잘못된 X-UUID 헤더, 또는 인증되지 않은 사용자")
     })
-    @GetMapping("/with-default-model")
+    @GetMapping("/all")
     public ApiResponseWrapper<UserInfoResponse> getCurrentUserAllData() {
         UserInfoResponse response = tryOnService.getCurrentUserAllData();
         return ApiResponseWrapper.ofSuccess(response);
