@@ -57,10 +57,10 @@ public class TryOnController {
     })
     @PostMapping(value = "/fitting", consumes = "multipart/form-data")
     public ApiResponseWrapper<TryOnResponse> tryOnWithImage(
-        @Parameter(description = "모델 이미지의 URL", required = true, example = "https://example.com/model.jpg") 
+        @Parameter(description = "모델 이미지의 URL", required = true, example = "https://cdn.example.com/model.jpg") 
         @RequestParam @NotBlank(message = "모델 이미지 URL은 필수입니다") @URL(message = "올바른 URL 형식이어야 합니다") String modelUrl,
         
-        @Parameter(description = "상품 상세 페이지 URL (선택)", example = "https://example.com/product/123") 
+        @Parameter(description = "상품 상세 페이지 URL (선택)", example = "https://cdn.example.com/product/123") 
         @RequestParam(required = false) @URL(message = "올바른 URL 형식이어야 합니다") String productPageUrl,
         
         @Parameter(description = "의류 이미지 파일 (10MB 이하, jpg/png/webp)", required = true) 

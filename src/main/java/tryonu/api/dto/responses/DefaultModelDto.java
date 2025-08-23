@@ -11,7 +11,7 @@ public record DefaultModelDto(
     @Schema(description = "기본 모델 ID", example = "5")
     Long defaultModelId,
     
-    @Schema(description = "기본 모델 이미지 URL", example = "https://example.com/default-model.jpg")
+    @Schema(description = "기본 모델 이미지 URL", example = "https://cdn.example.com/default-model.jpg")
     String defaultModelUrl
     
 ) {} 
