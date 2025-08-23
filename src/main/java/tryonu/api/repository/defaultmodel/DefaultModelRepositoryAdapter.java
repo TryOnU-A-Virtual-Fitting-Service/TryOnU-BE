@@ -61,10 +61,26 @@ public class DefaultModelRepositoryAdapter implements DefaultModelRepository {
         return defaultModels;
     }
     
+    /**
+     * ID 목록으로 사용자의 기본 모델들 조회
+     * 
+     * <p>빈 ID 리스트가 전달되는 경우 JPA "IN ()" 쿼리 오류를 방지하기 위해
+     * 즉시 빈 결과를 반환합니다. 또한 중복된 ID를 제거하여 정확한 결과를 보장합니다.</p>
+     * 
+     * @param ids 조회할 기본 모델 ID 목록
+     * @param userId 사용자 ID
+     * @return 해당 ID들에 해당하는 기본 모델 목록 (빈 리스트인 경우 빈 결과 반환)
+     */
     @Override
     public List<DefaultModel> findAllByIdsAndUserIdAndIsDeletedFalse(@NonNull List<Long> ids, @NonNull Long userId) {
-        List<DefaultModel> defaultModels = jpaDefaultModelRepository.findAllByIdsAndUserIdAndIsDeletedFalse(ids, userId);
-        log.debug("[DefaultModelRepositoryAdapter] ID 목록으로 기본 모델 조회 - userId: {}, ids: {}, found: {}", userId, ids, defaultModels.size());
+        if (ids.isEmpty()) {
+            log.debug("[DefaultModelRepositoryAdapter] ID 목록이 비어 있음 - userId: {}, ids: []", userId);
+            return List.of();
+        }
+        
+        List<Long> distinctIds = ids.stream().distinct().toList();
+        List<DefaultModel> defaultModels = jpaDefaultModelRepository.findAllByIdsAndUserIdAndIsDeletedFalse(distinctIds, userId);
+        log.debug("[DefaultModelRepositoryAdapter] ID 목록으로 기본 모델 조회 - userId: {}, ids: {}, found: {}", userId, distinctIds, defaultModels.size());
         return defaultModels;
     }
     

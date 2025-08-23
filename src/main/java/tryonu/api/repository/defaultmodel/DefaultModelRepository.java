@@ -35,6 +35,11 @@ public interface DefaultModelRepository {
     
     /**
      * ID 목록으로 사용자의 기본 모델들 조회
+     * 
+     * @param ids 조회할 기본 모델 ID 목록 (빈 리스트인 경우 빈 결과 반환)
+     * @param userId 사용자 ID
+     * @return 해당 ID들에 해당하는 기본 모델 목록
+     * @throws IllegalArgumentException ids가 null인 경우
      */
     List<DefaultModel> findAllByIdsAndUserIdAndIsDeletedFalse(@NonNull List<Long> ids, @NonNull Long userId);
     

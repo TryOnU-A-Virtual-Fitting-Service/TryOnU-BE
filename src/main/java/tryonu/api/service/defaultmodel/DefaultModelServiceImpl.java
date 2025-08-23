@@ -75,9 +75,13 @@ public class DefaultModelServiceImpl implements DefaultModelService {
                 .map(item -> item.id())
                 .toList();
         
+        if (requestedIds.isEmpty()) {
+            return;
+        }
+
         // 사용자 소유 및 존재하는 모델들 조회
-        List<DefaultModel> existingModels = defaultModelRepository
-                .findAllByIdsAndUserIdAndIsDeletedFalse(requestedIds, currentUserId);
+        List<DefaultModel> existingModels = defaultModelRepository.findAllByIdsAndUserIdAndIsDeletedFalse(requestedIds, currentUserId);
+
         
         // 요청된 ID와 실제 존재하는 ID 비교 (권한 확인)
         if (existingModels.size() != requestedIds.size()) {
