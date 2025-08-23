@@ -23,7 +23,7 @@ public record CompanyRequest(
     @Pattern(regexp = "^[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", message = "올바른 도메인 형식이 아닙니다.")
     String domain,
         
-    @Schema(description = "로고 이미지 CDN URL", example = "https://cdn.thatzfit.com/company/musinsa/musinsa_header.svg")
+    @Schema(description = "로고 이미지 CDN URL", example = "https://cdn.example.com/company/musinsa/musinsa_header.svg")
     @NotBlank(message = "로고 URL은 필수입니다.")
     @Size(max = 500, message = "로고 URL은 500자를 초과할 수 없습니다.")
     @Pattern(regexp = "^https?://.*", message = "올바른 URL 형식이 아닙니다.")

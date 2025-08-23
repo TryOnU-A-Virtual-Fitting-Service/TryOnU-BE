@@ -14,6 +14,9 @@ import tryonu.api.domain.User;
 import tryonu.api.common.exception.CustomException;
 import tryonu.api.common.exception.enums.ErrorCode;
 import tryonu.api.common.util.BackgroundRemovalUtil;
+import tryonu.api.dto.responses.DefaultModelDto;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -45,6 +48,14 @@ public class DefaultModelServiceImpl implements DefaultModelService {
         DefaultModel saved = defaultModelRepository.save(defaultModel);
 
         return defaultModelConverter.toDefaultModelResponse(saved);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<DefaultModelDto> getCurrentUserDefaultModels() {
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        List<DefaultModelDto> defaultModels = defaultModelRepository.findDefaultModelsByUserIdOrderByIdDesc(currentUserId);
+        return defaultModels;
     }
 
     

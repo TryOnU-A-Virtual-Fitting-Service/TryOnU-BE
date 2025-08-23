@@ -9,10 +9,10 @@ import java.util.List;
 @Schema(description = "유저 정보 조회 응답")
 public record UserInfoResponse(
 
-    @Schema(description = "기본 모델 리스트", example = "[{\"defaultModelId\": 5, \"defaultModelUrl\": \"https://example.com/default-model.jpg\"}]")
+    @Schema(description = "기본 모델 리스트", example = "[{\"defaultModelId\": 5, \"defaultModelUrl\": \"https://cdn.example.com/default-model.jpg\"}]")
     List<DefaultModelDto> defaultModels,
 
-    @Schema(description = "피팅 결과 리스트", example = "[{\"tryOnResultId\": 10, \"tryOnResultUrl\": \"https://example.com/try-on-result.jpg\"}]")
+    @Schema(description = "피팅 결과 리스트", example = "[{\"tryOnResultId\": 10, \"tryOnResultUrl\": \"https://cdn.example.com/try-on-result.jpg\"}]")
     List<TryOnResultDto> tryOnResults
     
 ) {} 
