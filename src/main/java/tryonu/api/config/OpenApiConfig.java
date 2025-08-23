@@ -33,6 +33,9 @@ public class OpenApiConfig {
     @Value("${app.swagger.servers.local:http://localhost:8080}")
     private String localUrl;
 
+    @Value("${app.swagger.servers.prod-https}")
+    private String prodHttpsUrl;
+
     private final Environment environment;
 
     public OpenApiConfig(Environment environment) {
@@ -102,7 +105,7 @@ public class OpenApiConfig {
             case "prod":
                 return List.of(
                     new Server()
-                        .url("https://api.example.com" + contextPath)
+                        .url(prodHttpsUrl + contextPath)
                         .description("운영 서버 (HTTPS)")
                 );
             case "local":
