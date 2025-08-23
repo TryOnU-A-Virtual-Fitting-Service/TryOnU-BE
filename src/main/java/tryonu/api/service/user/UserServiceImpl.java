@@ -46,10 +46,17 @@ public class UserServiceImpl implements UserService {
         User user; 
         // 이미 존재하는 사용자인지 확인 (PESSIMISTIC_WRITE 락으로 동시성 제어)
         Optional<User> userOptional = userRepository.findByUuid(request.uuid());
-        if (userOptional.isPresent() && !userOptional.get().getIsDeleted()) { 
-            // 이미 존재하는 사용자인 경우: 기존 사용자 정보 사용
+        if (userOptional.isPresent()) {
             user = userOptional.get();
-            log.info("[UserService] 기존 사용자 발견: userId={}, uuid={}", user.getId(), request.uuid());
+            if (user.getIsDeleted()) {
+                // Soft-delete된 사용자 복구
+                user.restore();
+                user = userRepository.save(user);
+                log.info("[UserService] 삭제된 사용자 복구: userId={}, uuid={}", user.getId(), request.uuid());
+            } else {
+                // 활성 사용자
+                log.info("[UserService] 기존 사용자 발견: userId={}, uuid={}", user.getId(), request.uuid());
+            }
         } else {
             // 존재하지 않는 경우: 새로운 사용자 생성
             user = User.builder()
