@@ -102,7 +102,7 @@ public class OpenApiConfig {
             case "prod":
                 return List.of(
                     new Server()
-                        .url("https://api.thatzfit.com" + contextPath)
+                        .url("https://api.example.com" + contextPath)
                         .description("운영 서버 (HTTPS)")
                 );
             case "local":

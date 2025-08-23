@@ -7,6 +7,6 @@ public record TryOnResponse(
     @Schema(description = "피팅 결과 ID", example = "1")
     Long tryOnResultId,
 
-    @Schema(description = "피팅 결과 이미지 URL", example = "https://cdn.thatzfit.com/users/models/tryonresult-1.jpg")
+    @Schema(description = "피팅 결과 이미지 URL", example = "https://cdn.example.com/users/models/tryonresult-1.jpg")
     String tryOnResultImageUrl
 ) {} 
