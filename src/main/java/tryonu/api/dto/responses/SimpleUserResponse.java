@@ -8,10 +8,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @Schema(description = "간단한 사용자 정보")
 public record SimpleUserResponse(
     
-    @Schema(description = "사용자 ID", example = "1")
-    Long userId,
-    
-    @Schema(description = "사용자 UUID", example = "550e8400-e29b-41d4-a716-446655440000")
-    String uuid
+    @Schema(description = "최근 사용한 모델 정보")
+    RecentlyUsedModel recentlyUsedModel
     
 ) {}

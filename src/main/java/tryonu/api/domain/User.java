@@ -29,10 +29,21 @@ public class User extends BaseEntity {
     @Builder.Default
     Boolean isDeleted = false;
 
+    @Column(name = "recently_used_model_url", columnDefinition = "TEXT")
+    @Setter
+    String recentlyUsedModelUrl;
+
     /**
      * 소프트 삭제된 사용자를 복구합니다.
      */
     public void restore() {
         this.isDeleted = false;
+    }
+
+    /**
+     * 최근 사용한 모델 URL을 업데이트합니다.
+     */
+    public void updateRecentlyUsedModelUrl(String modelUrl) {
+        this.recentlyUsedModelUrl = modelUrl;
     }
 }

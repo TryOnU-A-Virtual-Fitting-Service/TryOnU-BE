@@ -14,6 +14,7 @@ import tryonu.api.domain.Cloth;
 import tryonu.api.domain.User;
 import tryonu.api.repository.tryonresult.TryOnResultRepository;
 import tryonu.api.repository.cloth.ClothRepository;
+import tryonu.api.repository.user.UserRepository;
 import tryonu.api.common.util.VirtualFittingUtil;
 import tryonu.api.common.util.ImageUploadUtil;
 import tryonu.api.common.util.CategoryPredictionUtil;
@@ -50,6 +51,7 @@ public class TryOnServiceImpl implements TryOnService {
     private final CategoryPredictionUtil categoryPredictionUtil;
     private final TryOnResultRepository tryOnResultRepository;
     private final ClothRepository clothRepository;
+    private final UserRepository userRepository;
     private final TryOnResultConverter tryOnResultConverter;
     private final DefaultModelRepository defaultModelRepository;
     private final UserConverter userConverter;
@@ -115,6 +117,12 @@ public class TryOnServiceImpl implements TryOnService {
             // 피팅 결과 저장
             TryOnResult tryOnResult = tryOnResultConverter.toTryOnResultEntity(cloth, currentUser, modelUrl, resultImageUrl, virtualFittingResponse.id());
             tryOnResultRepository.save(tryOnResult);
+            
+            // 사용자의 최근 사용한 모델 URL 업데이트
+            currentUser.updateRecentlyUsedModelUrl(resultImageUrl);
+            userRepository.save(currentUser);
+            log.info("[TryOnService] 사용자 최근 사용 모델 URL 업데이트 완료 - userId={}, recentlyUsedModelUrl={}", 
+                    currentUser.getId(), resultImageUrl);
             
             // 메모리 추적 종료 (성공)
             memoryTracker.endTracking("VirtualFitting-Process", true);
