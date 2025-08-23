@@ -12,6 +12,12 @@ public record DefaultModelDto(
     Long defaultModelId,
     
     @Schema(description = "기본 모델 이미지 URL", example = "https://cdn.example.com/default-model.jpg")
-    String defaultModelUrl
+    String defaultModelUrl,
+    
+    @Schema(description = "모델 이름 (남자 모델, 여자 모델, 커스텀 모델)", example = "남자 모델")
+    String modelName,
+    
+    @Schema(description = "정렬 순서 (sortOrder 기준으로 정렬됨)", example = "1")
+    Integer sortOrder
     
 ) {} 

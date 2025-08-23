@@ -228,7 +228,7 @@ public class TryOnServiceImpl implements TryOnService {
     @Transactional(readOnly = true)
     public UserInfoResponse getCurrentUserAllData() {
         Long currentUserId = SecurityUtils.getCurrentUserId();
-        List<DefaultModelDto> defaultModels = defaultModelRepository.findDefaultModelsByUserIdOrderByIdDesc(currentUserId);
+        List<DefaultModelDto> defaultModels = defaultModelRepository.findDefaultModelsByUserIdOrderBySortOrder(currentUserId);
         List<TryOnResultDto> tryOnResults = tryOnResultRepository.findTryOnResultsByUserIdOrderByIdDesc(currentUserId);
         return userConverter.toUserInfoResponse(defaultModels, tryOnResults);
     }

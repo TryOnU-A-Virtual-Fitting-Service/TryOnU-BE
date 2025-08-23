@@ -56,16 +56,18 @@ public class UserServiceImpl implements UserService {
                     .build();
             user = userRepository.save(user);
 
+            int initialSortOrder = 1;
             for (Gender gender : Gender.values()) {
-                DefaultModel defaultModel = defaultModelConverter.createDefaultModel(user, gender);
+                DefaultModel defaultModel = defaultModelConverter.createDefaultModel(user, gender, initialSortOrder);
                 defaultModelRepository.save(defaultModel);
+                initialSortOrder++;
             }
 
             
             log.info("[UserService] 새 사용자 생성 완료: userId={}, uuid={}", user.getId(), request.uuid());
         }
 
-        List<DefaultModelDto> defaultModels = defaultModelRepository.findDefaultModelsByUserIdOrderByIdDesc(user.getId());
+        List<DefaultModelDto> defaultModels = defaultModelRepository.findDefaultModelsByUserIdOrderBySortOrder(user.getId());
         List<TryOnResultDto> tryOnResults = tryOnResultRepository.findTryOnResultsByUserIdOrderByIdDesc(user.getId());
         return userConverter.toUserInfoResponse(defaultModels, tryOnResults);
     }
@@ -75,7 +77,7 @@ public class UserServiceImpl implements UserService {
     public UserInfoResponse getCurrentUserInfo() {
         // Security Filter에서 이미 인증된 사용자만 여기까지 올 수 있음
         Long currentUserId = SecurityUtils.getCurrentUserId();
-        List<DefaultModelDto> defaultModels = defaultModelRepository.findDefaultModelsByUserIdOrderByIdDesc(currentUserId);
+        List<DefaultModelDto> defaultModels = defaultModelRepository.findDefaultModelsByUserIdOrderBySortOrder(currentUserId);
         List<TryOnResultDto> tryOnResults = tryOnResultRepository.findTryOnResultsByUserIdOrderByIdDesc(currentUserId);
         return userConverter.toUserInfoResponse(defaultModels, tryOnResults);
     }
