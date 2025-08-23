@@ -98,7 +98,7 @@ public class DefaultModelServiceImpl implements DefaultModelService {
             DefaultModel model = modelMap.get(item.id());
             
             switch (item.status()) {
-                case "UPDATE" -> {
+                case UPDATE -> {
                     // sortOrder가 null이면 기존 값 유지
                     if (item.sortOrder() != null) {
                         model.setSortOrder(item.sortOrder());
@@ -108,9 +108,7 @@ public class DefaultModelServiceImpl implements DefaultModelService {
                         model.setModelName(item.modelName());
                     }
                 }
-                case "DELETE" -> model.setIsDeleted(true);
-                default -> throw new CustomException(ErrorCode.INVALID_REQUEST, 
-                        "지원하지 않는 작업 상태입니다: " + item.status());
+                case DELETE -> model.setIsDeleted(true);
             }
         });
         

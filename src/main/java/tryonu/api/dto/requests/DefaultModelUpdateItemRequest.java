@@ -2,8 +2,8 @@ package tryonu.api.dto.requests;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
+import tryonu.api.common.enums.BatchUpdateStatus;
 
 /**
  * 개별 기본 모델 수정 요청 DTO
@@ -25,7 +25,6 @@ public record DefaultModelUpdateItemRequest(
     
     @Schema(description = "작업 상태 - UPDATE: 모델 정보 변경, DELETE: 모델 삭제", example = "UPDATE", allowableValues = {"UPDATE", "DELETE"}, requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "작업 상태는 필수입니다.")
-    @Pattern(regexp = "^(UPDATE|DELETE)$", message = "작업 상태는 UPDATE 또는 DELETE만 가능합니다.")
-    String status
+    BatchUpdateStatus status
     
 ) {}
