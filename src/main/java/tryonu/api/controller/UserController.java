@@ -21,7 +21,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
  */
 @Tag(name = "사용자 API", description = "사용자 정보 관리 관련 API")
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/user")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "X-UUID")
 public class UserController {

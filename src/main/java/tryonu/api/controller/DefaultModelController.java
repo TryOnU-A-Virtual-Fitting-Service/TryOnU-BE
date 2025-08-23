@@ -83,7 +83,7 @@ public class DefaultModelController {
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = DefaultModelDto.class)))),
         @ApiResponse(responseCode = "401", description = "잘못된 X-UUID 헤더, 또는 인증되지 않은 사용자")
     })
-    @GetMapping("")
+    @GetMapping("/list")
     public ApiResponseWrapper<List<DefaultModelDto>> getCurrentUserDefaultModels() {
         List<DefaultModelDto> response = defaultModelService.getCurrentUserDefaultModels();
         return ApiResponseWrapper.ofSuccess(response);
@@ -109,7 +109,7 @@ public class DefaultModelController {
         @ApiResponse(responseCode = "401", description = "잘못된 X-UUID 헤더, 또는 인증되지 않은 사용자"),
         @ApiResponse(responseCode = "404", description = "사용자가 소유하지 않은 기본 모델 ID 포함")
     })
-    @PatchMapping("")
+    @PatchMapping("/batch-update")
     public ResponseEntity<Void> batchUpdateDefaultModels(
             @Valid @RequestBody DefaultModelBatchUpdateRequest request
     ) {
