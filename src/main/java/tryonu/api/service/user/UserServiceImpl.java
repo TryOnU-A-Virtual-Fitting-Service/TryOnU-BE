@@ -17,6 +17,7 @@ import tryonu.api.common.enums.Gender;
 import tryonu.api.converter.DefaultModelConverter;
 import tryonu.api.common.auth.SecurityUtils;
 import tryonu.api.converter.UserConverter;
+import tryonu.api.dto.responses.SimpleUserResponse;
 
 import java.util.List;
 import java.util.Optional;
@@ -63,8 +64,10 @@ public class UserServiceImpl implements UserService {
             
             log.info("[UserService] 새 사용자 생성 완료: userId={}, uuid={}", user.getId(), request.uuid());
         }
-        
-        return buildUserInfoResponse(user.getId(), "사용자 초기화 응답 생성 완료");
+
+        List<DefaultModelDto> defaultModels = defaultModelRepository.findDefaultModelsByUserIdOrderByIdDesc(user.getId());
+        List<TryOnResultDto> tryOnResults = tryOnResultRepository.findTryOnResultsByUserIdOrderByIdDesc(user.getId());
+        return userConverter.toUserInfoResponse(defaultModels, tryOnResults);
     }
     
     @Override
@@ -72,21 +75,20 @@ public class UserServiceImpl implements UserService {
     public UserInfoResponse getCurrentUserInfo() {
         // Security Filter에서 이미 인증된 사용자만 여기까지 올 수 있음
         User currentUser = SecurityUtils.getCurrentUser();
-        log.info("[UserService] 현재 사용자 정보 조회 시작 - userId: {}, uuid: {}", currentUser.getId(), currentUser.getUuid());
-        return buildUserInfoResponse(currentUser.getId(), "사용자 정보 조회 완료");
-    }
-
-    /**
-     * userId로 모델 리스트를 조회하여 UserInfoResponse를 생성한다.
-     * @param userId 사용자 ID
-     * @param logContext 로그 메시지에 들어갈 맥락
-     * @return UserInfoResponse
-     */
-    private UserInfoResponse buildUserInfoResponse(Long userId, String logContext) {
-        List<DefaultModelDto> defaultModels = defaultModelRepository.findDefaultModelsByUserIdOrderByIdDesc(userId);
-        List<TryOnResultDto> tryOnResults = tryOnResultRepository.findTryOnResultsByUserIdOrderByIdDesc(userId);
+        List<DefaultModelDto> defaultModels = defaultModelRepository.findDefaultModelsByUserIdOrderByIdDesc(currentUser.getId());
+        List<TryOnResultDto> tryOnResults = tryOnResultRepository.findTryOnResultsByUserIdOrderByIdDesc(currentUser.getId());
         return userConverter.toUserInfoResponse(defaultModels, tryOnResults);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public SimpleUserResponse getCurrentUserSimpleInfo() {
+        // Security Filter에서 이미 인증된 사용자만 여기까지 올 수 있음
+        User currentUser = SecurityUtils.getCurrentUser();
+        return userConverter.toSimpleUserResponse(currentUser);
+    }
+
+
 
 
 }
