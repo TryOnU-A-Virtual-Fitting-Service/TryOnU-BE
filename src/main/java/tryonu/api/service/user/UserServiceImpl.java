@@ -74,9 +74,9 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public UserInfoResponse getCurrentUserInfo() {
         // Security Filter에서 이미 인증된 사용자만 여기까지 올 수 있음
-        User currentUser = SecurityUtils.getCurrentUser();
-        List<DefaultModelDto> defaultModels = defaultModelRepository.findDefaultModelsByUserIdOrderByIdDesc(currentUser.getId());
-        List<TryOnResultDto> tryOnResults = tryOnResultRepository.findTryOnResultsByUserIdOrderByIdDesc(currentUser.getId());
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        List<DefaultModelDto> defaultModels = defaultModelRepository.findDefaultModelsByUserIdOrderByIdDesc(currentUserId);
+        List<TryOnResultDto> tryOnResults = tryOnResultRepository.findTryOnResultsByUserIdOrderByIdDesc(currentUserId);
         return userConverter.toUserInfoResponse(defaultModels, tryOnResults);
     }
 

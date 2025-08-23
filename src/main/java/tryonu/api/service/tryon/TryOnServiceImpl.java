@@ -219,17 +219,17 @@ public class TryOnServiceImpl implements TryOnService {
     @Override
     @Transactional(readOnly = true)
     public List<TryOnResultDto> getCurrentUserTryOnResults() {
-        User currentUser = SecurityUtils.getCurrentUser();
-        List<TryOnResultDto> tryOnResults = tryOnResultRepository.findTryOnResultsByUserIdOrderByIdDesc(currentUser.getId());
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        List<TryOnResultDto> tryOnResults = tryOnResultRepository.findTryOnResultsByUserIdOrderByIdDesc(currentUserId);
         return tryOnResults;
     }
 
     @Override
     @Transactional(readOnly = true)
     public UserInfoResponse getCurrentUserAllData() {
-        User currentUser = SecurityUtils.getCurrentUser();
-        List<DefaultModelDto> defaultModels = defaultModelRepository.findDefaultModelsByUserIdOrderByIdDesc(currentUser.getId());
-        List<TryOnResultDto> tryOnResults = tryOnResultRepository.findTryOnResultsByUserIdOrderByIdDesc(currentUser.getId());
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        List<DefaultModelDto> defaultModels = defaultModelRepository.findDefaultModelsByUserIdOrderByIdDesc(currentUserId);
+        List<TryOnResultDto> tryOnResults = tryOnResultRepository.findTryOnResultsByUserIdOrderByIdDesc(currentUserId);
         return userConverter.toUserInfoResponse(defaultModels, tryOnResults);
     }
 } 

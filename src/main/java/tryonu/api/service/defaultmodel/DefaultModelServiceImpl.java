@@ -53,8 +53,8 @@ public class DefaultModelServiceImpl implements DefaultModelService {
     @Override
     @Transactional(readOnly = true)
     public List<DefaultModelDto> getCurrentUserDefaultModels() {
-        User currentUser = SecurityUtils.getCurrentUser();
-        List<DefaultModelDto> defaultModels = defaultModelRepository.findDefaultModelsByUserIdOrderByIdDesc(currentUser.getId());
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        List<DefaultModelDto> defaultModels = defaultModelRepository.findDefaultModelsByUserIdOrderByIdDesc(currentUserId);
         return defaultModels;
     }
 
