@@ -7,10 +7,10 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import tryonu.api.common.wrapper.ApiResponseWrapper;
 import tryonu.api.dto.requests.UserInitRequest;
-import tryonu.api.dto.responses.UserInfoResponse;
 import tryonu.api.dto.responses.SimpleUserResponse;
 import tryonu.api.service.user.UserService;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -43,14 +43,13 @@ public class UserController {
                      "피팅 결과는 id 내림차순으로 정렬되어 포함됩니다."
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "사용자 초기화 성공", 
-                    content = @Content(schema = @Schema(implementation = UserInfoResponse.class))),
+        @ApiResponse(responseCode = "201", description = "사용자 초기화 성공"),
         @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터")
     })
     @PostMapping("/init")
-    public ApiResponseWrapper<UserInfoResponse> initializeUser(@Valid @RequestBody UserInitRequest request) {
-        UserInfoResponse response = userService.initializeUser(request);
-        return ApiResponseWrapper.ofSuccess(response);
+    @ResponseStatus(HttpStatus.CREATED)
+    public void initializeUser(@Valid @RequestBody UserInitRequest request) {
+        userService.initializeUser(request);
     }
     
     /**

@@ -63,13 +63,23 @@ public class UserServiceImpl implements UserService {
             // 기본 모델들을 배치로 생성하여 한 번에 저장
             List<DefaultModel> initialModels = new ArrayList<>();
             int initialSortOrder = 1;
+            String firstModelUrl = null;
             for (Gender gender : Gender.values()) {
-                initialModels.add(defaultModelConverter.createDefaultModel(user, gender, initialSortOrder++));
+                DefaultModel model = defaultModelConverter.createDefaultModel(user, gender, initialSortOrder++);
+                initialModels.add(model);
+                // 첫 번째 모델의 URL을 저장 (sortOrder가 1인 모델)
+                if (firstModelUrl == null) {
+                    firstModelUrl = model.getImageUrl();
+                }
             }
             defaultModelRepository.saveAll(initialModels);
 
+            // 첫 번째 기본 모델의 URL로 recentlyUsedModelUrl 설정
+            user.updateRecentlyUsedModelUrl(firstModelUrl);
+            user = userRepository.save(user);
             
-            log.info("[UserService] 새 사용자 생성 완료: userId={}, uuid={}", user.getId(), request.uuid());
+            log.info("[UserService] 새 사용자 생성 완료: userId={}, uuid={}, recentlyUsedModelUrl={}", 
+                    user.getId(), request.uuid(), firstModelUrl);
         }
 
         List<DefaultModelDto> defaultModels = defaultModelRepository.findDefaultModelsByUserIdOrderBySortOrder(user.getId());
