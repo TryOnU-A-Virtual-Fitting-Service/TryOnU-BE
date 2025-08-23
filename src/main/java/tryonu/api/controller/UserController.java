@@ -39,7 +39,8 @@ public class UserController {
         description = "uuid를 사용하여 익명 사용자를 초기화합니다. " +
                      "기존 사용자가 있으면 해당 정보를 반환하고, " +
                      "없으면 새로운 사용자를 생성합니다. " +
-                     "응답에는 사용자의 기본 모델과 피팅 모델 목록이 id 내림차순으로 정렬되어 포함됩니다."
+                     "응답에는 사용자의 기본 모델이 sortOrder 오름차순, id 오름차순으로 정렬되어 포함되며, " +
+                     "피팅 결과는 id 내림차순으로 정렬되어 포함됩니다."
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "사용자 초기화 성공", 
@@ -61,7 +62,7 @@ public class UserController {
         summary = "현재 사용자 정보 조회",
         description = "X-UUID 헤더를 통해 현재 인증된 사용자의 간단한 정보를 조회합니다. " +
                      "응답에는 사용자의 ID와 UUID만 포함됩니다. " +
-                     "기본 모델과 피팅 결과가 필요한 경우 `/default-model` 또는 `/try-on/results` API를 사용하세요."
+                     "기본 모델과 피팅 결과가 필요한 경우 `/default-model` 또는 `/try-on/list` API를 사용하세요."
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "사용자 정보 조회 성공", 
