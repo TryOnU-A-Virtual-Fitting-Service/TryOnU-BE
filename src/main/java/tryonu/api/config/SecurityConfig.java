@@ -119,7 +119,7 @@ public class SecurityConfig {
 
     /**
      * CORS 설정
-     * Swagger UI에서 API 호출을 위한 CORS 정책 설정
+     * 프론트엔드에서 API 호출을 위한 CORS 정책 설정
      * 
      * @return CorsConfigurationSource CORS 설정 정보
      */
@@ -130,18 +130,52 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         
         // 허용할 오리진 설정 (설정 파일에서 주입받은 값 사용)
-        // 콤마로 구분된 문자열을 List로 변환
-        configuration.setAllowedOriginPatterns(Arrays.asList(allowedOriginPatterns.split(",")));
+        if (allowedOriginPatterns != null && !allowedOriginPatterns.trim().isEmpty()) {
+            String[] patterns = allowedOriginPatterns.split(",");
+            List<String> cleanPatterns = Arrays.stream(patterns)
+                .map(String::trim)
+                .filter(pattern -> !pattern.isEmpty())
+                .toList();
+            
+            configuration.setAllowedOriginPatterns(cleanPatterns);
+            log.info("✅ [SecurityConfig] 허용된 오리진 패턴: {}", cleanPatterns);
+        } else {
+            // 기본값 설정 (개발 환경용)
+            configuration.setAllowedOriginPatterns(List.of(
+                "http://localhost:*",
+                "https://localhost:*",
+                "http://127.0.0.1:*",
+                "https://127.0.0.1:*"
+            ));
+            log.warn("⚠️ [SecurityConfig] CORS 설정값이 없어 기본값 사용");
+        }
         
-        // 허용할 HTTP 메서드 (고유한 값들로 구성)
+        // 허용할 HTTP 메서드
         configuration.setAllowedMethods(List.of(
-            "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
+            "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"
         ));
         
         // 허용할 헤더
-        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowedHeaders(List.of(
+            "Authorization",
+            "Content-Type",
+            "X-Requested-With",
+            "Accept",
+            "Origin",
+            "Access-Control-Request-Method",
+            "Access-Control-Request-Headers",
+            "X-UUID"  // 커스텀 인증 헤더
+        ));
         
-        // 인증 정보 포함 허용
+        // 노출할 헤더
+        configuration.setExposedHeaders(List.of(
+            "Access-Control-Allow-Origin",
+            "Access-Control-Allow-Credentials",
+            "Access-Control-Allow-Methods",
+            "Access-Control-Allow-Headers"
+        ));
+        
+        // 인증 정보 포함 허용 (쿠키, Authorization 헤더 등)
         configuration.setAllowCredentials(true);
         
         // Preflight 요청 캐시 시간 (1시간)
@@ -150,7 +184,12 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         
-        log.info("✅ [SecurityConfig] CORS 설정 완료 - Swagger UI API 호출 허용");
+        log.info("✅ [SecurityConfig] CORS 설정 완료 - 프론트엔드 API 호출 허용");
+        log.info("🔍 [SecurityConfig] CORS 설정 상세: methods={}, headers={}, credentials={}, maxAge={}", 
+                configuration.getAllowedMethods(), 
+                configuration.getAllowedHeaders(), 
+                configuration.getAllowCredentials(), 
+                configuration.getMaxAge());
         
         return source;
     }
