@@ -4,19 +4,23 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.servers.Server;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.ComposedSchema;
+import io.swagger.v3.oas.models.media.MediaType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
+import org.springdoc.core.customizers.OpenApiCustomizer;
 
 import java.util.List;
 
 /**
  * OpenAPI 3.0 및 Swagger UI 설정
  * API 문서화를 위한 Swagger 설정을 관리합니다.
- * 환경별로 다른 서버 URL을 설정합니다.
+ * 환경별로 다른 서버 URL을 설정하고 ApiResponseWrapper를 자동으로 unwrapping합니다.
  */
 @Slf4j
 @Configuration
@@ -71,6 +75,70 @@ public class OpenApiConfig {
                                 .name("ThatzFit Team")
                                 .email("tryonu.team@gmail.com")))
                 .servers(servers);
+    }
+
+    /**
+     * ApiResponseWrapper를 자동으로 unwrapping하는 customizer
+     * 컨트롤러에서 @ApiResponse(schema = @Schema(implementation = T.class))로 지정한 경우
+     * 자동으로 ApiResponseWrapper<T> 구조로 변환합니다.
+     * 
+     * @return OpenApiCustomizer
+     */
+    @Bean
+    public OpenApiCustomizer unwrapResponseWrapper() {
+        return openApi -> {
+            log.info("🔧 [OpenApiConfig] ApiResponseWrapper unwrapping customizer 적용");
+            
+            // 모든 경로의 응답 스키마를 검사하여 ApiResponseWrapper 구조로 변환
+            openApi.getPaths().forEach((path, pathItem) -> {
+                pathItem.readOperations().forEach(operation -> {
+                    if (operation.getResponses() != null) {
+                        operation.getResponses().forEach((statusCode, response) -> {
+                            if (response.getContent() != null) {
+                                response.getContent().forEach((contentType, content) -> {
+                                    if (content.getSchema() != null && content.getSchema().get$ref() != null) {
+                                        // 스키마 참조가 있는 경우 ApiResponseWrapper로 래핑
+                                        wrapSchemaWithApiResponseWrapper(openApi, content);
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+        };
+    }
+
+    /**
+     * 스키마를 ApiResponseWrapper로 래핑합니다.
+     * 
+     * @param openApi OpenAPI 객체
+     * @param content MediaType 객체
+     */
+    private void wrapSchemaWithApiResponseWrapper(OpenAPI openApi, MediaType content) {
+        Schema<?> originalSchema = content.getSchema();
+        String originalRef = originalSchema.get$ref();
+        
+        if (originalRef != null && !originalRef.contains("ApiResponseWrapper")) {
+            // 원본 스키마 이름 추출
+            String schemaName = originalRef.substring(originalRef.lastIndexOf("/") + 1);
+            
+            // 새로운 래퍼 스키마 이름 생성
+            String wrapperName = schemaName + "Wrapper";
+            
+            // ComposedSchema를 사용하여 ApiResponseWrapper와 원본 스키마를 조합
+            ComposedSchema wrapperSchema = new ComposedSchema();
+            wrapperSchema.addAllOfItem(new Schema<>().$ref("#/components/schemas/ApiResponseWrapper"));
+            wrapperSchema.addAllOfItem(new Schema<>().$ref(originalRef));
+            
+            // 래퍼 스키마를 components에 추가
+            openApi.getComponents().getSchemas().put(wrapperName, wrapperSchema);
+            
+            // content의 스키마를 래퍼 스키마로 변경
+            content.setSchema(new Schema<>().$ref("#/components/schemas/" + wrapperName));
+            
+            log.debug("🔧 [OpenApiConfig] 스키마 래핑 완료: {} -> {}", schemaName, wrapperName);
+        }
     }
 
     /**
