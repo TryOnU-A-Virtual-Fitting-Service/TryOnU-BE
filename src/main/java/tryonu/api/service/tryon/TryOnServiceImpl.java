@@ -126,7 +126,7 @@ public class TryOnServiceImpl implements TryOnService {
             
             // 사용자의 최근 사용한 모델 URL과 modelName 업데이트
             currentUser.updateRecentlyUsedModelUrl(resultImageUrl);
-            currentUser.updateRecentlyUsedModelName(modelName);   
+            currentUser.updateRecentlyUsedModelName(modelName);
             userRepository.save(currentUser);
             log.info("[TryOnService] 사용자 최근 사용 모델 정보 업데이트 완료 - userId={}, recentlyUsedModelUrl={}, modelName={}", 
                     currentUser.getId(), resultImageUrl, modelName);
