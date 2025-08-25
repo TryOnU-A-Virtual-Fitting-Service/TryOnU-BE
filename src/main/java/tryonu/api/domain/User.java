@@ -33,6 +33,10 @@ public class User extends BaseEntity {
     @Setter
     String recentlyUsedModelUrl;
 
+    @Column(name = "recently_used_model_name", length = 100)
+    @Setter
+    String recentlyUsedModelName;
+
     /**
      * 소프트 삭제된 사용자를 복구합니다.
      */
@@ -45,5 +49,12 @@ public class User extends BaseEntity {
      */
     public void updateRecentlyUsedModelUrl(String modelUrl) {
         this.recentlyUsedModelUrl = modelUrl;
+    }
+
+    /**
+     * 모델 이름을 업데이트합니다.
+     */
+    public void updateRecentlyUsedModelName(String modelName) {
+        this.recentlyUsedModelName = modelName;
     }
 }
