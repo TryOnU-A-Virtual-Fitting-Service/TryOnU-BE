@@ -57,7 +57,6 @@ public class TryOnServiceImpl implements TryOnService {
     private final DefaultModelRepository defaultModelRepository;
     private final UserConverter userConverter;
 
-
     @Value("${virtual-fitting.polling.max-wait-time-ms:60000}")  // 기본 1분
     private long maxWaitTimeMs;
     
@@ -73,9 +72,6 @@ public class TryOnServiceImpl implements TryOnService {
         // 현재 인증된 사용자 조회
         User currentUser = SecurityUtils.getCurrentUser();
         
-        // defaultModelId로 기본 모델 조회하여 modelName 확인
-        DefaultModel defaultModel = defaultModelRepository.findByIdAndIsDeletedFalseOrThrow(defaultModelId);
-        String modelName = defaultModel.getModelName();
         
         
         // 전체 가상 피팅 프로세스 메모리 추적 시작
@@ -112,31 +108,35 @@ public class TryOnServiceImpl implements TryOnService {
             }
             
             String resultImageUrl = finalStatus.output().get(0);  // 첫 번째 결과 이미지
-
-            log.info("[TryOnService] 가상 피팅 성공 - modelUrl={}, resultUrl={}", modelUrl, resultImageUrl);
+            
+            // fashn.ai 결과 이미지를 다운로드하여 S3에 업로드
+            String uploadedResultImageUrl = imageUploadUtil.uploadTryOnResultImageFromUrl(resultImageUrl);
+            log.info("[TryOnService] 가상 피팅 결과 S3 업로드 완료 - originalUrl={}, s3Url={}", resultImageUrl, uploadedResultImageUrl);
 
             // 의류 저장 - 안전한 카테고리 변환
             Category category = parseCategory(categoryPredictionResponse.className());
             Cloth cloth = tryOnResultConverter.toClothEntity(clothImageUrl, productPageUrl, category);
             clothRepository.save(cloth);
 
-            // 피팅 결과 저장 (defaultModelId 포함)
-            TryOnResult tryOnResult = tryOnResultConverter.toTryOnResultEntity(cloth, currentUser, modelUrl, resultImageUrl, virtualFittingResponse.id(), defaultModelId);
+            // 피팅 결과 저장 (defaultModelId 포함, S3 URL 사용)
+            TryOnResult tryOnResult = tryOnResultConverter.toTryOnResultEntity(cloth, currentUser, modelUrl, uploadedResultImageUrl, virtualFittingResponse.id(), defaultModelId);
             tryOnResultRepository.save(tryOnResult);
             
-            // 사용자의 최근 사용한 모델 URL과 modelName 업데이트
-            currentUser.updateRecentlyUsedModelUrl(resultImageUrl);
-            currentUser.updateRecentlyUsedModelName(modelName);   
+            // 사용자의 최근 사용한 모델 URL과 modelName 업데이트 (S3 URL 사용)
+            DefaultModel defaultModel = defaultModelRepository.findByIdAndIsDeletedFalseOrThrow(defaultModelId);
+            currentUser.updateRecentlyUsedModelUrl(uploadedResultImageUrl);
+            currentUser.updateRecentlyUsedModelName(defaultModel.getModelName());   
+
             userRepository.save(currentUser);
             log.info("[TryOnService] 사용자 최근 사용 모델 정보 업데이트 완료 - userId={}, recentlyUsedModelUrl={}, modelName={}", 
-                    currentUser.getId(), resultImageUrl, modelName);
+                    currentUser.getId(), uploadedResultImageUrl, defaultModel.getModelName());
             
             // 메모리 추적 종료 (성공)
             memoryTracker.endTracking("VirtualFitting-Process", true);
             memoryTracker.logCurrentMemoryStatus("가상 피팅 프로세스 완료");
             
-            return tryOnResultConverter.toTryOnResponse(tryOnResult, modelName);
-        } else {
+            return tryOnResultConverter.toTryOnResponse(tryOnResult, defaultModel.getModelName());    
+        } else {    
             // 메모리 추적 종료 (실패)
             memoryTracker.endTracking("VirtualFitting-Process", false);
             
