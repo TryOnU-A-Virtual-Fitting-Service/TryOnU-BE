@@ -16,11 +16,12 @@ public interface TryOnService {
      * 가상 피팅 실행
      *
      * @param modelUrl 모델 이미지 URL
+     * @param modelName 모델 이름
      * @param productPageUrl 상품 페이지 URL
      * @param file 의류 이미지 파일
      * @return 가상 피팅 결과
      */
-    TryOnResponse tryOn(String modelUrl, String productPageUrl, MultipartFile file);
+    TryOnResponse tryOn(String modelUrl, String modelName, String productPageUrl, MultipartFile file);
 
     /**
      * 현재 사용자의 피팅 결과 목록 조회

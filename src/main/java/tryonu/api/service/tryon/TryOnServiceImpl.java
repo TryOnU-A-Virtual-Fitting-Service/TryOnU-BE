@@ -66,8 +66,8 @@ public class TryOnServiceImpl implements TryOnService {
     
 
     @Override
-    public TryOnResponse tryOn(String modelUrl, String productPageUrl, MultipartFile file) {
-        log.info("[TryOnService] 가상 피팅 시작 - modelUrl={}", modelUrl);
+    public TryOnResponse tryOn(String modelUrl, String modelName, String productPageUrl, MultipartFile file) {
+        log.info("[TryOnService] 가상 피팅 시작 - modelUrl={}, modelName={}", modelUrl, modelName);
         
         // 전체 가상 피팅 프로세스 메모리 추적 시작
         String fileSizeStr = String.format("%.1fMB", file.getSize() / 1024.0 / 1024.0);
@@ -118,11 +118,12 @@ public class TryOnServiceImpl implements TryOnService {
             TryOnResult tryOnResult = tryOnResultConverter.toTryOnResultEntity(cloth, currentUser, modelUrl, resultImageUrl, virtualFittingResponse.id());
             tryOnResultRepository.save(tryOnResult);
             
-            // 사용자의 최근 사용한 모델 URL 업데이트
+            // 사용자의 최근 사용한 모델 URL과 modelName 업데이트
             currentUser.updateRecentlyUsedModelUrl(resultImageUrl);
+            currentUser.updateRecentlyUsedModelName(modelName);   
             userRepository.save(currentUser);
-            log.info("[TryOnService] 사용자 최근 사용 모델 URL 업데이트 완료 - userId={}, recentlyUsedModelUrl={}", 
-                    currentUser.getId(), resultImageUrl);
+            log.info("[TryOnService] 사용자 최근 사용 모델 정보 업데이트 완료 - userId={}, recentlyUsedModelUrl={}, modelName={}", 
+                    currentUser.getId(), resultImageUrl, modelName);
             
             // 메모리 추적 종료 (성공)
             memoryTracker.endTracking("VirtualFitting-Process", true);
