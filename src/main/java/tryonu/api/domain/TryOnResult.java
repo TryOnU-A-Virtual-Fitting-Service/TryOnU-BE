@@ -24,6 +24,9 @@ public class TryOnResult extends BaseEntity {
     @Column(name = "model_url", nullable = false)
     String modelUrl;
 
+    @Column(name = "default_model_id", nullable = true)
+    Long defaultModelId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cloth_id", nullable = true)
     Cloth cloth;

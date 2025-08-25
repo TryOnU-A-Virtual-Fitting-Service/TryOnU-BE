@@ -56,9 +56,36 @@ public class TryOnResultConverter {
     }
 
     /**
-     * TryOnResponse 생성
+     * TryOnResult 엔티티 생성 (defaultModelId 포함)
+     */
+    public TryOnResult toTryOnResultEntity(Cloth cloth, User user, String modelUrl, String resultImageUrl, String virtualFittingId, Long defaultModelId) {
+        return TryOnResult.builder()
+                .user(user)
+                .cloth(cloth)
+                .modelUrl(modelUrl)
+                .imageUrl(resultImageUrl)
+                .virtualFittingId(virtualFittingId)
+                .defaultModelId(defaultModelId)
+                .sizeAdvice(null)
+                .build();
+    }
+
+    /**
+     * TryOnResponse 생성 (구버전 호환용 - defaultModelId, modelName null)
      */
     public TryOnResponse toTryOnResponse(TryOnResult tryOnResult) {
-        return new TryOnResponse(tryOnResult.getId(), tryOnResult.getImageUrl());
+        return new TryOnResponse(tryOnResult.getId(), tryOnResult.getImageUrl(), null, null);
+    }
+
+    /**
+     * TryOnResponse 생성 (defaultModelId, modelName 포함)
+     */
+    public TryOnResponse toTryOnResponse(TryOnResult tryOnResult, String modelName) {
+        return new TryOnResponse(
+            tryOnResult.getId(), 
+            tryOnResult.getImageUrl(),
+            tryOnResult.getDefaultModelId(),
+            modelName
+        );
     }
 } 

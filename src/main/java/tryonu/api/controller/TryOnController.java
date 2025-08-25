@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.URL;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
@@ -36,8 +37,8 @@ public class TryOnController {
     /**
      * 가상 피팅 실행
      * 
-     * @param modelUrl 모델 이미지의 URL
-     * @param modelName 모델 이름
+     * @param modelUrl 모델 이미지 URL
+     * @param defaultModelId 기본 모델 ID
      * @param productPageUrl 상품 상세 페이지 URL (선택)
      * @param file 의류 이미지 파일
      * @return 가상 피팅 결과
@@ -45,11 +46,11 @@ public class TryOnController {
     @Operation(
         summary = "가상 피팅 실행", 
         description = "의류 이미지와 모델 정보를 받아 가상 피팅을 실행합니다.\n\n" +
-                     "- modelUrl: 모델 이미지의 URL (쿼리 파라미터)\n" +
-                     "- modelName: 모델 이름 (쿼리 파라미터)\n" +
+                     "- modelUrl: 모델 이미지 URL (쿼리 파라미터)\n" +
+                     "- defaultModelId: 기본 모델 ID (쿼리 파라미터)\n" +
                      "- productPageUrl: 상품 상세 페이지 URL (쿼리 파라미터, 선택)\n" +
                      "- file: 의류 이미지 파일 (multipart/form-data)\n" +
-                     "\n파일 업로드 API에서 메타데이터(모델URL, 모델명, 상품URL 등)는 쿼리 파라미터로, 이미지는 file 파트로 분리."
+                     "\n파라미터는 쿼리로, 이미지는 파일로 분리하여 전송합니다."
     )
     @ApiResponses({ 
         @ApiResponse(responseCode = "200", description = "가상 피팅 성공", 
@@ -59,19 +60,19 @@ public class TryOnController {
     })
     @PostMapping(value = "/fitting", consumes = "multipart/form-data")
     public ApiResponseWrapper<TryOnResponse> tryOnWithImage(
-        @Parameter(description = "모델 이미지의 URL", required = true, example = "https://cdn.example.com/model.jpg") 
+        @Parameter(description = "모델 이미지 URL", required = true, example = "https://cdn.example.com/model.jpg") 
         @RequestParam @NotBlank(message = "모델 이미지 URL은 필수입니다") @URL(message = "올바른 URL 형식이어야 합니다") String modelUrl,
         
-        @Parameter(description = "모델 이름", required = true, example = "슬림 한국인 남성") 
-        @RequestParam @NotBlank(message = "모델 이름은 필수입니다") String modelName,
+        @Parameter(description = "기본 모델 ID", required = true, example = "5") 
+        @RequestParam @NotNull(message = "기본 모델 ID는 필수입니다") Long defaultModelId,
         
-        @Parameter(description = "상품 상세 페이지 URL", required = true, example = "https://cdn.example.com/product/123") 
+        @Parameter(description = "상품 상세 페이지 URL (선택)", example = "https://cdn.example.com/product/123") 
         @RequestParam(required = false) @URL(message = "올바른 URL 형식이어야 합니다") String productPageUrl,
         
-        @Parameter(description = "의류 이미지 파일 (10MB 이하, jpg/png/webp)", required = true) 
+        @Parameter(description = "의류 이미지 파일 (10MB 이하, jpg/png/jpeg)", required = true) 
         @RequestParam("file") @NotEmptyFile MultipartFile file
     ) {
-        TryOnResponse response = tryOnService.tryOn(modelUrl, modelName, productPageUrl, file);
+        TryOnResponse response = tryOnService.tryOn(modelUrl, defaultModelId, productPageUrl, file);
         return ApiResponseWrapper.ofSuccess(response);
     }
 

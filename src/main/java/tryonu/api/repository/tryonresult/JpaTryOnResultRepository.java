@@ -45,8 +45,10 @@ public interface JpaTryOnResultRepository extends JpaRepository<TryOnResult, Lon
     /**
      * 사용자별 피팅 결과 조회 (id 내림차순 정렬) - JPQL 최적화
      */
-    @Query("SELECT new tryonu.api.dto.responses.TryOnResultDto(tr.id, tr.imageUrl) " +
+    @Query("SELECT new tryonu.api.dto.responses.TryOnResultDto(tr.id, tr.imageUrl, tr.defaultModelId, " +
+           "CASE WHEN dm.modelName IS NOT NULL THEN dm.modelName ELSE '커스텀 모델' END) " +
            "FROM TryOnResult tr " +
+           "LEFT JOIN DefaultModel dm ON tr.defaultModelId = dm.id AND dm.isDeleted = false " +
            "WHERE tr.user.id = :userId AND tr.isDeleted = false " +
            "ORDER BY tr.id DESC")
     List<TryOnResultDto> findTryOnResultsByUserIdOrderByIdDesc(@Param("userId") Long userId);
