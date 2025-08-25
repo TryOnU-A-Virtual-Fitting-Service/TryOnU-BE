@@ -122,17 +122,12 @@ public class TryOnServiceImpl implements TryOnService {
             TryOnResult tryOnResult = tryOnResultConverter.toTryOnResultEntity(cloth, currentUser, modelUrl, uploadedResultImageUrl, virtualFittingResponse.id(), defaultModelId);
             tryOnResultRepository.save(tryOnResult);
             
-<<<<<<< HEAD
             // 사용자의 최근 사용한 모델 URL과 modelName 업데이트 (S3 URL 사용)
             DefaultModel defaultModel = defaultModelRepository.findByIdAndIsDeletedFalseOrThrow(defaultModelId);
             currentUser.updateRecentlyUsedModelUrl(uploadedResultImageUrl);
             currentUser.updateRecentlyUsedModelName(defaultModel.getModelName());   
 
-=======
-            // 사용자의 최근 사용한 모델 URL과 modelName 업데이트
-            currentUser.updateRecentlyUsedModelUrl(resultImageUrl);
-            currentUser.updateRecentlyUsedModelName(modelName);
->>>>>>> 59ea5d7fa344c751b55d1c7729df9daa9066c521
+
             userRepository.save(currentUser);
             log.info("[TryOnService] 사용자 최근 사용 모델 정보 업데이트 완료 - userId={}, recentlyUsedModelUrl={}, modelName={}", 
                     currentUser.getId(), uploadedResultImageUrl, defaultModel.getModelName());
