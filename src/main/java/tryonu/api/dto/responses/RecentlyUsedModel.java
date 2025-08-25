@@ -12,6 +12,9 @@ public record RecentlyUsedModel(
     String modelUrl,
     
     @Schema(description = "이미지 파일명", example = "slim-korean-male.png")
-    String imageName
+    String imageName,
+    
+    @Schema(description = "모델 이름", example = "커스텀 모델")
+    String modelName
     
 ) {}
