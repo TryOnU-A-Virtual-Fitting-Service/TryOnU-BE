@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.reactive.function.client.WebClient;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
@@ -29,6 +30,7 @@ import tryonu.api.common.exception.enums.ErrorCode;
 public class ImageUploadUtil {
     private final S3Client s3Client;
     private final MemoryTracker memoryTracker;
+    private final WebClient imageDownloadWebClient;
 
     @Value("${aws.s3.bucket-name}")
     private String bucketName;
@@ -200,6 +202,52 @@ public class ImageUploadUtil {
     }
     public String uploadTryOnResultImage(byte[] image) {
         return uploadToS3(image, tryonResultFolder, "image/png");
+    }
+
+    /**
+     * URL에서 트라이온 결과 이미지를 다운로드하여 S3에 업로드합니다.
+     */
+    public String uploadTryOnResultImageFromUrl(String imageUrl) {
+        log.info("[ImageUploadUtil] URL에서 이미지 다운로드 시작 - url={}", imageUrl);
+        
+        // 메모리 추적 시작
+        memoryTracker.startTracking("ImageDownload-S3Upload", imageUrl);
+        memoryTracker.logCurrentMemoryStatus("이미지 다운로드 시작");
+        
+        try {
+            // WebClient로 이미지 다운로드
+            byte[] imageBytes = imageDownloadWebClient
+                    .get()
+                    .uri(imageUrl)
+                    .retrieve()
+                    .bodyToMono(byte[].class)
+                    .block(); // 동기 방식으로 처리
+            
+            if (imageBytes == null || imageBytes.length == 0) {
+                throw new CustomException(ErrorCode.VIRTUAL_FITTING_FAILED, "이미지 다운로드에 실패했습니다.");
+            }
+            
+            log.info("[ImageUploadUtil] 이미지 다운로드 완료 - size={}KB", imageBytes.length / 1024);
+            
+            // 다운로드된 이미지를 S3에 업로드
+            String s3Url = uploadTryOnResultImage(imageBytes);
+            
+            log.info("[ImageUploadUtil] 이미지 다운로드 및 S3 업로드 완료 - originalUrl={}, s3Url={}", imageUrl, s3Url);
+            
+            // 메모리 추적 종료 (성공)
+            memoryTracker.endTracking("ImageDownload-S3Upload", true);
+            memoryTracker.logCurrentMemoryStatus("이미지 다운로드 및 업로드 완료");
+            
+            return s3Url;
+            
+        } catch (Exception e) {
+            log.error("[ImageUploadUtil] 이미지 다운로드 및 업로드 실패 - url={}, error={}", imageUrl, e.getMessage(), e);
+            
+            // 메모리 추적 종료 (실패)
+            memoryTracker.endTracking("ImageDownload-S3Upload", false);
+            
+            throw new CustomException(ErrorCode.VIRTUAL_FITTING_FAILED, "이미지 다운로드 및 업로드에 실패했습니다: " + e.getMessage());
+        }
     }
 
     /**
