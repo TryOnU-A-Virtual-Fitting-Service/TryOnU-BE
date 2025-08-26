@@ -11,6 +11,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 import tryonu.api.common.exception.enums.ErrorCode;
 import org.springframework.core.io.buffer.DataBufferLimitException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -128,6 +129,19 @@ public class GlobalExceptionHandler {
         );
         apiErrorPublisher.publishWithThrowable(request, HttpStatus.INTERNAL_SERVER_ERROR.value(), ErrorCode.UNEXPECTED_ERROR.getCode(), e.getMessage(), e);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+    }
+
+    /**
+     * JSON 파싱 실패 등 요청 본문을 읽을 수 없는 경우 처리
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiResponseWrapper<Void>> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex, HttpServletRequest request) {
+        String message = "요청 본문을 파싱할 수 없습니다. JSON 형식을 확인해 주세요.";
+        log.warn("✋ [GlobalExceptionHandler] 메시지 변환 실패 - {}", ex.getMostSpecificCause() != null ? ex.getMostSpecificCause().getMessage() : ex.getMessage());
+        apiErrorPublisher.publishWithThrowable(request, HttpStatus.BAD_REQUEST.value(), ErrorCode.INVALID_REQUEST.getCode(), message, ex);
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ApiResponseWrapper.ofFailure(ErrorCode.INVALID_REQUEST.getCode(), message));
     }
 
     /**
