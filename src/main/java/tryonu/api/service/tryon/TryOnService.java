@@ -1,6 +1,7 @@
 package tryonu.api.service.tryon;
 
 import org.springframework.web.multipart.MultipartFile;
+import tryonu.api.dto.requests.TryOnRequestDto;
 import tryonu.api.dto.responses.TryOnResponse;
 import tryonu.api.dto.responses.TryOnResultDto;
 import tryonu.api.dto.responses.UserInfoResponse;
@@ -15,13 +16,11 @@ public interface TryOnService {
     /**
      * 가상 피팅 실행
      *
-     * @param modelUrl 모델 이미지 URL
-     * @param defaultModelId 기본 모델 ID
-     * @param productPageUrl 상품 페이지 URL
+     * @param request 가상 피팅 요청 정보 (모델 URL, 기본 모델 ID, 상품 페이지 URL)
      * @param file 의류 이미지 파일
      * @return 가상 피팅 결과
      */
-    TryOnResponse tryOn(String modelUrl, Long defaultModelId, String productPageUrl, MultipartFile file);
+    TryOnResponse tryOn(TryOnRequestDto request, MultipartFile file);
 
     /**
      * 현재 사용자의 피팅 결과 목록 조회

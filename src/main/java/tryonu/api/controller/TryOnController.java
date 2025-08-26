@@ -6,9 +6,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import org.hibernate.validator.constraints.URL;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +17,8 @@ import tryonu.api.dto.responses.TryOnResultDto;
 import tryonu.api.service.tryon.TryOnService;
 import tryonu.api.common.validation.NotEmptyFile;
 import tryonu.api.dto.responses.UserInfoResponse;
+import tryonu.api.dto.requests.TryOnRequestDto;
+import jakarta.validation.Valid;
 
 import java.util.List;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -37,20 +37,19 @@ public class TryOnController {
     /**
      * 가상 피팅 실행
      * 
-     * @param modelUrl 모델 이미지 URL
-     * @param defaultModelId 기본 모델 ID
-     * @param productPageUrl 상품 상세 페이지 URL (선택)
+     * @param request 가상 피팅 요청 정보 (JSON)
      * @param file 의류 이미지 파일
      * @return 가상 피팅 결과
      */
     @Operation(
         summary = "가상 피팅 실행", 
         description = "의류 이미지와 모델 정보를 받아 가상 피팅을 실행합니다.\n\n" +
-                     "- modelUrl: 모델 이미지 URL (쿼리 파라미터)\n" +
-                     "- defaultModelId: 기본 모델 ID (쿼리 파라미터)\n" +
-                     "- productPageUrl: 상품 상세 페이지 URL (쿼리 파라미터, 선택)\n" +
+                     "- request: 가상 피팅 요청 정보 (JSON part)\n" +
+                     "  - modelUrl: 모델 이미지 URL\n" +
+                     "  - defaultModelId: 기본 모델 ID\n" +
+                     "  - productPageUrl: 상품 상세 페이지 URL (선택)\n" +
                      "- file: 의류 이미지 파일 (multipart/form-data)\n" +
-                     "\n파라미터는 쿼리로, 이미지는 파일로 분리하여 전송합니다."
+                     "\nJSON 데이터와 파일을 multipart/form-data로 함께 전송합니다."
     )
     @ApiResponses({ 
         @ApiResponse(responseCode = "200", description = "가상 피팅 성공", 
@@ -60,19 +59,13 @@ public class TryOnController {
     })
     @PostMapping(value = "/fitting", consumes = "multipart/form-data")
     public ApiResponseWrapper<TryOnResponse> tryOnWithImage(
-        @Parameter(description = "모델 이미지 URL", required = true, example = "https://cdn.example.com/model.jpg") 
-        @RequestParam @NotBlank(message = "모델 이미지 URL은 필수입니다") @URL(message = "올바른 URL 형식이어야 합니다") String modelUrl,
-        
-        @Parameter(description = "기본 모델 ID", required = true, example = "5") 
-        @RequestParam @NotNull(message = "기본 모델 ID는 필수입니다") Long defaultModelId,
-        
-        @Parameter(description = "상품 상세 페이지 URL (선택)", example = "https://cdn.example.com/product/123") 
-        @RequestParam(required = false) @URL(message = "올바른 URL 형식이어야 합니다") String productPageUrl,
+        @Parameter(description = "가상 피팅 요청 정보 (JSON)", required = true) 
+        @RequestPart(value = "request") @Valid TryOnRequestDto request,
         
         @Parameter(description = "의류 이미지 파일 (10MB 이하, jpg/png/jpeg)", required = true) 
-        @RequestParam("file") @NotEmptyFile MultipartFile file
+        @RequestPart("file") @NotEmptyFile MultipartFile file
     ) {
-        TryOnResponse response = tryOnService.tryOn(modelUrl, defaultModelId, productPageUrl, file);
+        TryOnResponse response = tryOnService.tryOn(request, file);
         return ApiResponseWrapper.ofSuccess(response);
     }
 

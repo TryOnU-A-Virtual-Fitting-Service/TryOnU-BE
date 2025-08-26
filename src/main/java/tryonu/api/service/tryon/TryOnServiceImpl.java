@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import tryonu.api.dto.requests.TryOnRequestDto;
 import tryonu.api.dto.requests.VirtualFittingRequest;
 import tryonu.api.dto.responses.TryOnResponse;
 import tryonu.api.dto.responses.VirtualFittingResponse;
@@ -66,7 +67,12 @@ public class TryOnServiceImpl implements TryOnService {
     
 
     @Override
-    public TryOnResponse tryOn(String modelUrl, Long defaultModelId, String productPageUrl, MultipartFile file) {
+    public TryOnResponse tryOn(TryOnRequestDto request, MultipartFile file) {
+        // DTO에서 개별 필드 추출
+        String modelUrl = request.modelUrl();
+        Long defaultModelId = request.defaultModelId();
+        String productPageUrl = request.productPageUrl();
+        
         log.info("[TryOnService] 가상 피팅 시작 - modelUrl={}, defaultModelId={}, productPageUrl={}", modelUrl, defaultModelId, productPageUrl);
         
         // 현재 인증된 사용자 조회
