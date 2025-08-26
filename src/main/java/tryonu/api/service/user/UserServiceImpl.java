@@ -24,6 +24,7 @@ import tryonu.api.dto.responses.SimpleUserResponse;
 import java.util.List;
 import java.util.Optional;
 import java.util.ArrayList;
+import org.springframework.dao.DataIntegrityViolationException;
 
 /**
  * 사용자 관련 비즈니스 로직을 처리하는 서비스 구현체
@@ -54,35 +55,42 @@ public class UserServiceImpl implements UserService {
             user = userOptional.get();
             log.info("[UserService] 기존 사용자 발견: userId={}, uuid={}", user.getId(), request.uuid());
         } else {
-            // 존재하지 않는 경우: 새로운 사용자 생성
-            user = User.builder()
-                    .uuid(request.uuid())
-                    .build();
-            user = userRepository.save(user);
+            // 존재하지 않는 경우: 새로운 사용자 생성 (동시성 중복 생성은 안전하게 복구)
+            try {
+                user = User.builder()
+                        .uuid(request.uuid())
+                        .build();
+                user = userRepository.save(user);
 
-            // 기본 모델들을 배치로 생성하여 한 번에 저장
-            List<DefaultModel> initialModels = new ArrayList<>();
-            int initialSortOrder = 1;
-            String firstModelUrl = null;
-            String firstModelName = null;
-            for (Gender gender : Gender.values()) {
-                DefaultModel model = defaultModelConverter.createDefaultModel(user, gender, initialSortOrder++);
-                initialModels.add(model);
-                // 첫 번째 모델의 URL과 이름을 저장 (sortOrder가 1인 모델)
-                if (firstModelUrl == null) {
-                    firstModelUrl = model.getImageUrl();
-                    firstModelName = model.getModelName();
+                // 기본 모델들을 배치로 생성하여 한 번에 저장
+                List<DefaultModel> initialModels = new ArrayList<>();
+                int initialSortOrder = 1;
+                String firstModelUrl = null;
+                String firstModelName = null;
+                for (Gender gender : Gender.values()) {
+                    DefaultModel model = defaultModelConverter.createDefaultModel(user, gender, initialSortOrder++);
+                    initialModels.add(model);
+                    // 첫 번째 모델의 URL과 이름을 저장 (sortOrder가 1인 모델)
+                    if (firstModelUrl == null) {
+                        firstModelUrl = model.getImageUrl();
+                        firstModelName = model.getModelName();
+                    }
                 }
-            }
-            defaultModelRepository.saveAll(initialModels);
+                defaultModelRepository.saveAll(initialModels);
 
-            // 첫 번째 기본 모델의 URL과 modelName 설정
-            user.updateRecentlyUsedModelUrl(firstModelUrl);
-            user.updateRecentlyUsedModelName(firstModelName);
-            user = userRepository.save(user);
-            
-            log.info("[UserService] 새 사용자 생성 완료: userId={}, uuid={}, recentlyUsedModelUrl={}, modelName={}", 
-                    user.getId(), request.uuid(), firstModelUrl, firstModelName);
+                // 첫 번째 기본 모델의 URL과 modelName 설정
+                user.updateRecentlyUsedModelUrl(firstModelUrl);
+                user.updateRecentlyUsedModelName(firstModelName);
+                user = userRepository.save(user);
+                
+                log.info("[UserService] 새 사용자 생성 완료: userId={}, uuid={}, recentlyUsedModelUrl={}, modelName={}", 
+                        user.getId(), request.uuid(), firstModelUrl, firstModelName);
+            } catch (DataIntegrityViolationException e) {
+                // 동시성에 의한 UUID 유니크 제약 위반 → 기존 사용자 조회 후 사용 (idempotent)
+                log.warn("[UserService] 동시성으로 인한 중복 사용자 생성 감지 - uuid={} : 기존 사용자로 대체", request.uuid());
+                user = userRepository.findByUuid(request.uuid())
+                        .orElseThrow(() -> e);
+            }
         }
 
         List<DefaultModelDto> defaultModels = defaultModelRepository.findDefaultModelsByUserIdOrderBySortOrder(user.getId());
