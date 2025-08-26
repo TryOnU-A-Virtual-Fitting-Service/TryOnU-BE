@@ -17,6 +17,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import tryonu.api.common.event.ApiErrorPublisher;
 import jakarta.validation.ConstraintViolationException;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.Map;
 
@@ -112,6 +113,21 @@ public class GlobalExceptionHandler {
         );
         apiErrorPublisher.publishWithThrowable(request, HttpStatus.SERVICE_UNAVAILABLE.value(), ErrorCode.OUT_OF_MEMORY_ERROR.getCode(), e.getMessage(), e);
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(response);
+    }
+
+    /**
+     * 데이터 무결성 제약 위반 (예: Unique Key 중복)
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponseWrapper<Void>> handleDataIntegrityViolationException(DataIntegrityViolationException ex, HttpServletRequest request) {
+        String message = "데이터 무결성 제약 위반: 중복되었거나 올바르지 않은 값입니다.";
+        log.warn("🔐 [GlobalExceptionHandler] DataIntegrityViolationException - {}", ex.getMostSpecificCause() != null ? ex.getMostSpecificCause().getMessage() : ex.getMessage());
+        // 중복 키 등은 409로 응답
+        HttpStatus status = HttpStatus.CONFLICT;
+        apiErrorPublisher.publishWithThrowable(request, status.value(), ErrorCode.USER_ALREADY_EXISTS.getCode(), message, ex);
+        return ResponseEntity
+            .status(status)
+            .body(ApiResponseWrapper.ofFailure(ErrorCode.USER_ALREADY_EXISTS.getCode(), message));
     }
 
     /**
