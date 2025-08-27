@@ -18,6 +18,9 @@ public record DefaultModelDto(
     String modelName,
     
     @Schema(description = "정렬 순서 (sortOrder 기준으로 정렬됨)", example = "1")
-    Integer sortOrder
+    Integer sortOrder,
+    
+    @Schema(description = "커스텀 모델 여부 (true: 사용자 업로드 모델, false: 기본 제공 모델)", example = "false")
+    Boolean isCustom
     
 ) {} 

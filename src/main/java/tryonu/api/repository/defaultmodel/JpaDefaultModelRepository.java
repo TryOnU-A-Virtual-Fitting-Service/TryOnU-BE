@@ -26,7 +26,7 @@ public interface JpaDefaultModelRepository extends JpaRepository<DefaultModel, L
     /**
      * 사용자별 기본 모델 조회 (sortOrder 오름차순, id 오름차순 정렬) - JPQL 최적화
      */
-    @Query("SELECT new tryonu.api.dto.responses.DefaultModelDto(dm.id, dm.imageUrl, dm.modelName, dm.sortOrder) " +
+    @Query("SELECT new tryonu.api.dto.responses.DefaultModelDto(dm.id, dm.imageUrl, dm.modelName, dm.sortOrder, dm.isCustom) " +
            "FROM DefaultModel dm " +
            "WHERE dm.user.id = :userId AND dm.isDeleted = false " +
            "ORDER BY dm.sortOrder ASC, dm.id ASC")
