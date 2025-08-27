@@ -24,6 +24,7 @@ public class DefaultModelConverter {
                 .imageUrl(defaultModelConfig.getDefaultModelUrl(gender))
                 .modelName(modelName)
                 .sortOrder(sortOrder != null ? sortOrder : 0)
+                .isCustom(false)  // 기본 제공 모델
                 .build();
     }
 
@@ -33,6 +34,7 @@ public class DefaultModelConverter {
                 .imageUrl(imageUrl)
                 .modelName("커스텀 모델")
                 .sortOrder(sortOrder != null ? sortOrder : 0)
+                .isCustom(true)  // 사용자 업로드 모델
                 .build();
     }
 
@@ -42,6 +44,7 @@ public class DefaultModelConverter {
                 .imageUrl(imageUrl)
                 .modelName(modelName)
                 .sortOrder(sortOrder != null ? sortOrder : 0)
+                .isCustom(true)  // 사용자 업로드 모델
                 .build();
     }
 
@@ -49,14 +52,14 @@ public class DefaultModelConverter {
      * DefaultModelResponse 생성
      */
     public DefaultModelResponse toDefaultModelResponse(DefaultModel defaultModel) {
-        return new DefaultModelResponse(defaultModel.getId(), defaultModel.getImageUrl(), defaultModel.getModelName(), defaultModel.getSortOrder());
+        return new DefaultModelResponse(defaultModel.getId(), defaultModel.getImageUrl(), defaultModel.getModelName(), defaultModel.getSortOrder(), defaultModel.getIsCustom());
     }
 
     /**
      * DefaultModelDto 생성
      */
     public DefaultModelDto toDefaultModelDto(DefaultModel defaultModel) {
-        return new DefaultModelDto(defaultModel.getId(), defaultModel.getImageUrl(), defaultModel.getModelName(), defaultModel.getSortOrder());
+        return new DefaultModelDto(defaultModel.getId(), defaultModel.getImageUrl(), defaultModel.getModelName(), defaultModel.getSortOrder(), defaultModel.getIsCustom());
     }
 
     /**

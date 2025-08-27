@@ -35,6 +35,11 @@ public class DefaultModel extends BaseEntity {
     @Setter
     Integer sortOrder = 0;
 
+    @Column(name = "is_custom", nullable = false)
+    @Builder.Default
+    @Setter
+    Boolean isCustom = false;
+
     @Column(name = "is_deleted", nullable = false)
     @Builder.Default
     @Setter
