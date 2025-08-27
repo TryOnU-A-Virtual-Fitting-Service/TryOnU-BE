@@ -18,5 +18,8 @@ public record DefaultModelResponse(
     String modelName,
 
     @Schema(description = "정렬 순서 (자동 할당됨)", example = "3")
-    Integer sortOrder
+    Integer sortOrder,
+    
+    @Schema(description = "커스텀 모델 여부 (true: 사용자 업로드 모델, false: 기본 제공 모델)", example = "true")
+    Boolean isCustom
 ) {} 
