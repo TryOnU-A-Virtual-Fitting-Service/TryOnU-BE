@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class DefaultModelServiceImpl implements DefaultModelService {
     private final DefaultModelRepository defaultModelRepository;
 
@@ -51,7 +52,8 @@ public class DefaultModelServiceImpl implements DefaultModelService {
         Integer nextSortOrder = getNextSortOrder(currentUser.getId());
 
         // DefaultModel 엔티티 생성 및 저장
-        DefaultModel defaultModel = defaultModelConverter.createDefaultModel(currentUser, imageUrl, "커스텀 모델", nextSortOrder);
+        DefaultModel defaultModel = defaultModelConverter.createDefaultModel(currentUser, imageUrl, "커스텀 모델",
+                nextSortOrder);
         DefaultModel saved = defaultModelRepository.save(defaultModel);
 
         return defaultModelConverter.toDefaultModelResponse(saved);
@@ -61,7 +63,8 @@ public class DefaultModelServiceImpl implements DefaultModelService {
     @Transactional(readOnly = true)
     public List<DefaultModelDto> getCurrentUserDefaultModels() {
         Long currentUserId = SecurityUtils.getCurrentUserId();
-        List<DefaultModelDto> defaultModels = defaultModelRepository.findDefaultModelsByUserIdOrderBySortOrder(currentUserId);
+        List<DefaultModelDto> defaultModels = defaultModelRepository
+                .findDefaultModelsByUserIdOrderBySortOrder(currentUserId);
         return defaultModels;
     }
 
@@ -69,30 +72,30 @@ public class DefaultModelServiceImpl implements DefaultModelService {
     @Transactional
     public void batchUpdateDefaultModels(DefaultModelBatchUpdateRequest request) {
         Long currentUserId = SecurityUtils.getCurrentUserId();
-        
+
         // 요청된 모든 ID 수집
         List<Long> requestedIds = request.defaultModels().stream()
                 .map(item -> item.id())
                 .toList();
-        
+
         if (requestedIds.isEmpty()) {
             return;
         }
 
         // 사용자 소유 및 존재하는 모델들 조회
-        List<DefaultModel> existingModels = defaultModelRepository.findAllByIdsAndUserIdAndIsDeletedFalse(requestedIds, currentUserId);
+        List<DefaultModel> existingModels = defaultModelRepository.findAllByIdsAndUserIdAndIsDeletedFalse(requestedIds,
+                currentUserId);
 
-        
         // 요청된 ID와 실제 존재하는 ID 비교 (권한 확인)
         if (existingModels.size() != requestedIds.size()) {
             List<Long> foundIds = existingModels.stream().map(DefaultModel::getId).toList();
             List<Long> notFoundIds = requestedIds.stream()
                     .filter(id -> !foundIds.contains(id))
                     .toList();
-            throw new CustomException(ErrorCode.DEFAULT_MODEL_NOT_FOUND, 
+            throw new CustomException(ErrorCode.DEFAULT_MODEL_NOT_FOUND,
                     String.format("사용자가 소유하지 않은 기본 모델입니다: %s", notFoundIds));
         }
-        
+
         // ID를 키로 하는 Map으로 변환하여 조회 성능 개선 (O(N^2) -> O(N))
         Map<Long, DefaultModel> modelMap = existingModels.stream()
                 .collect(Collectors.toMap(DefaultModel::getId, Function.identity()));
@@ -100,7 +103,7 @@ public class DefaultModelServiceImpl implements DefaultModelService {
         // 각 요청 항목에 대해 처리
         request.defaultModels().forEach(item -> {
             DefaultModel model = modelMap.get(item.id());
-            
+
             switch (item.status()) {
                 case UPDATE -> {
                     // sortOrder가 null이면 기존 값 유지
@@ -115,11 +118,11 @@ public class DefaultModelServiceImpl implements DefaultModelService {
                 case DELETE -> model.setIsDeleted(true);
             }
         });
-        
+
         // 일괄 저장
         defaultModelRepository.saveAll(existingModels);
     }
-    
+
     /**
      * 다음 sortOrder 계산 (사용자의 최대 sortOrder + 1)
      */
@@ -127,5 +130,5 @@ public class DefaultModelServiceImpl implements DefaultModelService {
         Integer maxSortOrder = defaultModelRepository.findMaxSortOrderByUserId(userId);
         return maxSortOrder + 1;
     }
-    
+
 }
