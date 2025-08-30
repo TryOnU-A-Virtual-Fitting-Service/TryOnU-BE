@@ -4,8 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.data.jpa.repository.Lock;
-import jakarta.persistence.LockModeType;
 import tryonu.api.domain.User;
 import tryonu.api.dto.requests.UserInitRequest;
 import tryonu.api.dto.responses.UserInfoResponse;
@@ -43,13 +41,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
     public UserInfoResponse initializeUser(UserInitRequest request) {
         log.info("[UserService] 익명 사용자 초기화 시작: uuid={}", request.uuid());
 
         User user;
-        // 이미 존재하는 사용자인지 확인 (PESSIMISTIC_WRITE 락으로 동시성 제어)
-        Optional<User> userOptional = userRepository.findByUuid(request.uuid());
+        // 이미 존재하는 사용자인지 확인 (Repository 레이어에서 비관적 락으로 동시성 제어)
+        Optional<User> userOptional = userRepository.findByUuidWithLock(request.uuid());
         if (userOptional.isPresent() && !userOptional.get().getIsDeleted()) {
             // 이미 존재하는 사용자인 경우: 기존 사용자 정보 사용
             user = userOptional.get();

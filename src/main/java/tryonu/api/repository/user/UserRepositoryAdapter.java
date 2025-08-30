@@ -13,54 +13,58 @@ import java.util.Optional;
 @Repository
 @RequiredArgsConstructor
 public class UserRepositoryAdapter implements UserRepository {
-    
+
     private final JpaUserRepository jpaUserRepository;
 
-    @Override
-    public Optional<User> findByUuid(@NonNull String uuid) {
-        return jpaUserRepository.findByUuid(uuid);
-    }
-    
     @Override
     public User save(@NonNull User user) {
         User savedUser = jpaUserRepository.save(user);
         log.debug("[UserRepositoryAdapter] 사용자 저장 - uuid: {}", savedUser.getUuid());
         return savedUser;
     }
-    
+
     @Override
     public User findByIdAndIsDeletedFalseOrThrow(@NonNull Long userId) {
         return jpaUserRepository.findByIdAndIsDeletedFalse(userId)
-            .orElseThrow(() -> {
-                log.error("[UserRepositoryAdapter] 사용자를 찾을 수 없음 - userId: {}", userId);
-                return new CustomException(ErrorCode.USER_NOT_FOUND, 
-                    String.format("사용자 ID '%d'에 해당하는 사용자를 찾을 수 없습니다.", userId));
-            });
+                .orElseThrow(() -> {
+                    log.error("[UserRepositoryAdapter] 사용자를 찾을 수 없음 - userId: {}", userId);
+                    return new CustomException(ErrorCode.USER_NOT_FOUND,
+                            String.format("사용자 ID '%d'에 해당하는 사용자를 찾을 수 없습니다.", userId));
+                });
     }
-    
+
+    @Override
+    public Optional<User> findByUuid(@NonNull String uuid) {
+        return jpaUserRepository.findByUuid(uuid);
+    }
+
+    @Override
+    public Optional<User> findByUuidWithLock(@NonNull String uuid) {
+        return jpaUserRepository.findByUuidWithLock(uuid);
+    }
+
     @Override
     public User findByUuidAndIsDeletedFalseOrThrow(@NonNull String uuid) {
         return jpaUserRepository.findByUuidAndIsDeletedFalse(uuid)
-            .orElseThrow(() -> {
-                log.error("[UserRepositoryAdapter] 사용자를 찾을 수 없음 - uuid: {}", uuid);
-                return new CustomException(ErrorCode.USER_NOT_FOUND, 
-                    String.format("uuid '%s'에 해당하는 사용자를 찾을 수 없습니다.", uuid));
-            });
+                .orElseThrow(() -> {
+                    log.error("[UserRepositoryAdapter] 사용자를 찾을 수 없음 - uuid: {}", uuid);
+                    return new CustomException(ErrorCode.USER_NOT_FOUND,
+                            String.format("uuid '%s'에 해당하는 사용자를 찾을 수 없습니다.", uuid));
+                });
     }
-    
-    
+
     @Override
     public boolean existsByUuidAndIsDeletedFalse(@NonNull String uuid) {
         boolean exists = jpaUserRepository.existsByUuidAndIsDeletedFalse(uuid);
         log.debug("[UserRepositoryAdapter] 사용자 존재 여부 확인 - uuid: {}, exists: {}", uuid, exists);
         return exists;
     }
-    
+
     @Override
     public void softDelete(@NonNull User user) {
         user.setIsDeleted(true);
         jpaUserRepository.save(user);
         log.debug("[UserRepositoryAdapter] 사용자 소프트 삭제 - uuid: {}", user.getUuid());
     }
-    
-} 
+
+}
