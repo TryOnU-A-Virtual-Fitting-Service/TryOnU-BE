@@ -20,7 +20,7 @@ import tryonu.api.converter.TryOnResultConverter;
 public class TryOnWriteServiceImpl implements TryOnWriteService {
 
     private final TryOnResultRepository tryOnResultRepository;
-    private final ClothRepository clothRepository;;
+    private final ClothRepository clothRepository;
     private final TryOnResultConverter tryOnResultConverter;
     private final UserRepository userRepository;
 
