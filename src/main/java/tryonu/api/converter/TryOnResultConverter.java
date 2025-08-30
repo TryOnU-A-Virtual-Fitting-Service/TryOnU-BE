@@ -7,7 +7,7 @@ import tryonu.api.domain.Cloth;
 import tryonu.api.domain.TryOnResult;
 import tryonu.api.common.enums.Category;
 import tryonu.api.domain.User;
-
+import tryonu.api.domain.DefaultModel;
 
 @Component
 public class TryOnResultConverter {
@@ -19,15 +19,14 @@ public class TryOnResultConverter {
         return new VirtualFittingRequest(
                 "tryon-v1.6",
                 new VirtualFittingRequest.VirtualFittingInputs(
-                        defaultModelImageUrl,  // model_image - 모델 이미지 URL
-                        clothImageUrl,         // garment_image - 의류 이미지 URL 
-                        null,                  // category - null (기본값 사용)
-                        null,                  // mode - null (기본값 사용)
-                        null,                  // garment_photo_type - null (기본값 사용)
-                        null,                  // num_samples - null (기본값 사용)
-                        null                   // seed - null (기본값 사용)
-                )
-        );
+                        defaultModelImageUrl, // model_image - 모델 이미지 URL
+                        clothImageUrl, // garment_image - 의류 이미지 URL
+                        null, // category - null (기본값 사용)
+                        null, // mode - null (기본값 사용)
+                        null, // garment_photo_type - null (기본값 사용)
+                        null, // num_samples - null (기본값 사용)
+                        null // seed - null (기본값 사용)
+                ));
     }
 
     /**
@@ -44,7 +43,8 @@ public class TryOnResultConverter {
     /**
      * TryOnResult 엔티티 생성 (modelUrl 직접 사용)
      */
-    public TryOnResult toTryOnResultEntity(Cloth cloth, User user, String modelUrl, String resultImageUrl, String virtualFittingId) {
+    public TryOnResult toTryOnResultEntity(Cloth cloth, User user, String modelUrl, String resultImageUrl,
+            String virtualFittingId) {
         return TryOnResult.builder()
                 .user(user)
                 .cloth(cloth)
@@ -58,14 +58,15 @@ public class TryOnResultConverter {
     /**
      * TryOnResult 엔티티 생성 (defaultModelId 포함)
      */
-    public TryOnResult toTryOnResultEntity(Cloth cloth, User user, String modelUrl, String resultImageUrl, String virtualFittingId, Long defaultModelId) {
+    public TryOnResult toTryOnResultEntity(Cloth cloth, User user, String modelUrl, String resultImageUrl,
+            String virtualFittingId, DefaultModel defaultModel) {
         return TryOnResult.builder()
                 .user(user)
                 .cloth(cloth)
                 .modelUrl(modelUrl)
                 .imageUrl(resultImageUrl)
                 .virtualFittingId(virtualFittingId)
-                .defaultModelId(defaultModelId)
+                .defaultModelId(defaultModel.getId())
                 .sizeAdvice(null)
                 .build();
     }
@@ -82,10 +83,9 @@ public class TryOnResultConverter {
      */
     public TryOnResponse toTryOnResponse(TryOnResult tryOnResult, String modelName) {
         return new TryOnResponse(
-            tryOnResult.getId(), 
-            tryOnResult.getImageUrl(),
-            tryOnResult.getDefaultModelId(),
-            modelName
-        );
+                tryOnResult.getId(),
+                tryOnResult.getImageUrl(),
+                tryOnResult.getDefaultModelId(),
+                modelName);
     }
-} 
+}

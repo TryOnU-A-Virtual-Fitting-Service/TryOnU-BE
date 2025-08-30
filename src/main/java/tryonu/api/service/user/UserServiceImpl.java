@@ -31,14 +31,14 @@ import org.springframework.dao.DataIntegrityViolationException;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor    
-@Transactional(readOnly = true) 
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
-    
+
     private final UserRepository userRepository;
     private final DefaultModelRepository defaultModelRepository;
     private final TryOnResultRepository tryOnResultRepository;
-    private final DefaultModelConverter defaultModelConverter;  
+    private final DefaultModelConverter defaultModelConverter;
     private final UserConverter userConverter;
 
     @Override
@@ -46,11 +46,11 @@ public class UserServiceImpl implements UserService {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     public UserInfoResponse initializeUser(UserInitRequest request) {
         log.info("[UserService] 익명 사용자 초기화 시작: uuid={}", request.uuid());
-        
-        User user; 
+
+        User user;
         // 이미 존재하는 사용자인지 확인 (PESSIMISTIC_WRITE 락으로 동시성 제어)
         Optional<User> userOptional = userRepository.findByUuid(request.uuid());
-        if (userOptional.isPresent() && !userOptional.get().getIsDeleted()) { 
+        if (userOptional.isPresent() && !userOptional.get().getIsDeleted()) {
             // 이미 존재하는 사용자인 경우: 기존 사용자 정보 사용
             user = userOptional.get();
             log.info("[UserService] 기존 사용자 발견: userId={}, uuid={}", user.getId(), request.uuid());
@@ -82,8 +82,8 @@ public class UserServiceImpl implements UserService {
                 user.updateRecentlyUsedModelUrl(firstModelUrl);
                 user.updateRecentlyUsedModelName(firstModelName);
                 user = userRepository.save(user);
-                
-                log.info("[UserService] 새 사용자 생성 완료: userId={}, uuid={}, recentlyUsedModelUrl={}, modelName={}", 
+
+                log.info("[UserService] 새 사용자 생성 완료: userId={}, uuid={}, recentlyUsedModelUrl={}, modelName={}",
                         user.getId(), request.uuid(), firstModelUrl, firstModelName);
             } catch (DataIntegrityViolationException e) {
                 // 동시성에 의한 UUID 유니크 제약 위반 → 기존 사용자 조회 후 사용 (idempotent)
@@ -93,17 +93,19 @@ public class UserServiceImpl implements UserService {
             }
         }
 
-        List<DefaultModelDto> defaultModels = defaultModelRepository.findDefaultModelsByUserIdOrderBySortOrder(user.getId());
+        List<DefaultModelDto> defaultModels = defaultModelRepository
+                .findDefaultModelsByUserIdOrderBySortOrder(user.getId());
         List<TryOnResultDto> tryOnResults = tryOnResultRepository.findTryOnResultsByUserIdOrderByIdDesc(user.getId());
         return userConverter.toUserInfoResponse(defaultModels, tryOnResults);
     }
-    
+
     @Override
     @Transactional(readOnly = true)
     public UserInfoResponse getCurrentUserInfo() {
         // Security Filter에서 이미 인증된 사용자만 여기까지 올 수 있음
         Long currentUserId = SecurityUtils.getCurrentUserId();
-        List<DefaultModelDto> defaultModels = defaultModelRepository.findDefaultModelsByUserIdOrderBySortOrder(currentUserId);
+        List<DefaultModelDto> defaultModels = defaultModelRepository
+                .findDefaultModelsByUserIdOrderBySortOrder(currentUserId);
         List<TryOnResultDto> tryOnResults = tryOnResultRepository.findTryOnResultsByUserIdOrderByIdDesc(currentUserId);
         return userConverter.toUserInfoResponse(defaultModels, tryOnResults);
     }
@@ -115,8 +117,5 @@ public class UserServiceImpl implements UserService {
         User currentUser = SecurityUtils.getCurrentUser();
         return userConverter.toSimpleUserResponse(currentUser);
     }
-
-
-
 
 }
