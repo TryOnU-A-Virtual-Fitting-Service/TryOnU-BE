@@ -54,36 +54,40 @@ public class PerformanceLoggingAspect {
      */
     @Around("execution(* tryonu.api.controller..*Controller.*(..))")
     public Object logApiExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
-        long startTime = System.currentTimeMillis();
+        long startTime = System.nanoTime();
 
         String className = joinPoint.getTarget().getClass().getSimpleName();
         String methodName = joinPoint.getSignature().getName();
         String controllerName = className.replace("Controller", "");
 
+        Object result = null;
+        Exception exception = null;
+
         try {
-            Object result = joinPoint.proceed();
+            result = joinPoint.proceed();
+            return result;
+        } catch (Exception e) {
+            exception = e;
+            throw e;
+        } finally {
+            long executionTime = (System.nanoTime() - startTime) / 1_000_000;
 
-            long executionTime = System.currentTimeMillis() - startTime;
-
-            // API 응답시간은 모든 요청을 로깅 (모니터링 목적)
-            if (executionTime >= API_WARN_THRESHOLD_MS) {
-                log.warn("🌐 [API-Performance] {}.{} 응답시간: {}ms (느린 응답)",
-                        controllerName, methodName, executionTime);
-            } else if (executionTime >= API_INFO_THRESHOLD_MS) {
-                log.info("🌐 [API-Performance] {}.{} 응답시간: {}ms",
+            if (exception != null) {
+                log.error("🌐 [API-Performance] {}.{} 응답시간: {}ms (예외 발생)",
                         controllerName, methodName, executionTime);
             } else {
-                log.debug("🌐 [API-Performance] {}.{} 응답시간: {}ms",
-                        controllerName, methodName, executionTime);
+                // API 응답시간은 모든 요청을 로깅 (모니터링 목적)
+                if (executionTime >= API_WARN_THRESHOLD_MS) {
+                    log.warn("🌐 [API-Performance] {}.{} 응답시간: {}ms (느린 응답)",
+                            controllerName, methodName, executionTime);
+                } else if (executionTime >= API_INFO_THRESHOLD_MS) {
+                    log.info("🌐 [API-Performance] {}.{} 응답시간: {}ms",
+                            controllerName, methodName, executionTime);
+                } else {
+                    log.debug("🌐 [API-Performance] {}.{} 응답시간: {}ms",
+                            controllerName, methodName, executionTime);
+                }
             }
-
-            return result;
-
-        } catch (Exception e) {
-            long executionTime = System.currentTimeMillis() - startTime;
-            log.error("🌐 [API-Performance] {}.{} 응답시간: {}ms (예외 발생)",
-                    controllerName, methodName, executionTime);
-            throw e;
         }
     }
 }

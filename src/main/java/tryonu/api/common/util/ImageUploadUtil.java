@@ -111,7 +111,7 @@ public class ImageUploadUtil {
             log.error("[ImageUploadUtil] S3 업로드 실패 - fileName={}, error={}", file.getOriginalFilename(), e.getMessage(),
                     e);
 
-            throw new RuntimeException("S3 업로드 중 오류가 발생했습니다.", e);
+            throw new CustomException(ErrorCode.FILE_UPLOAD_FAILED);
         }
     }
 
@@ -144,7 +144,7 @@ public class ImageUploadUtil {
         } catch (Exception e) {
             log.error("[ImageUploadUtil] S3 업로드 실패(byte[]) - error={}", e.getMessage(), e);
 
-            throw new RuntimeException("S3 업로드 중 오류가 발생했습니다.", e);
+            throw new CustomException(ErrorCode.FILE_UPLOAD_FAILED);
         }
     }
 
