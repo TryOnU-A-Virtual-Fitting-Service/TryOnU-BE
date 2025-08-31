@@ -29,7 +29,6 @@ import tryonu.api.common.exception.enums.ErrorCode;
 @Component
 public class ImageUploadUtil {
     private final S3Client s3Client;
-    private final MemoryTracker memoryTracker;
     private final WebClient imageDownloadWebClient;
 
     @Value("${aws.s3.bucket-name}")
@@ -72,21 +71,16 @@ public class ImageUploadUtil {
     /**
      * S3에 이미지를 업로드합니다.
      *
-     * @param s3Client S3 클라이언트
+     * @param s3Client   S3 클라이언트
      * @param bucketName S3 버킷 이름
-     * @param file 업로드할 파일
+     * @param file       업로드할 파일
      * @param folderPath S3 내 폴더 경로 (예: "users/profiles", "models", "clothes")
      * @return 업로드된 이미지의 S3 URL
      * @throws IllegalArgumentException 파일 검증 실패 시
-     * @throws RuntimeException 업로드 실패 시
+     * @throws RuntimeException         업로드 실패 시
      */
     public String uploadToS3(MultipartFile file, String folderPath) {
         log.info("[ImageUploadUtil] 이미지 업로드 시작 - fileName={}, folderPath={}", file.getOriginalFilename(), folderPath);
-        
-        // 메모리 추적 시작
-        String fileSizeStr = String.format("%.1fMB", file.getSize() / 1024.0 / 1024.0);
-        memoryTracker.startTracking("S3Upload-MultipartFile", fileSizeStr);
-        memoryTracker.logCurrentMemoryStatus("S3 업로드 시작");
 
         // 파일 검증 (확장자, Content-Type 포함)
         validateFile(file);
@@ -112,19 +106,13 @@ public class ImageUploadUtil {
             String imageUrl = cloudfrontDomain + "/" + s3Key;
 
             log.info("[ImageUploadUtil] 이미지 업로드 성공 - imageUrl={}", imageUrl);
-            
-            // 메모리 추적 종료 (성공)
-            memoryTracker.endTracking("S3Upload-MultipartFile", true);
-            memoryTracker.logCurrentMemoryStatus("S3 업로드 완료");
-            
+
             return imageUrl;
 
         } catch (Exception e) {
-            log.error("[ImageUploadUtil] S3 업로드 실패 - fileName={}, error={}", file.getOriginalFilename(), e.getMessage(), e);
-            
-            // 메모리 추적 종료 (실패)
-            memoryTracker.endTracking("S3Upload-MultipartFile", false);
-            
+            log.error("[ImageUploadUtil] S3 업로드 실패 - fileName={}, error={}", file.getOriginalFilename(), e.getMessage(),
+                    e);
+
             throw new RuntimeException("S3 업로드 중 오류가 발생했습니다.", e);
         }
     }
@@ -132,17 +120,12 @@ public class ImageUploadUtil {
     /**
      * S3에 이미지를 업로드합니다. (byte[] 버전)
      *
-     * @param image 업로드할 이미지 바이트 배열
-     * @param folderPath S3 내 폴더 경로
+     * @param image       업로드할 이미지 바이트 배열
+     * @param folderPath  S3 내 폴더 경로
      * @param contentType Content-Type (예: image/png)
      * @return 업로드된 이미지의 S3 URL
      */
     public String uploadToS3(byte[] image, String folderPath, String contentType) {
-        // 메모리 추적 시작
-        String imageSizeStr = String.format("%.1fMB", image.length / 1024.0 / 1024.0);
-        memoryTracker.startTracking("S3Upload-ByteArray", imageSizeStr);
-        memoryTracker.logCurrentMemoryStatus("S3 byte[] 업로드 시작");
-        
         try {
             String fileName = generateFileName("image.png");
             String s3Key = folderPath + "/" + fileName;
@@ -158,18 +141,11 @@ public class ImageUploadUtil {
 
             String imageUrl = cloudfrontDomain + "/" + s3Key;
             log.info("[ImageUploadUtil] 이미지 업로드 성공(byte[]) - imageUrl={}", imageUrl);
-            
-            // 메모리 추적 종료 (성공)
-            memoryTracker.endTracking("S3Upload-ByteArray", true);
-            memoryTracker.logCurrentMemoryStatus("S3 byte[] 업로드 완료");
-            
+
             return imageUrl;
         } catch (Exception e) {
             log.error("[ImageUploadUtil] S3 업로드 실패(byte[]) - error={}", e.getMessage(), e);
-            
-            // 메모리 추적 종료 (실패)
-            memoryTracker.endTracking("S3Upload-ByteArray", false);
-            
+
             throw new RuntimeException("S3 업로드 중 오류가 발생했습니다.", e);
         }
     }
@@ -180,6 +156,7 @@ public class ImageUploadUtil {
     public String uploadModelImage(byte[] image) {
         return uploadToS3(image, modelFolder, "image/png");
     }
+
     public String uploadModelImage(MultipartFile file) {
         return uploadToS3(file, modelFolder);
     }
@@ -190,6 +167,7 @@ public class ImageUploadUtil {
     public String uploadClothImage(MultipartFile file) {
         return uploadToS3(file, clothFolder);
     }
+
     public String uploadClothImage(byte[] image) {
         return uploadToS3(image, clothFolder, "image/jpeg");
     }
@@ -200,6 +178,7 @@ public class ImageUploadUtil {
     public String uploadTryOnResultImage(MultipartFile file) {
         return uploadToS3(file, tryonResultFolder);
     }
+
     public String uploadTryOnResultImage(byte[] image) {
         return uploadToS3(image, tryonResultFolder, "image/png");
     }
@@ -209,11 +188,7 @@ public class ImageUploadUtil {
      */
     public String uploadTryOnResultImageFromUrl(String imageUrl) {
         log.info("[ImageUploadUtil] URL에서 이미지 다운로드 시작 - url={}", imageUrl);
-        
-        // 메모리 추적 시작
-        memoryTracker.startTracking("ImageDownload-S3Upload", imageUrl);
-        memoryTracker.logCurrentMemoryStatus("이미지 다운로드 시작");
-        
+
         try {
             // WebClient로 이미지 다운로드
             byte[] imageBytes = imageDownloadWebClient
@@ -222,30 +197,23 @@ public class ImageUploadUtil {
                     .retrieve()
                     .bodyToMono(byte[].class)
                     .block(); // 동기 방식으로 처리
-            
+
             if (imageBytes == null || imageBytes.length == 0) {
                 throw new CustomException(ErrorCode.VIRTUAL_FITTING_FAILED, "이미지 다운로드에 실패했습니다.");
             }
-            
+
             log.info("[ImageUploadUtil] 이미지 다운로드 완료 - size={}KB", imageBytes.length / 1024);
-            
+
             // 다운로드된 이미지를 S3에 업로드
             String s3Url = uploadTryOnResultImage(imageBytes);
-            
+
             log.info("[ImageUploadUtil] 이미지 다운로드 및 S3 업로드 완료 - originalUrl={}, s3Url={}", imageUrl, s3Url);
-            
-            // 메모리 추적 종료 (성공)
-            memoryTracker.endTracking("ImageDownload-S3Upload", true);
-            memoryTracker.logCurrentMemoryStatus("이미지 다운로드 및 업로드 완료");
-            
+
             return s3Url;
-            
+
         } catch (Exception e) {
             log.error("[ImageUploadUtil] 이미지 다운로드 및 업로드 실패 - url={}, error={}", imageUrl, e.getMessage(), e);
-            
-            // 메모리 추적 종료 (실패)
-            memoryTracker.endTracking("ImageDownload-S3Upload", false);
-            
+
             throw new CustomException(ErrorCode.VIRTUAL_FITTING_FAILED, "이미지 다운로드 및 업로드에 실패했습니다: " + e.getMessage());
         }
     }
@@ -270,18 +238,16 @@ public class ImageUploadUtil {
         String extension = getFileExtension(originalFilename);
         if (!allowedExtensions.contains(extension.toLowerCase())) {
             throw new CustomException(
-                ErrorCode.INVALID_REQUEST, "지원하지 않는 파일 형식입니다. 지원 형식: " + String.join(", ", allowedExtensions) +
-                " (실제: " + extension + ")"
-            );
+                    ErrorCode.INVALID_REQUEST, "지원하지 않는 파일 형식입니다. 지원 형식: " + String.join(", ", allowedExtensions) +
+                            " (실제: " + extension + ")");
         }
 
         String contentType = file.getContentType();
         if (contentType == null || !allowedContentTypes.contains(contentType.toLowerCase())) {
             throw new CustomException(
-                ErrorCode.INVALID_REQUEST,
-                "지원하지 않는 Content-Type입니다. 지원 형식: " + String.join(", ", allowedContentTypes) +
-                " (실제: " + contentType + ")"
-            );
+                    ErrorCode.INVALID_REQUEST,
+                    "지원하지 않는 Content-Type입니다. 지원 형식: " + String.join(", ", allowedContentTypes) +
+                            " (실제: " + contentType + ")");
         }
     }
 
@@ -292,7 +258,7 @@ public class ImageUploadUtil {
         String extension = getFileExtension(originalFilename);
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
         String uuid = UUID.randomUUID().toString().substring(0, 8);
-        
+
         return timestamp + "_" + uuid + "." + extension;
     }
 
@@ -303,4 +269,4 @@ public class ImageUploadUtil {
         int lastDotIndex = filename.lastIndexOf(".");
         return lastDotIndex > 0 ? filename.substring(lastDotIndex + 1).toLowerCase() : "";
     }
-} 
+}
