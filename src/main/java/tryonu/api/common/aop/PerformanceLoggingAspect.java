@@ -17,6 +17,10 @@ public class PerformanceLoggingAspect {
     // 100ms 이상 걸리는 메서드만 성능 로깅
     private static final long PERFORMANCE_THRESHOLD_MS = 100;
 
+    // API 응답시간 임계값 (ms)
+    private static final long API_WARN_THRESHOLD_MS = 1000; // 1초 이상
+    private static final long API_INFO_THRESHOLD_MS = 500; // 500ms 이상
+
     /**
      * 서비스 레이어 메서드 실행 시간 측정
      */
@@ -69,10 +73,10 @@ public class PerformanceLoggingAspect {
             long executionTime = System.currentTimeMillis() - startTime;
 
             // API 응답시간은 모든 요청을 로깅 (모니터링 목적)
-            if (executionTime >= 1000) { // 1초 이상
+            if (executionTime >= API_WARN_THRESHOLD_MS) {
                 log.warn("🌐 [API-Performance] {}.{} 응답시간: {}ms (느린 응답)",
                         controllerName, methodName, executionTime);
-            } else if (executionTime >= 500) { // 500ms 이상
+            } else if (executionTime >= API_INFO_THRESHOLD_MS) {
                 log.info("🌐 [API-Performance] {}.{} 응답시간: {}ms",
                         controllerName, methodName, executionTime);
             } else {

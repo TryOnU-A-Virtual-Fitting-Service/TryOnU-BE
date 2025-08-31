@@ -8,6 +8,7 @@ import org.aspectj.lang.annotation.Before;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 /**
  * 서비스 레이어 메서드의 시작과 완료를 자동으로 로깅하는 Aspect
@@ -81,7 +82,6 @@ public class ServiceLoggingAspect {
 
                     return argString;
                 })
-                .reduce((a, b) -> a + ", " + b)
-                .orElse("");
+                .collect(Collectors.joining(", "));
     }
 }

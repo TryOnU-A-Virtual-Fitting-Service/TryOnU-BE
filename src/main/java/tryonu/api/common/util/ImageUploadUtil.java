@@ -71,8 +71,6 @@ public class ImageUploadUtil {
     /**
      * S3에 이미지를 업로드합니다.
      *
-     * @param s3Client   S3 클라이언트
-     * @param bucketName S3 버킷 이름
      * @param file       업로드할 파일
      * @param folderPath S3 내 폴더 경로 (예: "users/profiles", "models", "clothes")
      * @return 업로드된 이미지의 S3 URL

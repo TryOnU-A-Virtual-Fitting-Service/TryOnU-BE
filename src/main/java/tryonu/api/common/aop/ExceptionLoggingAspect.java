@@ -8,7 +8,8 @@ import org.springframework.stereotype.Component;
 import tryonu.api.common.exception.CustomException;
 
 /**
- * 서비스 레이어에서 발생하는 예외를 자동으로 로깅하는 Aspect
+ * 서비스와 레포지토리 레이어에서 발생하는 예외를 자동으로 로깅하는 Aspect
+ * (컨트롤러 예외는 GlobalExceptionHandler에서 처리)
  */
 @Slf4j
 @Aspect
@@ -34,28 +35,6 @@ public class ExceptionLoggingAspect {
             // 일반 예외의 경우 상세 정보 로깅
             log.error("💥 [{}] {}.{} 시스템 예외 발생 - exceptionType={}, message={}",
                     serviceName, className, methodName,
-                    exception.getClass().getSimpleName(),
-                    exception.getMessage(), exception);
-        }
-    }
-
-    /**
-     * 컨트롤러 레이어에서 예외 발생 시 자동 로깅
-     */
-    @AfterThrowing(pointcut = "execution(* tryonu.api.controller..*Controller.*(..))", throwing = "exception")
-    public void logControllerException(JoinPoint joinPoint, Throwable exception) {
-        String className = joinPoint.getTarget().getClass().getSimpleName();
-        String methodName = joinPoint.getSignature().getName();
-        String controllerName = className.replace("Controller", "");
-
-        if (exception instanceof CustomException customException) {
-            log.error("🌐❌ [API-Error] {}.{} 비즈니스 예외 - errorCode={}, message={}",
-                    controllerName, methodName,
-                    customException.getErrorCode().name(),
-                    customException.getMessage());
-        } else {
-            log.error("🌐💥 [API-Error] {}.{} 시스템 예외 - exceptionType={}, message={}",
-                    controllerName, methodName,
                     exception.getClass().getSimpleName(),
                     exception.getMessage(), exception);
         }
