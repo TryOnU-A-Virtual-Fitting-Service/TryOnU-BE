@@ -66,9 +66,6 @@ public class TryOnServiceImpl implements TryOnService {
         Long defaultModelId = request.defaultModelId();
         String productPageUrl = request.productPageUrl();
 
-        log.info("[TryOnService] 가상 피팅 시작 - modelUrl={}, defaultModelId={}, productPageUrl={}", modelUrl,
-                defaultModelId, productPageUrl);
-
         // 현재 인증된 사용자 및 기본 모델 조회
         User currentUser = SecurityUtils.getCurrentUser();
         DefaultModel defaultModel = defaultModelRepository.findByIdAndIsDeletedFalseOrThrow(defaultModelId); // 검증

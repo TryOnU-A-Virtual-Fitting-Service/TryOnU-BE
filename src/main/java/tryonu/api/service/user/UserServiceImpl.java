@@ -42,8 +42,6 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserInfoResponse initializeUser(UserInitRequest request) {
-        log.info("[UserService] 익명 사용자 초기화 시작: uuid={}", request.uuid());
-
         User user;
         // 이미 존재하는 사용자인지 확인 (Repository 레이어에서 비관적 락으로 동시성 제어)
         Optional<User> userOptional = userRepository.findByUuidWithLock(request.uuid());
