@@ -26,7 +26,7 @@ public class PerformanceLoggingAspect {
      */
     @Around("execution(* tryonu.api.service..*ServiceImpl.*(..))")
     public Object logExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
-        long startTime = System.currentTimeMillis();
+        long start = System.nanoTime();
 
         String className = joinPoint.getTarget().getClass().getSimpleName();
         String methodName = joinPoint.getSignature().getName();
@@ -34,25 +34,18 @@ public class PerformanceLoggingAspect {
 
         try {
             Object result = joinPoint.proceed();
-
-            long executionTime = System.currentTimeMillis() - startTime;
+            return result;
+        } finally {
+            long executionTimeMs = (System.nanoTime() - start) / 1_000_000;
 
             // 성능 임계값을 초과하는 경우만 로깅
-            if (executionTime >= PERFORMANCE_THRESHOLD_MS) {
+            if (executionTimeMs >= PERFORMANCE_THRESHOLD_MS) {
                 log.warn("⚡ [Performance] {}.{} 실행시간: {}ms (최적화 검토 필요)",
-                        serviceName, methodName, executionTime);
+                        serviceName, methodName, executionTimeMs);
             } else {
                 log.debug("⚡ [Performance] {}.{} 실행시간: {}ms",
-                        serviceName, methodName, executionTime);
+                        serviceName, methodName, executionTimeMs);
             }
-
-            return result;
-
-        } catch (Exception e) {
-            long executionTime = System.currentTimeMillis() - startTime;
-            log.error("⚡ [Performance] {}.{} 실행시간: {}ms (예외 발생)",
-                    serviceName, methodName, executionTime);
-            throw e;
         }
     }
 
