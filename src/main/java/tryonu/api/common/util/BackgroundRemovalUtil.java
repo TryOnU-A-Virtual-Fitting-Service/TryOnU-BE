@@ -16,37 +16,42 @@ import tryonu.api.common.exception.enums.ErrorCode;
 public class BackgroundRemovalUtil {
     private final WebClient backgroundRemovalWebClient;
     private final WebClient imageDownloadWebClient; // 이미지 다운로드 전용
-    private final MemoryTracker memoryTracker;
 
     /**
      * 배경 제거 API 호출 (MultipartFile → byte[])
      */
     public byte[] removeBackground(MultipartFile file) {
-        // 메모리 추적 시작
-        String fileSizeStr = String.format("%.1fMB", file.getSize() / 1024.0 / 1024.0);
-        memoryTracker.startTracking("BackgroundRemoval-MultipartFile", fileSizeStr);
-        memoryTracker.logCurrentMemoryStatus("배경 제거 시작");
-        
         try {
+            // filename을 명시적으로 설정하여 서버가 파일명을 요구하는 경우에 대응
+            String filename = file.getOriginalFilename() != null ? file.getOriginalFilename() : "image.jpg";
+
+            // filename이 포함된 Resource 생성
+            org.springframework.core.io.Resource fileResource = new org.springframework.core.io.InputStreamResource(
+                    file.getInputStream()) {
+                @Override
+                public String getFilename() {
+                    return filename;
+                }
+            };
+
             byte[] result = backgroundRemovalWebClient.post()
                     .contentType(MediaType.MULTIPART_FORM_DATA)
-                    .body(BodyInserters.fromMultipartData("file", file.getResource()))
+                    .body(BodyInserters.fromMultipartData("file", fileResource))
                     .retrieve()
                     .bodyToMono(byte[].class)
                     .block();
-            
-            // 메모리 추적 종료 (성공)
-            memoryTracker.endTracking("BackgroundRemoval-MultipartFile", true);
-            memoryTracker.logCurrentMemoryStatus("배경 제거 완료");
-            
+
+            // null 응답 체크
+            if (result == null || result.length == 0) {
+                throw new CustomException(ErrorCode.BACKGROUND_REMOVAL_FAILED,
+                        "배경 제거 API에서 유효하지 않은 응답을 받았습니다.");
+            }
+
             return result;
         } catch (Exception e) {
-            log.error("[BackgroundRemovalUtil] 배경 제거 실패 - fileName={}, error={}", 
+            log.error("[BackgroundRemovalUtil] 배경 제거 실패 - fileName={}, error={}",
                     file.getOriginalFilename(), e.getMessage(), e);
-            
-            // 메모리 추적 종료 (실패)
-            memoryTracker.endTracking("BackgroundRemoval-MultipartFile", false);
-            
+
             throw new CustomException(ErrorCode.BACKGROUND_REMOVAL_FAILED, "이미지 배경 제거에 실패했습니다.");
         }
     }
@@ -63,18 +68,18 @@ public class BackgroundRemovalUtil {
                     .retrieve()
                     .bodyToMono(byte[].class)
                     .block();
-            
+
             if (imageBytes == null || imageBytes.length == 0) {
                 throw new RuntimeException("URL에서 이미지를 다운로드할 수 없습니다: " + imageUrl);
             }
-            
-            log.info("[BackgroundRemovalUtil] 이미지 다운로드 완료 - imageUrl={}, size={}bytes", 
+
+            log.info("[BackgroundRemovalUtil] 이미지 다운로드 완료 - imageUrl={}, size={}bytes",
                     imageUrl, imageBytes.length);
-            
+
             // 2. 배경 제거 API 호출
-            return backgroundRemovalWebClient.post()
+            byte[] result = backgroundRemovalWebClient.post()
                     .contentType(MediaType.MULTIPART_FORM_DATA)
-                    .body(BodyInserters.fromMultipartData("file", 
+                    .body(BodyInserters.fromMultipartData("file",
                             new org.springframework.core.io.ByteArrayResource(imageBytes) {
                                 @Override
                                 public String getFilename() {
@@ -84,10 +89,18 @@ public class BackgroundRemovalUtil {
                     .retrieve()
                     .bodyToMono(byte[].class)
                     .block();
+
+            // null 응답 체크
+            if (result == null || result.length == 0) {
+                throw new CustomException(ErrorCode.BACKGROUND_REMOVAL_FAILED,
+                        "배경 제거 API에서 유효하지 않은 응답을 받았습니다.");
+            }
+
+            return result;
         } catch (Exception e) {
-            log.error("[BackgroundRemovalUtil] URL 이미지 배경 제거 실패 - imageUrl={}, error={}", 
+            log.error("[BackgroundRemovalUtil] URL 이미지 배경 제거 실패 - imageUrl={}, error={}",
                     imageUrl, e.getMessage(), e);
             throw new CustomException(ErrorCode.BACKGROUND_REMOVAL_FAILED, "이미지 배경 제거에 실패했습니다.");
         }
     }
-} 
+}

@@ -17,7 +17,6 @@ import tryonu.api.repository.tryonresult.TryOnResultRepository;
 import tryonu.api.common.util.VirtualFittingUtil;
 import tryonu.api.common.util.ImageUploadUtil;
 import tryonu.api.common.util.CategoryPredictionUtil;
-import tryonu.api.common.util.MemoryTracker;
 import tryonu.api.dto.responses.CategoryPredictionResponse;
 import tryonu.api.common.exception.CustomException;
 import tryonu.api.common.exception.enums.ErrorCode;
@@ -44,7 +43,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class TryOnServiceImpl implements TryOnService {
 
     private final VirtualFittingUtil virtualFittingUtil;
-    private final MemoryTracker memoryTracker;
     private final ImageUploadUtil imageUploadUtil;
     private final CategoryPredictionUtil categoryPredictionUtil;
     private final TryOnResultRepository tryOnResultRepository;
@@ -66,16 +64,9 @@ public class TryOnServiceImpl implements TryOnService {
         Long defaultModelId = request.defaultModelId();
         String productPageUrl = request.productPageUrl();
 
-        log.info("[TryOnService] 가상 피팅 시작 - modelUrl={}, defaultModelId={}, productPageUrl={}", modelUrl,
-                defaultModelId, productPageUrl);
-
         // 현재 인증된 사용자 및 기본 모델 조회
         User currentUser = SecurityUtils.getCurrentUser();
         DefaultModel defaultModel = defaultModelRepository.findByIdAndIsDeletedFalseOrThrow(defaultModelId); // 검증
-        // 전체 가상 피팅 프로세스 메모리 추적 시작
-        String fileSizeStr = String.format("%.1fMB", file.getSize() / 1024.0 / 1024.0);
-        memoryTracker.startTracking("VirtualFitting-Process", fileSizeStr);
-        memoryTracker.logCurrentMemoryStatus("가상 피팅 프로세스 시작");
 
         try {
             // 의류 이미지 카테고리 예측
@@ -128,22 +119,13 @@ public class TryOnServiceImpl implements TryOnService {
                         defaultModel,
                         currentUser);
 
-                // 메모리 추적 종료 (성공)
-                memoryTracker.endTracking("VirtualFitting-Process", true);
-                memoryTracker.logCurrentMemoryStatus("가상 피팅 프로세스 완료");
-
                 return response;
             } else {
-                // 메모리 추적 종료 (실패)
-                memoryTracker.endTracking("VirtualFitting-Process", false);
-
                 // fashn.ai API 에러 구체적 로깅 및 처리
                 handleVirtualFittingError(modelUrl, finalStatus);
                 throw new RuntimeException("This should never be reached"); // handleVirtualFittingError always throws
             }
         } catch (Exception e) {
-            // 예외 발생시 메모리 추적 종료
-            memoryTracker.endTracking("VirtualFitting-Process", false);
             throw e;
         }
     }
