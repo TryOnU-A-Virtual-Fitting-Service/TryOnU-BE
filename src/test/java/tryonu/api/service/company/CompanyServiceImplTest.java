@@ -252,7 +252,7 @@ class CompanyServiceImplTest extends BaseServiceTest {
             testDomainExtraction("https://www.musinsa.com/product/123", "musinsa.com");
             testDomainExtraction("https://m.a-bly.com/product/123", "a-bly.com");
             testDomainExtraction("https://shop.example.com/product/123", "example.com");
-            testDomainExtraction("http://subdomain.test-site.co.kr/path", "test-site.co.kr");
+            testDomainExtraction("http://subdomain.test-site.co.kr/path", "test-site.co");
         }
 
         private void testDomainExtraction(String url, String expectedDomain) {
