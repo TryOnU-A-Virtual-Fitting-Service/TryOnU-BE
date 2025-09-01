@@ -70,10 +70,10 @@ class UserServiceImplTest extends BaseServiceTest {
                 testUserInitRequest = RequestFixture.createUserInitRequest("test-uuid-12345");
 
                 initialModels = new ArrayList<>();
-                DefaultModel femaleModel = DefaultModelFixture.createDefaultModel(testUser, Gender.FEMALE, 1);
-                DefaultModel maleModel = DefaultModelFixture.createDefaultModel(testUser, Gender.MALE, 2);
-                initialModels.add(femaleModel);
+                DefaultModel maleModel = DefaultModelFixture.createDefaultModel(testUser, Gender.MALE, 1);
+                DefaultModel femaleModel = DefaultModelFixture.createDefaultModel(testUser, Gender.FEMALE, 2);
                 initialModels.add(maleModel);
+                initialModels.add(femaleModel);
 
                 defaultModelDtos = List.of(
                                 new DefaultModelDto(1L,
@@ -102,9 +102,9 @@ class UserServiceImplTest extends BaseServiceTest {
                         given(userRepository.findByUuidWithLock(uuid)).willReturn(Optional.empty());
                         given(userRepository.save(any(User.class))).willReturn(newUser);
 
-                        given(defaultModelConverter.createDefaultModel(eq(newUser), eq(Gender.FEMALE), eq(1)))
+                        given(defaultModelConverter.createDefaultModel(any(User.class), eq(Gender.MALE), eq(1)))
                                         .willReturn(initialModels.get(0));
-                        given(defaultModelConverter.createDefaultModel(eq(newUser), eq(Gender.MALE), eq(2)))
+                        given(defaultModelConverter.createDefaultModel(any(User.class), eq(Gender.FEMALE), eq(2)))
                                         .willReturn(initialModels.get(1));
 
                         given(defaultModelRepository.saveAll(anyList())).willReturn(initialModels);
@@ -126,8 +126,8 @@ class UserServiceImplTest extends BaseServiceTest {
                         then(userRepository).should().findByUuidWithLock(uuid);
                         then(userRepository).should(times(2)).save(any(User.class));
                         then(defaultModelRepository).should().saveAll(anyList());
-                        then(defaultModelConverter).should().createDefaultModel(eq(newUser), eq(Gender.FEMALE), eq(1));
-                        then(defaultModelConverter).should().createDefaultModel(eq(newUser), eq(Gender.MALE), eq(2));
+                        then(defaultModelConverter).should().createDefaultModel(eq(newUser), eq(Gender.MALE), eq(1));
+                        then(defaultModelConverter).should().createDefaultModel(eq(newUser), eq(Gender.FEMALE), eq(2));
                 }
 
                 @Test
