@@ -9,7 +9,7 @@ import java.util.List;
 public class ResponseFixture {
 
     public static CategoryPredictionResponse createCategoryPredictionResponse() {
-        return new CategoryPredictionResponse(0, "TOP", 0.95);
+        return new CategoryPredictionResponse(0, "LONG_SLEEVE", 0.95);
     }
 
     public static CategoryPredictionResponse createCategoryPredictionResponse(String className, Double confidence) {
