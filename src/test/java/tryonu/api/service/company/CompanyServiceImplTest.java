@@ -4,6 +4,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
@@ -244,31 +246,29 @@ class CompanyServiceImplTest extends BaseServiceTest {
     @DisplayName("도메인 추출 테스트")
     class DomainExtraction {
 
-        @Test
+        @ParameterizedTest
+        @CsvSource({
+                "'https://musinsa.com/product/123', 'musinsa.com'",
+                "'https://www.musinsa.com/product/123', 'musinsa.com'",
+                "'https://m.a-bly.com/product/123', 'a-bly.com'",
+                "'https://shop.example.com/product/123', 'example.com'",
+                "'http://subdomain.test-site.co.kr/path', 'test-site.co'"
+        })
         @DisplayName("성공: 다양한 URL 패턴에서 도메인 추출")
-        void domainExtraction_VariousPatterns() {
-            // Given & When & Then
-            testDomainExtraction("https://musinsa.com/product/123", "musinsa.com");
-            testDomainExtraction("https://www.musinsa.com/product/123", "musinsa.com");
-            testDomainExtraction("https://m.a-bly.com/product/123", "a-bly.com");
-            testDomainExtraction("https://shop.example.com/product/123", "example.com");
-            testDomainExtraction("http://subdomain.test-site.co.kr/path", "test-site.co");
-        }
-
-        private void testDomainExtraction(String url, String expectedDomain) {
+        void domainExtraction_VariousPatterns(String url, String expectedDomain) {
+            // Given
             Company mockCompany = CompanyFixture.createCompany("test", expectedDomain);
             AssetResponse mockResponse = ResponseFixture.createAssetResponse();
 
             given(companyRepository.findByDomainAndIsActiveTrueOrThrow(expectedDomain)).willReturn(mockCompany);
             given(companyConverter.getAssetUrl(mockCompany)).willReturn(mockResponse);
 
+            // When
             AssetResponse result = companyService.getAssetResponseByUrl(url);
 
+            // Then
             assertThat(result).isNotNull();
             then(companyRepository).should().findByDomainAndIsActiveTrueOrThrow(expectedDomain);
-
-            // Reset mocks for next test
-            reset(companyRepository, companyConverter);
         }
     }
 }

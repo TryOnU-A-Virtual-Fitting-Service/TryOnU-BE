@@ -4,6 +4,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
@@ -184,17 +186,11 @@ class TryOnWriteServiceImplTest extends BaseServiceTest {
                         then(tryOnResultConverter).should().toClothEntity(clothImageUrl, null, category);
                 }
 
-                @Test
+                @ParameterizedTest
+                @EnumSource(value = Category.class, names = {"LONG_SLEEVE", "LONG_PANTS", "SLEEVELESS"})
                 @DisplayName("성공: 다양한 카테고리 처리")
-                void saveAndBuildResponse_Success_VariousCategories() {
+                void saveAndBuildResponse_Success_VariousCategories(Category category) {
                         // Given
-                        testCategoryProcessing(Category.LONG_SLEEVE);
-                        testCategoryProcessing(Category.LONG_PANTS);
-                        testCategoryProcessing(Category.SLEEVELESS);
-                }
-
-                private void testCategoryProcessing(Category category) {
-                        // Setup common test data
                         String clothImageUrl = "https://test-bucket.s3.amazonaws.com/clothes/test-"
                                         + category.name().toLowerCase()
                                         + ".jpg";
@@ -211,9 +207,6 @@ class TryOnWriteServiceImplTest extends BaseServiceTest {
                                         uploadedResultImageUrl,
                                         testDefaultModel.getId(),
                                         testDefaultModel.getModelName());
-
-                        // Reset mocks for clean test
-                        reset(tryOnResultConverter, clothRepository, tryOnResultRepository, userRepository);
 
                         given(tryOnResultConverter.toClothEntity(clothImageUrl, productPageUrl, category))
                                         .willReturn(cloth);

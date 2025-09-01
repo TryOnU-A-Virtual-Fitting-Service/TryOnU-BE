@@ -19,7 +19,6 @@ import lombok.*;
 public class User extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Setter
     Long id;
 
     @Column(name = "uuid", unique = true, nullable = false)

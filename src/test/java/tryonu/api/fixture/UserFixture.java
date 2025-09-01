@@ -25,7 +25,13 @@ public class UserFixture {
 
     public static User createUserWithId(Long id, String uuid) {
         User user = createUser(uuid);
-        user.setId(id);
+        try {
+            var idField = User.class.getDeclaredField("id");
+            idField.setAccessible(true);
+            idField.set(user, id);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException("Failed to set ID for User", e);
+        }
         return user;
     }
 
