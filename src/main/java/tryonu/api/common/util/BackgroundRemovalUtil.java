@@ -2,6 +2,8 @@ package tryonu.api.common.util;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,9 +27,12 @@ public class BackgroundRemovalUtil {
             // filename을 명시적으로 설정하여 서버가 파일명을 요구하는 경우에 대응
             String filename = file.getOriginalFilename() != null ? file.getOriginalFilename() : "image.jpg";
 
-            // filename이 포함된 Resource 생성
-            org.springframework.core.io.Resource fileResource = new org.springframework.core.io.InputStreamResource(
-                    file.getInputStream()) {
+            // MultipartFile을 byte[]로 변환하여 여러 번 읽을 있게 함
+            byte[] fileBytes = file.getBytes();
+
+            // filename이 포함된 ByteArrayResource 생성 (여러 번 읽기 가능)
+            Resource fileResource = new ByteArrayResource(
+                    fileBytes) {
                 @Override
                 public String getFilename() {
                     return filename;
