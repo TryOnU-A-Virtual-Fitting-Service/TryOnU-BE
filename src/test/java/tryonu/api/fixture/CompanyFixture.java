@@ -11,7 +11,6 @@ public class CompanyFixture {
         return Company.builder()
                 .companyName("테스트 패션 컴퍼니")
                 .domain("test-fashion.com")
-                .pluginKey("test-plugin-key")
                 .logoUrl("https://test-bucket.s3.amazonaws.com/logos/test-logo.png")
                 .isActive(true)
                 .build();
@@ -21,7 +20,6 @@ public class CompanyFixture {
         return Company.builder()
                 .companyName(companyName)
                 .domain(domain)
-                .pluginKey("plugin-" + domain.replace(".", "-"))
                 .logoUrl("https://test-bucket.s3.amazonaws.com/logos/" + domain + "-logo.png")
                 .isActive(true)
                 .build();
@@ -29,7 +27,13 @@ public class CompanyFixture {
 
     public static Company createCompanyWithId(Long id, String companyName, String domain) {
         Company company = createCompany(companyName, domain);
-        company.setId(id);
+        try {
+            var idField = Company.class.getDeclaredField("id");
+            idField.setAccessible(true);
+            idField.set(company, id);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to set ID", e);
+        }
         return company;
     }
 
@@ -37,7 +41,6 @@ public class CompanyFixture {
         return Company.builder()
                 .companyName("비활성 컴퍼니")
                 .domain("inactive-company.com")
-                .pluginKey("inactive-plugin-key")
                 .logoUrl("https://test-bucket.s3.amazonaws.com/logos/inactive-logo.png")
                 .isActive(false)
                 .build();

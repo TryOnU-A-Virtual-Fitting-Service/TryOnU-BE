@@ -12,7 +12,7 @@ public class ClothFixture {
         return Cloth.builder()
                 .imageUrl("https://test-bucket.s3.amazonaws.com/clothes/test-shirt.jpg")
                 .productPageUrl("https://test-fashion.com/products/test-shirt")
-                .category(Category.TOP)
+                .category(Category.LONG_SLEEVE)
                 .build();
     }
 
@@ -29,7 +29,13 @@ public class ClothFixture {
                 "https://test-bucket.s3.amazonaws.com/clothes/test-" + category.name().toLowerCase() + ".jpg",
                 "https://test-fashion.com/products/test-" + category.name().toLowerCase(),
                 category);
-        cloth.setId(id);
+        try {
+            var idField = Cloth.class.getDeclaredField("id");
+            idField.setAccessible(true);
+            idField.set(cloth, id);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to set ID", e);
+        }
         return cloth;
     }
 
@@ -37,20 +43,20 @@ public class ClothFixture {
         return createCloth(
                 "https://test-bucket.s3.amazonaws.com/clothes/test-top.jpg",
                 "https://test-fashion.com/products/test-top",
-                Category.TOP);
+                Category.LONG_SLEEVE);
     }
 
     public static Cloth createBottomCloth() {
         return createCloth(
                 "https://test-bucket.s3.amazonaws.com/clothes/test-bottom.jpg",
                 "https://test-fashion.com/products/test-bottom",
-                Category.BOTTOM);
+                Category.LONG_PANTS);
     }
 
     public static Cloth createDressCloth() {
         return createCloth(
                 "https://test-bucket.s3.amazonaws.com/clothes/test-dress.jpg",
                 "https://test-fashion.com/products/test-dress",
-                Category.DRESS);
+                Category.LONG_SLEEVE);
     }
 }

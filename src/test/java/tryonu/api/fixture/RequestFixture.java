@@ -57,11 +57,17 @@ public class RequestFixture {
 
     public static VirtualFittingRequest createVirtualFittingRequest() {
         return new VirtualFittingRequest(
-                "https://test-bucket.s3.amazonaws.com/models/default-model.jpg",
-                "https://test-bucket.s3.amazonaws.com/clothes/test-shirt.jpg");
+                "tryon-v1.6",
+                new VirtualFittingRequest.VirtualFittingInputs(
+                        "https://test-bucket.s3.amazonaws.com/models/default-model.jpg",
+                        "https://test-bucket.s3.amazonaws.com/clothes/test-shirt.jpg",
+                        "auto", "balanced", "auto", 1, null));
     }
 
     public static VirtualFittingRequest createVirtualFittingRequest(String modelUrl, String clothUrl) {
-        return new VirtualFittingRequest(modelUrl, clothUrl);
+        return new VirtualFittingRequest(
+                "tryon-v1.6",
+                new VirtualFittingRequest.VirtualFittingInputs(
+                        modelUrl, clothUrl, "auto", "balanced", "auto", 1, null));
     }
 }

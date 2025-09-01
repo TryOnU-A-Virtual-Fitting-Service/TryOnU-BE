@@ -68,17 +68,14 @@ public class ResponseFixture {
     }
 
     public static AssetResponse createAssetResponse() {
-        return new AssetResponse("https://cdn.example.com/company/test/logo.png");
+        return new AssetResponse("test-company.com", "https://cdn.example.com/company/test/logo.png");
     }
 
     public static CompanyResponse createCompanyResponse() {
         return new CompanyResponse(
-                1L,
                 "testcompany",
                 "test-company.com",
-                "test-plugin-key",
-                "https://cdn.example.com/company/test/logo.png",
-                true);
+                "test-plugin-key");
     }
 
     public static TryOnResponse createTryOnResponse() {

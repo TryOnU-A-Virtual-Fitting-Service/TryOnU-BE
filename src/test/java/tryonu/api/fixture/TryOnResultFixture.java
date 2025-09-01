@@ -15,9 +15,9 @@ public class TryOnResultFixture {
                 .cloth(ClothFixture.createCloth())
                 .user(UserFixture.createUser())
                 .modelUrl("https://test-bucket.s3.amazonaws.com/models/default-model.jpg")
-                .resultImageUrl("https://test-bucket.s3.amazonaws.com/results/test-result.jpg")
+                .imageUrl("https://test-bucket.s3.amazonaws.com/results/test-result.jpg")
                 .virtualFittingId("test-fitting-id-12345")
-                .defaultModel(DefaultModelFixture.createDefaultModel())
+                .defaultModelId(1L)
                 .build();
     }
 
@@ -26,15 +26,21 @@ public class TryOnResultFixture {
                 .cloth(cloth)
                 .user(user)
                 .modelUrl(defaultModel.getImageUrl())
-                .resultImageUrl("https://test-bucket.s3.amazonaws.com/results/test-result.jpg")
+                .imageUrl("https://test-bucket.s3.amazonaws.com/results/test-result.jpg")
                 .virtualFittingId("test-fitting-id-12345")
-                .defaultModel(defaultModel)
+                .defaultModelId(defaultModel.getId())
                 .build();
     }
 
     public static TryOnResult createTryOnResultWithId(Long id, Cloth cloth, User user, DefaultModel defaultModel) {
         TryOnResult result = createTryOnResult(cloth, user, defaultModel);
-        result.setId(id);
+        try {
+            var idField = TryOnResult.class.getDeclaredField("id");
+            idField.setAccessible(true);
+            idField.set(result, id);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to set ID", e);
+        }
         return result;
     }
 
@@ -44,9 +50,9 @@ public class TryOnResultFixture {
                 .cloth(ClothFixture.createCloth())
                 .user(UserFixture.createUser())
                 .modelUrl(modelUrl)
-                .resultImageUrl(resultImageUrl)
+                .imageUrl(resultImageUrl)
                 .virtualFittingId(virtualFittingId)
-                .defaultModel(DefaultModelFixture.createDefaultModel())
+                .defaultModelId(1L)
                 .build();
     }
 }

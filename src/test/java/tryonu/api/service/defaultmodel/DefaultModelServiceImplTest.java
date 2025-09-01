@@ -17,13 +17,9 @@ import tryonu.api.common.util.BackgroundRemovalUtil;
 import tryonu.api.common.auth.SecurityUtils;
 import tryonu.api.domain.User;
 import tryonu.api.domain.DefaultModel;
-import tryonu.api.dto.requests.DefaultModelBatchUpdateRequest;
-import tryonu.api.dto.requests.DefaultModelUpdateItemRequest;
 import tryonu.api.dto.responses.DefaultModelResponse;
 import tryonu.api.dto.responses.DefaultModelDto;
 import tryonu.api.common.exception.CustomException;
-import tryonu.api.common.exception.enums.ErrorCode;
-import tryonu.api.common.enums.BatchUpdateStatus;
 
 import tryonu.api.fixture.*;
 
