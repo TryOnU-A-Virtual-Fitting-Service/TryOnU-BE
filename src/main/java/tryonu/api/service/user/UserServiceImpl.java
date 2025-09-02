@@ -71,12 +71,13 @@ public class UserServiceImpl implements UserService {
                         firstModelName = model.getModelName();
                     }
                 }
-                defaultModelRepository.saveAll(initialModels);
+                List<DefaultModel> savedModels = defaultModelRepository.saveAll(initialModels);
 
                 // 첫 번째 기본 모델의 URL과 modelName 설정
                 user.updateRecentlyUsedModelUrl(firstModelUrl);
                 user.updateRecentlyUsedModelName(firstModelName);
-                user = userRepository.save(user);
+                user.updateRecentlyUsedModelId(savedModels.getFirst().getId());
+                    user = userRepository.save(user);
 
                 log.info("[UserService] 새 사용자 생성 완료: userId={}, uuid={}, recentlyUsedModelUrl={}, modelName={}",
                         user.getId(), request.uuid(), firstModelUrl, firstModelName);

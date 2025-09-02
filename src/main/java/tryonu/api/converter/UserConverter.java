@@ -17,20 +17,20 @@ public class UserConverter {
      * SimpleUserResponse 생성
      */
     public SimpleUserResponse toSimpleUserResponse(User user) {
-        RecentlyUsedModel recentlyUsedModel = createRecentlyUsedModel(user.getRecentlyUsedModelUrl(), user.getRecentlyUsedModelName());
+        RecentlyUsedModel recentlyUsedModel = createRecentlyUsedModel(user.getRecentlyUsedModelId(), user.getRecentlyUsedModelUrl(), user.getRecentlyUsedModelName());
         return new SimpleUserResponse(recentlyUsedModel);
     }
 
     /**
      * URL에서 파일명을 추출하여 RecentlyUsedModel 생성
      */
-    private RecentlyUsedModel createRecentlyUsedModel(String modelUrl, String modelName) {
+    private RecentlyUsedModel createRecentlyUsedModel(Long defaultModelId, String modelUrl, String modelName) {
         if (modelUrl == null || modelUrl.isEmpty()) {
             return null;
         }
         
         String imageName = extractImageNameFromUrl(modelUrl);
-        return new RecentlyUsedModel(modelUrl, imageName, modelName);
+        return new RecentlyUsedModel(defaultModelId, modelUrl, imageName, modelName);
     }
 
     /**

@@ -53,6 +53,7 @@ public class TryOnWriteServiceImpl implements TryOnWriteService {
 
         currentUser.updateRecentlyUsedModelUrl(uploadedResultImageUrl);
         currentUser.updateRecentlyUsedModelName(defaultModel.getModelName());
+        currentUser.updateRecentlyUsedModelId(defaultModel.getId());
         userRepository.save(currentUser);
 
         return tryOnResultConverter.toTryOnResponse(tryOnResult, defaultModel.getModelName());
