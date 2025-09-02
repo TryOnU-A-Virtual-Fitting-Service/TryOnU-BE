@@ -82,7 +82,7 @@ public record ApiResponseWrapper<T>(
         @Schema(description = "에러 메시지", example = "사용자를 찾을 수 없습니다.")
         String message,
 
-        @Schema(description = "필드별 validation 에러", example = "{ 'name': '이름은 필수입니다.' }")
+        @Schema(description = "필드별 validation 에러", example = "{\"name\": \"이름은 필수입니다.\"}")
         @JsonInclude(JsonInclude.Include.NON_NULL)
         Map<String, String> validationErrors
     ) {}
