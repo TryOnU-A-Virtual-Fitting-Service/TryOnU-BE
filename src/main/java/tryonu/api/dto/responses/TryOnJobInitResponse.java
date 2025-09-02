@@ -1,4 +1,6 @@
 package tryonu.api.dto.responses;
 
-public class TryOnJobInitResponse {
+public record TryOnJobInitResponse(
+    String tryOnJobId
+) {
 }

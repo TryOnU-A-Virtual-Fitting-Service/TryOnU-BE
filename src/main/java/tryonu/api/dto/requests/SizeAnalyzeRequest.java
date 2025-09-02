@@ -1,4 +1,7 @@
 package tryonu.api.dto.requests;
 
-public record SizeAnalyzeRequest() {
+public record SizeAnalyzeRequest(
+        String tryOnId,
+        String sizeInfo
+) {
 }

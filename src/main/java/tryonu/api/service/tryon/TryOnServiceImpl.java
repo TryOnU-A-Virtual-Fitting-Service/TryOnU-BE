@@ -8,29 +8,27 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import tryonu.api.dto.requests.TryOnRequestDto;
 import tryonu.api.dto.requests.VirtualFittingRequest;
-import tryonu.api.dto.responses.TryOnResponse;
-import tryonu.api.dto.responses.VirtualFittingResponse;
-import tryonu.api.dto.responses.VirtualFittingStatusResponse;
+import tryonu.api.dto.responses.*;
 import tryonu.api.domain.User;
 import tryonu.api.domain.DefaultModel;
 import tryonu.api.repository.tryonresult.TryOnResultRepository;
 import tryonu.api.common.util.VirtualFittingUtil;
 import tryonu.api.common.util.ImageUploadUtil;
 import tryonu.api.common.util.CategoryPredictionUtil;
-import tryonu.api.dto.responses.CategoryPredictionResponse;
 import tryonu.api.common.exception.CustomException;
 import tryonu.api.common.exception.enums.ErrorCode;
 import tryonu.api.converter.TryOnResultConverter;
 import tryonu.api.common.enums.Category;
 import tryonu.api.common.auth.SecurityUtils;
-import tryonu.api.dto.responses.TryOnResultDto;
-import tryonu.api.dto.responses.UserInfoResponse;
 import tryonu.api.repository.defaultmodel.DefaultModelRepository;
 import tryonu.api.converter.UserConverter;
-import tryonu.api.dto.responses.DefaultModelDto;
+import tryonu.api.repository.sizeadvice.SizeAdviceRepository;
+import tryonu.api.converter.SizeAdviceConverter;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
+
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -50,12 +48,27 @@ public class TryOnServiceImpl implements TryOnService {
     private final DefaultModelRepository defaultModelRepository;
     private final UserConverter userConverter;
     private final TryOnWriteService tryOnWriteService;
+    private final SizeAdviceRepository sizeAdviceRepository;
+    private final SizeAdviceConverter sizeAdviceConverter;
 
     @Value("${virtual-fitting.polling.max-wait-time-ms:60000}") // 기본 1분
     private long maxWaitTimeMs;
 
     @Value("${virtual-fitting.polling.interval-ms:1000}") // 기본 1초 간격
     private long pollIntervalMs;
+
+    @Override
+    @Transactional(readOnly = false)
+    public TryOnJobInitResponse createTryOnJob() {
+        String tryOnJobId = UUID.randomUUID().toString();
+        User currentUser = SecurityUtils.getCurrentUser();
+
+        log.info("[TryOnService] Created Try-On Job with ID: {}", tryOnJobId);
+        tryOnResultRepository.save(tryOnResultConverter.toTryOnResultEntity(tryOnJobId, currentUser));
+        sizeAdviceRepository.save(sizeAdviceConverter.toSizeAdviceEntity(tryOnJobId, currentUser));
+        return new TryOnJobInitResponse(tryOnJobId);
+
+    }
 
     @Override
     public TryOnResponse tryOn(TryOnRequestDto request, MultipartFile file) {

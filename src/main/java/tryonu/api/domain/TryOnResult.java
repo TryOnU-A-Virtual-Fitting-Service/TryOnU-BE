@@ -5,8 +5,8 @@ import lombok.*;
 
 @Entity
 @Table(name = "try_on_results", indexes = {
-    @Index(name = "idx_try_on_results_is_deleted", columnList = "is_deleted"),
-    @Index(name = "idx_try_on_results_user_id", columnList = "user_id")
+        @Index(name = "idx_try_on_results_is_deleted", columnList = "is_deleted"),
+        @Index(name = "idx_try_on_results_user_id", columnList = "user_id")
 })
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,27 +17,27 @@ public class TryOnResult extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
+    @Column(name = "try_on_job_id", nullable = false, unique = true)
+    String tryOnJobId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     User user; // 외래키 관계로 설정
-    
-    @Column(name = "model_url", nullable = false)
+
+    @Column(name = "model_url")
     String modelUrl;
 
-    @Column(name = "default_model_id", nullable = true)
+    @Column(name = "default_model_id")
     Long defaultModelId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cloth_id", nullable = true)
+    @JoinColumn(name = "cloth_id")
     Cloth cloth;
 
-    @Column(name = "size_advice", nullable = true, columnDefinition = "TEXT") // 사이즈 정보 생성 실패할 경우 null
-    String sizeAdvice;
-
-    @Column(name = "image_url", nullable = false)
+    @Column(name = "image_url")
     String imageUrl;
 
-    @Column(name = "virtual_fitting_id", nullable = true)
+    @Column(name = "virtual_fitting_id")
     String virtualFittingId; // 가상 피팅 API 응답 ID
 
     @Column(name = "is_deleted", nullable = false)
