@@ -58,7 +58,12 @@ public enum ErrorCode {
 
     // 인프라 관련 에러
     S3_CLIENT_CREATION_FAILED("INF001", "S3 클라이언트 생성에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    OUT_OF_MEMORY_ERROR("INF002", "서버 메모리 부족으로 요청을 처리할 수 없습니다. 잠시 후 다시 시도해 주세요.", HttpStatus.SERVICE_UNAVAILABLE);
+    OUT_OF_MEMORY_ERROR("INF002", "서버 메모리 부족으로 요청을 처리할 수 없습니다. 잠시 후 다시 시도해 주세요.", HttpStatus.SERVICE_UNAVAILABLE),
+
+    // AI/Bedrock 관련 에러
+    AI_REQUEST_BUILD_FAILED("AI001", "AI 요청 생성에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    AI_SERVICE_UNAVAILABLE("AI002", "AI 서비스에 일시적인 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.", HttpStatus.SERVICE_UNAVAILABLE),
+    AI_CREDENTIALS_ERROR("AI003", "AI 서비스 인증에 실패했습니다.", HttpStatus.UNAUTHORIZED);
 
     private final String code;
     private final String message;
