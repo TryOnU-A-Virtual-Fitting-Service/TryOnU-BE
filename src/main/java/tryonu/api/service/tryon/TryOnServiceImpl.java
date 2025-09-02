@@ -74,7 +74,9 @@ public class TryOnServiceImpl implements TryOnService {
         return new TryOnJobInitResponse(tryOnJobId);
 
     }
+
     @Override
+    @Transactional
     public SizeAdviceResponse giveSizeAdvice(SizeAdviceRequest request) {
         String tryOnJobId = request.tryOnJobId();
         String sizeInfo = request.sizeInfo();        
