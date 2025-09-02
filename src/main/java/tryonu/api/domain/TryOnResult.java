@@ -45,4 +45,50 @@ public class TryOnResult extends BaseEntity {
     @Setter
     Boolean isDeleted = false; // 삭제 여부. 삭제되면 true로
 
+    // Setter methods
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setTryOnJobId(String tryOnJobId) {
+        this.tryOnJobId = tryOnJobId;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public void setModelUrl(String modelUrl) {
+        this.modelUrl = modelUrl;
+    }
+
+    public void setDefaultModelId(Long defaultModelId) {
+        this.defaultModelId = defaultModelId;
+    }
+
+    public void setCloth(Cloth cloth) {
+        this.cloth = cloth;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public void setVirtualFittingId(String virtualFittingId) {
+        this.virtualFittingId = virtualFittingId;
+    }
+
+    /**
+     * 피팅 결과 정보 업데이트
+     */
+    public void updateTryOnResult(Cloth cloth, User user, String modelUrl, String imageUrl,
+            String virtualFittingId, Long defaultModelId) {
+        this.cloth = cloth;
+        this.user = user;
+        this.modelUrl = modelUrl;
+        this.imageUrl = imageUrl;
+        this.virtualFittingId = virtualFittingId;
+        this.defaultModelId = defaultModelId;
+    }
+
 }

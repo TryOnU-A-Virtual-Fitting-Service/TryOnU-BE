@@ -76,6 +76,7 @@ public class TryOnServiceImpl implements TryOnService {
         String modelUrl = request.modelUrl();
         Long defaultModelId = request.defaultModelId();
         String productPageUrl = request.productPageUrl();
+        String tryOnJobId = request.tryOnJobId();
 
         // 현재 인증된 사용자 및 기본 모델 조회
         User currentUser = SecurityUtils.getCurrentUser();
@@ -123,6 +124,7 @@ public class TryOnServiceImpl implements TryOnService {
                 // 저장 및 응답 생성은 짧은 쓰기 트랜잭션으로 분리
                 Category category = parseCategory(categoryPredictionResponse.className());
                 TryOnResponse response = tryOnWriteService.saveAndBuildResponse(
+                        tryOnJobId,
                         category,
                         clothImageUrl,
                         productPageUrl,
@@ -136,7 +138,8 @@ public class TryOnServiceImpl implements TryOnService {
             } else {
                 // fashn.ai API 에러 구체적 로깅 및 처리
                 handleVirtualFittingError(modelUrl, finalStatus);
-                throw new RuntimeException("This should never be reached"); // handleVirtualFittingError always throws
+                // 이 코드는 절대 실행되지 않음 (handleVirtualFittingError가 항상 예외를 던짐)
+                throw new RuntimeException("Unreachable code");
             }
         } catch (Exception e) {
             throw e;

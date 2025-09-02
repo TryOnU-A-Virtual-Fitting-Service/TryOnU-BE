@@ -14,6 +14,7 @@ public interface TryOnWriteService {
      * 외부 연산이 끝난 이후, DB에 필요한 엔티티들을 원자적으로 저장하고 응답을 만든다.
      */
     TryOnResponse saveAndBuildResponse(
+            String tryOnJobId,
             Category category,
             String clothImageUrl,
             String productPageUrl,

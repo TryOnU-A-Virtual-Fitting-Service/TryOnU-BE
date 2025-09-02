@@ -37,6 +37,16 @@ public class TryOnResultRepositoryAdapter implements TryOnResultRepository {
     }
 
     @Override
+    public TryOnResult findByTryOnJobIdOrThrow(@NonNull String tryOnJobId) {
+        return jpaTryOnResultRepository.findByTryOnJobIdAndIsDeletedFalse(tryOnJobId)
+                .orElseThrow(() -> {
+                    log.error("[TryOnResultRepositoryAdapter] 피팅 결과를 찾을 수 없음 - tryOnJobId: {}", tryOnJobId);
+                    return new CustomException(ErrorCode.TRY_ON_RESULT_NOT_FOUND,
+                            String.format("Try-on 작업 ID '%s'에 해당하는 피팅 결과를 찾을 수 없습니다.", tryOnJobId));
+                });
+    }
+
+    @Override
     public List<TryOnResult> findAllByUserIdAndIsDeletedFalseOrThrow(@NonNull Long userId) {
         List<TryOnResult> tryOnResults = jpaTryOnResultRepository.findByUser_IdAndIsDeletedFalse(userId);
         log.debug("[TryOnResultRepositoryAdapter] 사용자별 피팅 결과 조회 - userId: {}, count: {}", userId, tryOnResults.size());

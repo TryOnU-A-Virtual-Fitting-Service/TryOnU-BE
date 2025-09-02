@@ -27,6 +27,7 @@ public class TryOnWriteServiceImpl implements TryOnWriteService {
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public TryOnResponse saveAndBuildResponse(
+            String tryOnJobId,
             Category category,
             String clothImageUrl,
             String productPageUrl,
@@ -38,13 +39,16 @@ public class TryOnWriteServiceImpl implements TryOnWriteService {
         Cloth cloth = tryOnResultConverter.toClothEntity(clothImageUrl, productPageUrl, category);
         clothRepository.save(cloth);
 
-        TryOnResult tryOnResult = tryOnResultConverter.toTryOnResultEntity(
+        TryOnResult tryOnResult = tryOnResultRepository.findByTryOnJobIdOrThrow(tryOnJobId);
+
+        // 기존 tryOnResult 업데이트
+        tryOnResult.updateTryOnResult(
                 cloth,
                 currentUser,
                 modelUrl,
                 uploadedResultImageUrl,
                 virtualFittingId,
-                defaultModel);
+                defaultModel.getId());
         tryOnResultRepository.save(tryOnResult);
 
         currentUser.updateRecentlyUsedModelUrl(uploadedResultImageUrl);
