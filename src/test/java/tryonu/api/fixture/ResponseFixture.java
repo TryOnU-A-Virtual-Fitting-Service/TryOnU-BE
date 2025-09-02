@@ -80,15 +80,15 @@ public class ResponseFixture {
 
     public static TryOnResponse createTryOnResponse() {
         return new TryOnResponse(
-                1L,
+                "test-job-12345",
                 "https://test-bucket.s3.amazonaws.com/results/test-result.jpg",
                 1L,
                 "기본 여성 모델");
     }
 
-    public static TryOnResponse createTryOnResponse(Long tryOnResultId, String resultImageUrl, Long defaultModelId,
+    public static TryOnResponse createTryOnResponse(String tryOnJobId, String resultImageUrl, Long defaultModelId,
             String modelName) {
-        return new TryOnResponse(tryOnResultId, resultImageUrl, defaultModelId, modelName);
+        return new TryOnResponse(tryOnJobId, resultImageUrl, defaultModelId, modelName);
     }
 
     public static DefaultModelResponse createDefaultModelResponse() {
