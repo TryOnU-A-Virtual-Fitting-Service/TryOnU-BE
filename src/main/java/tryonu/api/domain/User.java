@@ -29,6 +29,10 @@ public class User extends BaseEntity {
     @Builder.Default
     Boolean isDeleted = false;
 
+    @Column(name = "recently_used_model_id")
+    @Setter
+    Long recentlyUsedModelId;
+
     @Column(name = "recently_used_model_url", columnDefinition = "TEXT")
     @Setter
     String recentlyUsedModelUrl;
@@ -56,5 +60,12 @@ public class User extends BaseEntity {
      */
     public void updateRecentlyUsedModelName(String modelName) {
         this.recentlyUsedModelName = modelName;
+    }
+
+    /**
+     * 최근 사용한 모델 ID를 업데이트합니다.
+     */
+    public void updateRecentlyUsedModelId(Long modelId) {
+        this.recentlyUsedModelId = modelId;
     }
 }
