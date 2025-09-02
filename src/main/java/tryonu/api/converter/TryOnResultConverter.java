@@ -51,7 +51,6 @@ public class TryOnResultConverter {
                 .modelUrl(modelUrl)
                 .imageUrl(resultImageUrl)
                 .virtualFittingId(virtualFittingId)
-                .sizeAdvice(null)
                 .build();
     }
 
@@ -67,7 +66,13 @@ public class TryOnResultConverter {
                 .imageUrl(resultImageUrl)
                 .virtualFittingId(virtualFittingId)
                 .defaultModelId(defaultModel.getId())
-                .sizeAdvice(null)
+                .build();
+    }
+
+    public TryOnResult toTryOnResultEntity(String tryOnJobId, User user) {
+        return TryOnResult.builder()
+                .tryOnJobId(tryOnJobId)
+                .user(user)
                 .build();
     }
 

@@ -171,3 +171,5 @@ src/main/resources/data-dev.sql
 src/main/resources/data-prod.sql
 
 cors-test.html
+
+fitting-test.json

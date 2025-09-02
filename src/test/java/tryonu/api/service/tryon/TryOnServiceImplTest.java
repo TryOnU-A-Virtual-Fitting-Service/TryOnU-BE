@@ -127,6 +127,7 @@ class TryOnServiceImplTest extends BaseServiceTest {
                                 given(imageUploadUtil.uploadTryOnResultImageFromUrl(completedStatus.output().get(0)))
                                                 .willReturn(uploadedResultImageUrl);
                                 given(tryOnWriteService.saveAndBuildResponse(
+                                                eq(testRequest.tryOnJobId()),
                                                 eq(Category.LONG_SLEEVE),
                                                 eq(clothImageUrl),
                                                 eq(testRequest.productPageUrl()),

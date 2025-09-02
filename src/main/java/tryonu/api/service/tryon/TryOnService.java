@@ -2,6 +2,7 @@ package tryonu.api.service.tryon;
 
 import org.springframework.web.multipart.MultipartFile;
 import tryonu.api.dto.requests.TryOnRequestDto;
+import tryonu.api.dto.responses.TryOnJobInitResponse;
 import tryonu.api.dto.responses.TryOnResponse;
 import tryonu.api.dto.responses.TryOnResultDto;
 import tryonu.api.dto.responses.UserInfoResponse;
@@ -12,7 +13,9 @@ import java.util.List;
  * 가상 피팅 서비스 인터페이스
  */
 public interface TryOnService {
-    
+
+    TryOnJobInitResponse createTryOnJob();
+
     /**
      * 가상 피팅 실행
      *

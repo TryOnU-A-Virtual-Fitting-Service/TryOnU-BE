@@ -12,6 +12,7 @@ public class RequestFixture {
 
     public static TryOnRequestDto createTryOnRequest() {
         return new TryOnRequestDto(
+                "test-job-12345",
                 "https://test-bucket.s3.amazonaws.com/models/default-female-model.jpg",
                 1L,
                 "https://test-fashion.com/products/test-shirt");
@@ -19,6 +20,7 @@ public class RequestFixture {
 
     public static TryOnRequestDto createTryOnRequest(String modelUrl, Long defaultModelId) {
         return new TryOnRequestDto(
+                "test-job-12345",
                 modelUrl,
                 defaultModelId,
                 "https://test-fashion.com/products/test-shirt");
@@ -26,6 +28,7 @@ public class RequestFixture {
 
     public static TryOnRequestDto createTryOnRequestWithoutProductUrl(String modelUrl, Long defaultModelId) {
         return new TryOnRequestDto(
+                "test-job-12345",
                 modelUrl,
                 defaultModelId,
                 null);
