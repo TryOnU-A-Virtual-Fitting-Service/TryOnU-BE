@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Value;
 import software.amazon.awssdk.services.bedrockruntime.BedrockRuntimeClient;
+import software.amazon.awssdk.services.bedrockruntime.model.BedrockRuntimeException;
 import software.amazon.awssdk.services.bedrockruntime.model.InvokeModelRequest;
 import software.amazon.awssdk.services.bedrockruntime.model.InvokeModelResponse;
 import software.amazon.awssdk.core.SdkBytes;
@@ -14,6 +15,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.Map;
 import java.util.List;
 import java.util.HashMap;
+import tryonu.api.common.exception.CustomException;
+import tryonu.api.common.exception.enums.ErrorCode;
 
 @Slf4j
 @Component
@@ -45,9 +48,7 @@ public class BedrockSizeAnalyzer implements SizeAnalyzer {
         try {
             ObjectMapper mapper = new ObjectMapper();
 
-            Map<String, Object> systemBlock = Map.of(
-                    "type", "text",
-                    "text", system);
+
 
             Map<String, Object> userContent = Map.of(
                     "type", "text",
@@ -80,12 +81,16 @@ public class BedrockSizeAnalyzer implements SizeAnalyzer {
             advice = "사이즈 정보를 확인할 수 없어 일반적인 정사이즈 착용을 권장합니다.";
         }
         return new SizeAnalyzeResult(advice.trim());
-        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
-            log.warn("[BedrockSizeAnalyzer] JSON build/parse failed: {}", e.getMessage());
-            return new SizeAnalyzeResult("사이즈 정보를 확인할 수 없어 일반적인 정사이즈 착용을 권장합니다.");
-        } catch (software.amazon.awssdk.services.bedrockruntime.model.BedrockRuntimeException e) {
-            log.warn("[BedrockSizeAnalyzer] Bedrock invoke failed: {}", e.getMessage());
-            return new SizeAnalyzeResult("사이즈 정보를 확인할 수 없어 일반적인 정사이즈 착용을 권장합니다.");
+        } catch (JsonProcessingException e) {
+            throw new CustomException(ErrorCode.AI_REQUEST_BUILD_FAILED, "사이즈 추천 AI 요청 생성 중 오류가 발생했습니다: " + e.getMessage());
+        } catch (BedrockRuntimeException e) {
+            if (e.getMessage().contains("credentials") || e.getMessage().contains("authentication")) {
+                throw new CustomException(ErrorCode.AI_CREDENTIALS_ERROR, "사이즈 추천 AI 서비스 인증에 실패했습니다: " + e.getMessage());
+            } else {
+                throw new CustomException(ErrorCode.AI_SERVICE_UNAVAILABLE, "사이즈 추천 AI 서비스 호출에 실패했습니다: " + e.getMessage());
+            }
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.AI_SERVICE_UNAVAILABLE, "사이즈 추천 AI 서비스 처리 중 예상치 못한 오류가 발생했습니다: " + e.getMessage());
         }
     }
 
