@@ -120,9 +120,7 @@ class TryOnWriteServiceImplTest extends BaseServiceTest {
                         // Verify interactions
                         then(tryOnResultConverter).should().toClothEntity(clothImageUrl, productPageUrl, category);
                         then(clothRepository).should().save(testCloth);
-                        then(tryOnResultConverter).should().toTryOnResultEntity(
-                                        testCloth, testUser, modelUrl, uploadedResultImageUrl, virtualFittingId,
-                                        testDefaultModel);
+                        then(tryOnResultRepository).should().findByTryOnJobIdOrThrow(tryOnJobId);
                         then(tryOnResultRepository).should().save(testTryOnResult);
                         then(userRepository).should().save(testUser);
                         then(tryOnResultConverter).should().toTryOnResponse(testTryOnResult, defaultModelName);
@@ -130,6 +128,9 @@ class TryOnWriteServiceImplTest extends BaseServiceTest {
                         // Verify user information update
                         assertThat(testUser.getRecentlyUsedModelUrl()).isEqualTo(uploadedResultImageUrl);
                         assertThat(testUser.getRecentlyUsedModelName()).isEqualTo(defaultModelName);
+                        verify(tryOnResultConverter).toClothEntity(anyString(), anyString(), any());
+                        verify(tryOnResultConverter).toTryOnResponse(any(TryOnResult.class), anyString());
+
                 }
 
                 @Test
