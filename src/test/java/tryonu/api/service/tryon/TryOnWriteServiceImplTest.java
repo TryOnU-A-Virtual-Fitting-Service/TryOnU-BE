@@ -73,6 +73,7 @@ class TryOnWriteServiceImplTest extends BaseServiceTest {
                 @DisplayName("성공: 완전한 트라이온 결과 저장 및 응답 생성")
                 void saveAndBuildResponse_Success() {
                         // Given
+                        String tryOnJobId = "test-job-12345";
                         Category category = Category.LONG_SLEEVE;
                         String clothImageUrl = "https://test-bucket.s3.amazonaws.com/clothes/test-cloth.jpg";
                         String productPageUrl = "https://test-shop.com/product/123";
@@ -90,9 +91,7 @@ class TryOnWriteServiceImplTest extends BaseServiceTest {
                         given(tryOnResultConverter.toClothEntity(clothImageUrl, productPageUrl, category))
                                         .willReturn(testCloth);
                         given(clothRepository.save(testCloth)).willReturn(testCloth);
-                        given(tryOnResultConverter.toTryOnResultEntity(
-                                        testCloth, testUser, modelUrl, uploadedResultImageUrl, virtualFittingId,
-                                        testDefaultModel))
+                        given(tryOnResultRepository.findByTryOnJobIdOrThrow(tryOnJobId))
                                         .willReturn(testTryOnResult);
                         given(tryOnResultRepository.save(testTryOnResult)).willReturn(testTryOnResult);
                         given(userRepository.save(testUser)).willReturn(testUser);
@@ -101,6 +100,7 @@ class TryOnWriteServiceImplTest extends BaseServiceTest {
 
                         // When
                         TryOnResponse result = tryOnWriteService.saveAndBuildResponse(
+                                        tryOnJobId,
                                         category,
                                         clothImageUrl,
                                         productPageUrl,
@@ -136,6 +136,7 @@ class TryOnWriteServiceImplTest extends BaseServiceTest {
                 @DisplayName("성공: productPageUrl이 null인 경우 처리")
                 void saveAndBuildResponse_Success_NullProductPageUrl() {
                         // Given
+                        String tryOnJobId = "test-job-12345";
                         Category category = Category.LONG_SLEEVE;
                         String clothImageUrl = "https://test-bucket.s3.amazonaws.com/clothes/test-dress.jpg";
                         String productPageUrl = null; // null 값
@@ -158,9 +159,7 @@ class TryOnWriteServiceImplTest extends BaseServiceTest {
                         given(tryOnResultConverter.toClothEntity(clothImageUrl, productPageUrl, category))
                                         .willReturn(clothWithNullUrl);
                         given(clothRepository.save(clothWithNullUrl)).willReturn(clothWithNullUrl);
-                        given(tryOnResultConverter.toTryOnResultEntity(
-                                        clothWithNullUrl, testUser, modelUrl, uploadedResultImageUrl, virtualFittingId,
-                                        testDefaultModel))
+                        given(tryOnResultRepository.findByTryOnJobIdOrThrow(tryOnJobId))
                                         .willReturn(tryOnResultWithNullUrl);
                         given(tryOnResultRepository.save(tryOnResultWithNullUrl)).willReturn(tryOnResultWithNullUrl);
                         given(userRepository.save(testUser)).willReturn(testUser);
@@ -169,6 +168,7 @@ class TryOnWriteServiceImplTest extends BaseServiceTest {
 
                         // When
                         TryOnResponse result = tryOnWriteService.saveAndBuildResponse(
+                                        tryOnJobId,
                                         category,
                                         clothImageUrl,
                                         productPageUrl, // null
@@ -187,10 +187,11 @@ class TryOnWriteServiceImplTest extends BaseServiceTest {
                 }
 
                 @ParameterizedTest
-                @EnumSource(value = Category.class, names = {"LONG_SLEEVE", "LONG_PANTS", "SLEEVELESS"})
+                @EnumSource(value = Category.class, names = { "LONG_SLEEVE", "LONG_PANTS", "SLEEVELESS" })
                 @DisplayName("성공: 다양한 카테고리 처리")
                 void saveAndBuildResponse_Success_VariousCategories(Category category) {
                         // Given
+                        String tryOnJobId = "test-job-12345";
                         String clothImageUrl = "https://test-bucket.s3.amazonaws.com/clothes/test-"
                                         + category.name().toLowerCase()
                                         + ".jpg";
@@ -211,9 +212,7 @@ class TryOnWriteServiceImplTest extends BaseServiceTest {
                         given(tryOnResultConverter.toClothEntity(clothImageUrl, productPageUrl, category))
                                         .willReturn(cloth);
                         given(clothRepository.save(cloth)).willReturn(cloth);
-                        given(tryOnResultConverter.toTryOnResultEntity(
-                                        cloth, testUser, modelUrl, uploadedResultImageUrl, virtualFittingId,
-                                        testDefaultModel))
+                        given(tryOnResultRepository.findByTryOnJobIdOrThrow(tryOnJobId))
                                         .willReturn(tryOnResult);
                         given(tryOnResultRepository.save(tryOnResult)).willReturn(tryOnResult);
                         given(userRepository.save(testUser)).willReturn(testUser);
@@ -222,6 +221,7 @@ class TryOnWriteServiceImplTest extends BaseServiceTest {
 
                         // When
                         TryOnResponse result = tryOnWriteService.saveAndBuildResponse(
+                                        tryOnJobId,
                                         category,
                                         clothImageUrl,
                                         productPageUrl,
