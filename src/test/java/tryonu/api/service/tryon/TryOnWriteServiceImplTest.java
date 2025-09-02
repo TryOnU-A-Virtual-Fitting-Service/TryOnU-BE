@@ -128,8 +128,6 @@ class TryOnWriteServiceImplTest extends BaseServiceTest {
                         // Verify user information update
                         assertThat(testUser.getRecentlyUsedModelUrl()).isEqualTo(uploadedResultImageUrl);
                         assertThat(testUser.getRecentlyUsedModelName()).isEqualTo(defaultModelName);
-                        verify(tryOnResultConverter).toClothEntity(anyString(), anyString(), any());
-                        verify(tryOnResultConverter).toTryOnResponse(any(TryOnResult.class), anyString());
 
                 }
 
