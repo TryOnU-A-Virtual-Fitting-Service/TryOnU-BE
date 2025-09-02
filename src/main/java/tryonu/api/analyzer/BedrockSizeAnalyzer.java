@@ -82,15 +82,19 @@ public class BedrockSizeAnalyzer implements SizeAnalyzer {
         }
         return new SizeAnalyzeResult(advice.trim());
         } catch (JsonProcessingException e) {
-            throw new CustomException(ErrorCode.AI_REQUEST_BUILD_FAILED, "사이즈 추천 AI 요청 생성 중 오류가 발생했습니다: " + e.getMessage());
+            log.error("AI 요청 JSON 생성에 실패했습니다.", e);
+            throw new CustomException(ErrorCode.AI_REQUEST_BUILD_FAILED);
         } catch (BedrockRuntimeException e) {
-            if (e.getMessage().contains("credentials") || e.getMessage().contains("authentication")) {
-                throw new CustomException(ErrorCode.AI_CREDENTIALS_ERROR, "사이즈 추천 AI 서비스 인증에 실패했습니다: " + e.getMessage());
+            log.error("Bedrock 서비스 호출에 실패했습니다.", e);
+            // HTTP 401 Unauthorized, 403 Forbidden 등은 인증/권한 오류로 간주
+            if (e.statusCode() == 401 || e.statusCode() == 403) {
+                throw new CustomException(ErrorCode.AI_CREDENTIALS_ERROR);
             } else {
-                throw new CustomException(ErrorCode.AI_SERVICE_UNAVAILABLE, "사이즈 추천 AI 서비스 호출에 실패했습니다: " + e.getMessage());
+                throw new CustomException(ErrorCode.AI_SERVICE_UNAVAILABLE);
             }
         } catch (Exception e) {
-            throw new CustomException(ErrorCode.AI_SERVICE_UNAVAILABLE, "사이즈 추천 AI 서비스 처리 중 예상치 못한 오류가 발생했습니다: " + e.getMessage());
+            log.error("사이즈 추천 처리 중 예상치 못한 오류가 발생했습니다.", e);
+            throw new CustomException(ErrorCode.AI_SERVICE_UNAVAILABLE);
         }
     }
 

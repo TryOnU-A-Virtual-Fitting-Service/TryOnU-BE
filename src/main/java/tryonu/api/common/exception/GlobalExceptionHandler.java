@@ -12,7 +12,7 @@ import tryonu.api.common.exception.enums.ErrorCode;
 import org.springframework.core.io.buffer.DataBufferLimitException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import tryonu.api.common.event.ApiErrorPublisher;
@@ -217,5 +217,18 @@ public class GlobalExceptionHandler {
             ));
     }
 
-
-}
+    /**
+     * 지원하지 않는 HTTP 메서드 예외 처리
+     */
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ApiResponseWrapper<?>> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException ex, HttpServletRequest request) {
+        String method = ex.getMethod();
+        String supportedMethods = String.join(", ", ex.getSupportedMethods());
+        log.warn("🚫 [GlobalExceptionHandler] 지원하지 않는 HTTP 메서드: method={}, supportedMethods={}", method, supportedMethods);
+        String message = String.format("'%s' 메서드는 지원하지 않습니다. 지원하는 메서드: %s", method, supportedMethods);
+        apiErrorPublisher.publish(request, ErrorCode.METHOD_NOT_ALLOWED.getHttpStatus().value(), ErrorCode.METHOD_NOT_ALLOWED.getCode(), message);
+        return ResponseEntity
+            .status(ErrorCode.METHOD_NOT_ALLOWED.getHttpStatus())
+            .body(ApiResponseWrapper.ofFailure(ErrorCode.METHOD_NOT_ALLOWED.getCode(), message));
+    }
+} 
