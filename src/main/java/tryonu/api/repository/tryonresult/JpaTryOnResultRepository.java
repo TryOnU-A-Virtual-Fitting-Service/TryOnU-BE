@@ -59,7 +59,7 @@ public interface JpaTryOnResultRepository extends JpaRepository<TryOnResult, Lon
                      "CASE WHEN dm.modelName IS NOT NULL THEN dm.modelName ELSE '커스텀 모델' END) " +
                      "FROM TryOnResult tr " +
                      "LEFT JOIN DefaultModel dm ON tr.defaultModelId = dm.id AND dm.isDeleted = false " +
-                     "WHERE tr.user.id = :userId AND tr.isDeleted = false " +
+                     "WHERE tr.user.id = :userId AND tr.isDeleted = false AND tr.imageUrl IS NOT NULL " +
                      "ORDER BY tr.id DESC")
        List<TryOnResultDto> findTryOnResultsByUserIdOrderByIdDesc(@Param("userId") Long userId);
 }

@@ -23,10 +23,11 @@ import jakarta.validation.Valid;
 import java.util.List;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import tryonu.api.dto.responses.TryOnJobInitResponse;
 import tryonu.api.dto.responses.SizeAdviceResponse;
 import tryonu.api.dto.requests.SizeAdviceRequest;
+import tryonu.api.dto.responses.docs.TryOnResultListApiResponseDoc;
+import tryonu.api.dto.responses.docs.UserInfoApiResponseDoc;
 
 @Validated
 @RestController
@@ -99,7 +100,7 @@ public class TryOnController {
         @Operation(summary = "피팅 결과 목록 조회", description = "X-UUID 헤더를 통해 현재 인증된 사용자의 피팅 결과 목록을 조회합니다. " +
                         "응답에는 사용자의 피팅 결과 목록이 id 내림차순으로 정렬되어 포함됩니다.")
         @ApiResponses({
-                        @ApiResponse(responseCode = "200", description = "피팅 결과 목록 조회 성공", content = @Content(array = @ArraySchema(schema = @Schema(implementation = TryOnResultDto.class)))),
+                        @ApiResponse(responseCode = "200", description = "피팅 결과 목록 조회 성공", content = @Content(schema = @Schema(implementation = TryOnResultListApiResponseDoc.class))),
                         @ApiResponse(responseCode = "401", description = "잘못된 X-UUID 헤더, 또는 인증되지 않은 사용자")
         })
         @GetMapping("/list")
@@ -117,7 +118,7 @@ public class TryOnController {
                         +
                         "응답에는 사용자의 기본 모델과 피팅 결과 목록이 id 내림차순으로 정렬되어 포함됩니다.")
         @ApiResponses({
-                        @ApiResponse(responseCode = "200", description = "기본 모델 및 피팅 결과 목록 조회 성공", content = @Content(schema = @Schema(implementation = UserInfoResponse.class))),
+                        @ApiResponse(responseCode = "200", description = "기본 모델 및 피팅 결과 목록 조회 성공", content = @Content(schema = @Schema(implementation = UserInfoApiResponseDoc.class))),
                         @ApiResponse(responseCode = "401", description = "잘못된 X-UUID 헤더, 또는 인증되지 않은 사용자")
         })
         @GetMapping("/with-default-model/list")

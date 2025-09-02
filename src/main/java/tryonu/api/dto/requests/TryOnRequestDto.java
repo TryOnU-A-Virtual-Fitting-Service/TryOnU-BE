@@ -11,7 +11,7 @@ import org.hibernate.validator.constraints.URL;
  */
 @Schema(description = "가상 피팅 요청")
 public record TryOnRequestDto(
-        @Schema(description = "가상 피팅 작업 ID", example = "1234567890", requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank(message = "가상 피팅 작업 ID는 필수입니다") String tryOnJobId,
+        @Schema(description = "가상 피팅 작업 ID", example = "1c3f077f-ef18-4361-9ed0-4701904f3d90", requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank(message = "가상 피팅 작업 ID는 필수입니다") String tryOnJobId,
 
         @Schema(description = "모델 이미지 URL", example = "https://cdn.example.com/model.jpg", requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank(message = "모델 이미지 URL은 필수입니다") @URL(message = "올바른 URL 형식이어야 합니다") String modelUrl,
 

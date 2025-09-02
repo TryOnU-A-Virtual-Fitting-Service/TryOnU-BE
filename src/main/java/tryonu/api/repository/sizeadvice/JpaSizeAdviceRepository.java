@@ -50,7 +50,7 @@ public interface JpaSizeAdviceRepository extends JpaRepository<SizeAdvice, Long>
      */
     @Query("SELECT s FROM SizeAdvice s " +
             "LEFT JOIN FETCH s.user u " +
-            "WHERE s.user.id = :userId")
+            "WHERE s.user.id = :userId AND s.advice IS NOT NULL")
     List<SizeAdvice> findByUserIdWithDetails(@Param("userId") Long userId);
 
     /**
@@ -58,6 +58,6 @@ public interface JpaSizeAdviceRepository extends JpaRepository<SizeAdvice, Long>
      */
     @Query("SELECT s FROM SizeAdvice s " +
             "LEFT JOIN FETCH s.user u " +
-            "WHERE s.user.id = :userId AND s.isDeleted = false")
+            "WHERE s.user.id = :userId AND s.isDeleted = false AND s.advice IS NOT NULL")
     List<SizeAdvice> findByUserIdWithDetailsAndIsDeletedFalse(@Param("userId") Long userId);
 }
