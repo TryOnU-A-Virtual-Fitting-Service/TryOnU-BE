@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import tryonu.api.dto.requests.SizeAdviceRequest;
 import tryonu.api.dto.requests.TryOnRequestDto;
 import tryonu.api.dto.requests.VirtualFittingRequest;
 import tryonu.api.dto.responses.*;
@@ -24,6 +25,9 @@ import tryonu.api.repository.defaultmodel.DefaultModelRepository;
 import tryonu.api.converter.UserConverter;
 import tryonu.api.repository.sizeadvice.SizeAdviceRepository;
 import tryonu.api.converter.SizeAdviceConverter;
+import tryonu.api.domain.SizeAdvice;
+import tryonu.api.analyzer.SizeAnalyzer;
+import tryonu.api.analyzer.SizeAnalyzeRequest;
 
 import java.util.Arrays;
 import java.util.List;
@@ -50,6 +54,7 @@ public class TryOnServiceImpl implements TryOnService {
     private final TryOnWriteService tryOnWriteService;
     private final SizeAdviceRepository sizeAdviceRepository;
     private final SizeAdviceConverter sizeAdviceConverter;
+    private final SizeAnalyzer sizeAnalyzer;
 
     @Value("${virtual-fitting.polling.max-wait-time-ms:60000}") // 기본 1분
     private long maxWaitTimeMs;
@@ -69,6 +74,23 @@ public class TryOnServiceImpl implements TryOnService {
         return new TryOnJobInitResponse(tryOnJobId);
 
     }
+
+    @Override
+    @Transactional
+    public SizeAdviceResponse giveSizeAdvice(SizeAdviceRequest request) {
+        String tryOnJobId = request.tryOnJobId();
+        String sizeInfo = request.sizeInfo();        
+       
+        SizeAdvice sizeAdvice = sizeAdviceRepository.findByTryOnJobIdAndIsDeletedFalseOrThrow(tryOnJobId);
+        
+        String advice = sizeAnalyzer.analyze(new SizeAnalyzeRequest(tryOnJobId, sizeInfo)).advice();
+
+        sizeAdvice.updateSizeInfoAndAdvice(sizeInfo, advice);
+        sizeAdviceRepository.save(sizeAdvice);
+
+        return sizeAdviceConverter.toSizeAdviceResponse(sizeAdvice);
+    }
+
 
     @Override
     public TryOnResponse tryOn(TryOnRequestDto request, MultipartFile file) {

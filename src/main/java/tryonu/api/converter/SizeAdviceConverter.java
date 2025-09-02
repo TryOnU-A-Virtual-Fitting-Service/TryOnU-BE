@@ -25,12 +25,8 @@ public class SizeAdviceConverter {
                 sizeAdvice.getTryOnJobId());
 
         SizeAdviceResponse response = new SizeAdviceResponse(
-                sizeAdvice.getId(),
                 sizeAdvice.getTryOnJobId(),
-                sizeAdvice.getSizeInfo(),
-                sizeAdvice.getAdvice(),
-                sizeAdvice.getCreatedAt(),
-                sizeAdvice.getUpdatedAt());
+                sizeAdvice.getAdvice());
 
         log.debug("[SizeAdviceConverter] SizeAdvice 엔티티 -> SizeAdviceResponse 변환 완료 - tryOnJobId: {}",
                 sizeAdvice.getTryOnJobId());

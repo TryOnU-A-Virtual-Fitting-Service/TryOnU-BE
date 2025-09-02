@@ -25,6 +25,8 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import tryonu.api.dto.responses.TryOnJobInitResponse;
+import tryonu.api.dto.responses.SizeAdviceResponse;
+import tryonu.api.dto.requests.SizeAdviceRequest;
 
 @Validated
 @RestController
@@ -78,6 +80,14 @@ public class TryOnController {
 
                         @Parameter(description = "의류 이미지 파일 (10MB 이하, jpg/png/jpeg)", required = true) @RequestPart("file") @NotEmptyFile MultipartFile file) {
                 TryOnResponse response = tryOnService.tryOn(request, file);
+                return ApiResponseWrapper.ofSuccess(response);
+        }
+
+
+        @PostMapping("/size-advice")
+        public ApiResponseWrapper<SizeAdviceResponse> giveSizeAdvice(
+                        @Parameter(description = "사이즈 조언 정보 (JSON)", required = true) @RequestBody @Valid SizeAdviceRequest request) {
+                SizeAdviceResponse response = tryOnService.giveSizeAdvice(request);
                 return ApiResponseWrapper.ofSuccess(response);
         }
 
