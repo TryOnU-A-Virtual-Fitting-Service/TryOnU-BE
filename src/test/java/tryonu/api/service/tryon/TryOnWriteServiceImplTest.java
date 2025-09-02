@@ -83,7 +83,7 @@ class TryOnWriteServiceImplTest extends BaseServiceTest {
                         String defaultModelName = testDefaultModel.getModelName();
 
                         TryOnResponse expectedResponse = ResponseFixture.createTryOnResponse(
-                                        1L,
+                                        tryOnJobId,
                                         uploadedResultImageUrl,
                                         testDefaultModel.getId(),
                                         defaultModelName);
@@ -112,7 +112,7 @@ class TryOnWriteServiceImplTest extends BaseServiceTest {
 
                         // Then
                         assertThat(result).isNotNull();
-                        assertThat(result.tryOnResultId()).isEqualTo(1L);
+                        assertThat(result.tryOnJobId()).isEqualTo(tryOnJobId);
                         assertThat(result.modelName()).isEqualTo(defaultModelName);
                         assertThat(result.tryOnResultImageUrl()).isEqualTo(uploadedResultImageUrl);
                         assertThat(result.defaultModelId()).isEqualTo(testDefaultModel.getId());
@@ -120,9 +120,7 @@ class TryOnWriteServiceImplTest extends BaseServiceTest {
                         // Verify interactions
                         then(tryOnResultConverter).should().toClothEntity(clothImageUrl, productPageUrl, category);
                         then(clothRepository).should().save(testCloth);
-                        then(tryOnResultConverter).should().toTryOnResultEntity(
-                                        testCloth, testUser, modelUrl, uploadedResultImageUrl, virtualFittingId,
-                                        testDefaultModel);
+                        then(tryOnResultRepository).should().findByTryOnJobIdOrThrow(tryOnJobId);
                         then(tryOnResultRepository).should().save(testTryOnResult);
                         then(userRepository).should().save(testUser);
                         then(tryOnResultConverter).should().toTryOnResponse(testTryOnResult, defaultModelName);
@@ -130,6 +128,7 @@ class TryOnWriteServiceImplTest extends BaseServiceTest {
                         // Verify user information update
                         assertThat(testUser.getRecentlyUsedModelUrl()).isEqualTo(uploadedResultImageUrl);
                         assertThat(testUser.getRecentlyUsedModelName()).isEqualTo(defaultModelName);
+
                 }
 
                 @Test
@@ -151,7 +150,7 @@ class TryOnWriteServiceImplTest extends BaseServiceTest {
                                         testDefaultModel);
 
                         TryOnResponse expectedResponse = ResponseFixture.createTryOnResponse(
-                                        1L,
+                                        tryOnJobId,
                                         uploadedResultImageUrl,
                                         testDefaultModel.getId(),
                                         defaultModelName);
@@ -204,7 +203,7 @@ class TryOnWriteServiceImplTest extends BaseServiceTest {
                         TryOnResult tryOnResult = TryOnResultFixture.createTryOnResult(cloth, testUser,
                                         testDefaultModel);
                         TryOnResponse expectedResponse = ResponseFixture.createTryOnResponse(
-                                        1L,
+                                        tryOnJobId,
                                         uploadedResultImageUrl,
                                         testDefaultModel.getId(),
                                         testDefaultModel.getModelName());

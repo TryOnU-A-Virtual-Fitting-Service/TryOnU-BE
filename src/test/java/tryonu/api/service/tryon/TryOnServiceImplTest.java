@@ -102,7 +102,7 @@ class TryOnServiceImplTest extends BaseServiceTest {
                         VirtualFittingStatusResponse completedStatus = ResponseFixture.createCompletedStatusResponse();
                         String uploadedResultImageUrl = "https://test-bucket.s3.amazonaws.com/results/test-result.jpg";
                         TryOnResponse expectedResponse = ResponseFixture.createTryOnResponse(
-                                        1L,
+                                        testRequest.tryOnJobId(),
                                         uploadedResultImageUrl,
                                         testDefaultModel.getId(),
                                         testDefaultModel.getModelName());
@@ -142,6 +142,7 @@ class TryOnServiceImplTest extends BaseServiceTest {
 
                                 // Then
                                 assertThat(result).isNotNull();
+                                assertThat(result.tryOnJobId()).isEqualTo(testRequest.tryOnJobId());
                                 assertThat(result.modelName()).isEqualTo(testDefaultModel.getModelName());
                                 assertThat(result.tryOnResultImageUrl()).isEqualTo(uploadedResultImageUrl);
                                 assertThat(result.defaultModelId()).isEqualTo(testDefaultModel.getId());
@@ -196,7 +197,7 @@ class TryOnServiceImplTest extends BaseServiceTest {
                         Long userId = 1L;
                         List<TryOnResultDto> expectedResults = List.of(
                                         new TryOnResultDto(
-                                                        1L,
+                                                        "test-job-12345",
                                                         "https://test-bucket.s3.amazonaws.com/results/result1.jpg",
                                                         1L,
                                                         "기본 여성 모델"));
@@ -237,7 +238,7 @@ class TryOnServiceImplTest extends BaseServiceTest {
                                                         false));
                         List<TryOnResultDto> tryOnResults = List.of(
                                         new TryOnResultDto(
-                                                        1L,
+                                                        "test-job-12345",
                                                         "https://test-bucket.s3.amazonaws.com/results/result1.jpg",
                                                         1L,
                                                         "기본 여성 모델"));

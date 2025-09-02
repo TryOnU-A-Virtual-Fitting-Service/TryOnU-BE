@@ -80,7 +80,7 @@ public class TryOnResultConverter {
      * TryOnResponse 생성 (구버전 호환용 - defaultModelId, modelName null)
      */
     public TryOnResponse toTryOnResponse(TryOnResult tryOnResult) {
-        return new TryOnResponse(tryOnResult.getId(), tryOnResult.getImageUrl(), null, null);
+        return new TryOnResponse(tryOnResult.getTryOnJobId(), tryOnResult.getImageUrl(), null, null);
     }
 
     /**
@@ -88,7 +88,7 @@ public class TryOnResultConverter {
      */
     public TryOnResponse toTryOnResponse(TryOnResult tryOnResult, String modelName) {
         return new TryOnResponse(
-                tryOnResult.getId(),
+                tryOnResult.getTryOnJobId(),
                 tryOnResult.getImageUrl(),
                 tryOnResult.getDefaultModelId(),
                 modelName);
