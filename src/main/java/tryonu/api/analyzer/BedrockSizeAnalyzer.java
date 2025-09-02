@@ -58,7 +58,7 @@ public class BedrockSizeAnalyzer implements SizeAnalyzer {
             Map<String, Object> payload = new HashMap<>();
             payload.put("anthropic_version", "bedrock-2023-05-31");
             payload.put("max_tokens", 500);
-            payload.put("system", List.of(systemBlock));
+            payload.put("system", system);
             payload.put("messages", List.of(userMessage));
 
             String requestJson = mapper.writeValueAsString(payload);
