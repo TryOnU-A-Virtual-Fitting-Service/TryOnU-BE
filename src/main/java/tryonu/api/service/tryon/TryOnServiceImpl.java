@@ -26,6 +26,8 @@ import tryonu.api.converter.UserConverter;
 import tryonu.api.repository.sizeadvice.SizeAdviceRepository;
 import tryonu.api.converter.SizeAdviceConverter;
 import tryonu.api.domain.SizeAdvice;
+import tryonu.api.analyzer.SizeAnalyzer;
+import tryonu.api.analyzer.SizeAnalyzeRequest;
 
 import java.util.Arrays;
 import java.util.List;
@@ -52,6 +54,7 @@ public class TryOnServiceImpl implements TryOnService {
     private final TryOnWriteService tryOnWriteService;
     private final SizeAdviceRepository sizeAdviceRepository;
     private final SizeAdviceConverter sizeAdviceConverter;
+    private final SizeAnalyzer sizeAnalyzer;
 
     @Value("${virtual-fitting.polling.max-wait-time-ms:60000}") // 기본 1분
     private long maxWaitTimeMs;
@@ -78,7 +81,7 @@ public class TryOnServiceImpl implements TryOnService {
        
         SizeAdvice sizeAdvice = sizeAdviceRepository.findByTryOnJobIdAndIsDeletedFalseOrThrow(tryOnJobId);
         
-        String advice = "사이즈 조언 완료"; // SpringAI 응답으로 대체
+        String advice = sizeAnalyzer.analyze(new SizeAnalyzeRequest(tryOnJobId, sizeInfo)).advice();
 
         sizeAdvice.updateSizeInfoAndAdvice(sizeInfo, advice);
         sizeAdviceRepository.save(sizeAdvice);
