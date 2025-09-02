@@ -1,13 +1,16 @@
 package tryonu.api.service.tryon;
 
+import java.util.List;
+
 import org.springframework.web.multipart.MultipartFile;
+
+import tryonu.api.dto.requests.SizeAdviceRequest;
 import tryonu.api.dto.requests.TryOnRequestDto;
+import tryonu.api.dto.responses.SizeAdviceResponse;
 import tryonu.api.dto.responses.TryOnJobInitResponse;
 import tryonu.api.dto.responses.TryOnResponse;
 import tryonu.api.dto.responses.TryOnResultDto;
 import tryonu.api.dto.responses.UserInfoResponse;
-
-import java.util.List;
 
 /**
  * 가상 피팅 서비스 인터페이스
@@ -31,6 +34,13 @@ public interface TryOnService {
      */
     TryOnResponse tryOn(TryOnRequestDto request, MultipartFile file);
 
+    /**
+     * 사이즈 조언 제공
+     *
+     * @param request 사이즈 조언 요청 정보
+     * @return 사이즈 조언 결과
+     */
+    SizeAdviceResponse giveSizeAdvice(SizeAdviceRequest request);
     /**
      * 현재 사용자의 피팅 결과 목록 조회
      * 
