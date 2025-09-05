@@ -6,11 +6,13 @@ import org.springframework.web.multipart.MultipartFile;
 
 import tryonu.api.dto.requests.SizeAdviceRequest;
 import tryonu.api.dto.requests.TryOnRequestDto;
+import tryonu.api.dto.requests.ImageUrlRequest;
 import tryonu.api.dto.responses.SizeAdviceResponse;
 import tryonu.api.dto.responses.TryOnJobInitResponse;
 import tryonu.api.dto.responses.TryOnResponse;
 import tryonu.api.dto.responses.TryOnResultDto;
 import tryonu.api.dto.responses.UserInfoResponse;
+import tryonu.api.dto.responses.ImageDataUrlResponse;
 
 /**
  * 가상 피팅 서비스 인터페이스
@@ -54,4 +56,13 @@ public interface TryOnService {
      * @return 현재 사용자의 기본 모델과 피팅 결과 목록
      */
     UserInfoResponse getCurrentUserAllData();
+
+    /**
+     * 이미지 URL을 받아서 Data URL로 변환합니다.
+     * 캡처 로직 최적화를 위한 메서드입니다.
+     * 
+     * @param request 이미지 URL 요청
+     * @return Data URL 형태의 이미지 데이터
+     */
+    ImageDataUrlResponse convertImageUrlToDataUrl(ImageUrlRequest request);
 }

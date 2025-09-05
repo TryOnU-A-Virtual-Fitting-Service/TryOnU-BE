@@ -9,7 +9,9 @@ import org.springframework.web.multipart.MultipartFile;
 import tryonu.api.dto.requests.SizeAdviceRequest;
 import tryonu.api.dto.requests.TryOnRequestDto;
 import tryonu.api.dto.requests.VirtualFittingRequest;
+import tryonu.api.dto.requests.ImageUrlRequest;
 import tryonu.api.dto.responses.*;
+import tryonu.api.dto.responses.ImageDataUrlResponse;
 import tryonu.api.domain.User;
 import tryonu.api.domain.DefaultModel;
 import tryonu.api.domain.TryOnResult;
@@ -34,6 +36,10 @@ import tryonu.api.analyzer.SizeAnalyzeRequest;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.Base64;
+import java.util.Optional;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,6 +64,7 @@ public class TryOnServiceImpl implements TryOnService {
     private final SizeAdviceConverter sizeAdviceConverter;
     private final SizeAnalyzer sizeAnalyzer;
     private final BackgroundRemovalUtil backgroundRemovalUtil;
+    private final org.springframework.web.reactive.function.client.WebClient imageDownloadWebClient;
 
     @Value("${virtual-fitting.polling.max-wait-time-ms:60000}") // 기본 1분
     private long maxWaitTimeMs;
@@ -269,5 +276,74 @@ public class TryOnServiceImpl implements TryOnService {
                 .findDefaultModelsByUserIdOrderBySortOrder(currentUserId);
         List<TryOnResultDto> tryOnResults = tryOnResultRepository.findTryOnResultsByUserIdOrderByIdDesc(currentUserId);
         return userConverter.toUserInfoResponse(defaultModels, tryOnResults);
+    }
+
+    @Override
+    public ImageDataUrlResponse convertImageUrlToDataUrl(ImageUrlRequest request) {
+        String imageUrl = request.imageUrl();
+        log.info("[TryOnService] 이미지 URL을 Data URL로 변환 시작 - url={}", imageUrl);
+
+        try {
+            ResponseEntity<byte[]> responseEntity = imageDownloadWebClient
+                    .get()
+                    .uri(imageUrl)
+                    .retrieve()
+                    .toEntity(byte[].class)
+                    .block();
+
+            byte[] imageBytes = responseEntity.getBody();
+            if (imageBytes == null || imageBytes.length == 0) {
+                throw new CustomException(ErrorCode.IMAGE_LOAD_ERROR, "다운로드된 이미지가 비어있습니다.");
+            }
+
+            log.info("[TryOnService] 이미지 다운로드 완료 - size={}KB", imageBytes.length / 1024);
+
+            // Content-Type 헤더에서 MIME 타입 가져오기 (더 신뢰성 높음)
+            String mimeType = Optional.ofNullable(responseEntity.getHeaders().getContentType())
+                    .map(Object::toString)
+                    .orElseGet(() -> detectMimeType(imageUrl)); // fallback
+
+            String base64 = Base64.getEncoder().encodeToString(imageBytes);
+            String dataUrl = String.format("data:%s;base64,%s", mimeType, base64);
+
+            log.info("[TryOnService] Data URL 변환 완료 - mimeType={}", mimeType);
+
+            return new ImageDataUrlResponse(dataUrl);
+
+        } catch (WebClientResponseException e) {
+            log.error("[TryOnService] 이미지 URL 변환 실패 (WebClient) - url={}, status={}, body={}", imageUrl, e.getStatusCode(), e.getResponseBodyAsString(), e);
+            throw new CustomException(ErrorCode.RESOURCE_NOT_FOUND, "이미지를 찾을 수 없거나 접근할 수 없습니다: ");
+            
+        } catch (Exception e) {
+            log.error("[TryOnService] 이미지 URL 변환 실패 - url={}, error={}", imageUrl, e.getMessage(), e);
+            throw new CustomException(ErrorCode.IMAGE_LOAD_ERROR, "이미지 URL을 Data URL로 변환하는데 실패했습니다.");
+        }
+    }
+
+    /**
+     * URL에서 MIME 타입을 감지합니다.
+     * 
+     * @param imageUrl 이미지 URL
+     * @return MIME 타입
+     */
+    private String detectMimeType(String imageUrl) {
+        String lowerUrl = imageUrl.toLowerCase();
+        
+        if (lowerUrl.contains(".jpg") || lowerUrl.contains(".jpeg")) {
+            return "image/jpeg";
+        } else if (lowerUrl.contains(".png")) {
+            return "image/png";
+        } else if (lowerUrl.contains(".gif")) {
+            return "image/gif";
+        } else if (lowerUrl.contains(".webp")) {
+            return "image/webp";
+        } else if (lowerUrl.contains(".bmp")) {
+            return "image/bmp";
+        } else if (lowerUrl.contains(".svg")) {
+            return "image/svg+xml";
+        } else {
+            // 기본값으로 JPEG 사용
+            return "image/jpeg";
+        }
     }
 }

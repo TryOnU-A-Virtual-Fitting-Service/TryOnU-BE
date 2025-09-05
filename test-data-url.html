@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data URL 이미지 테스트</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        .test-section h3 {
+            color: #333;
+            margin-top: 0;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="url"], textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .image-display {
+            margin-top: 15px;
+            text-align: center;
+        }
+        .image-display img {
+            max-width: 100%;
+            max-height: 400px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .image-info {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+        .loading {
+            display: none;
+            color: #007bff;
+            font-style: italic;
+        }
+        .data-url-preview {
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 12px;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🖼️ Data URL 이미지 테스트 도구</h1>
+        <p>이 도구를 사용하여 API에서 받은 Data URL이 제대로 브라우저에 표시되는지 확인할 수 있습니다.</p>
+        
+        <!-- 테스트 1: API 호출 테스트 -->
+        <div class="test-section">
+            <h3>1. API 호출 테스트</h3>
+            <div class="input-group">
+                <label for="imageUrl">이미지 URL:</label>
+                <input type="url" id="imageUrl" placeholder="https://example.com/image.jpg" 
+                       value="https://via.placeholder.com/300x200.png">
+            </div>
+            <button onclick="testApiCall()" id="apiTestBtn">API 호출 테스트</button>
+            <div class="loading" id="apiLoading">API 호출 중...</div>
+            <div id="apiResult"></div>
+        </div>
+
+        <!-- 테스트 2: Data URL 직접 테스트 -->
+        <div class="test-section">
+            <h3>2. Data URL 직접 테스트</h3>
+            <div class="input-group">
+                <label for="dataUrlInput">Data URL (직접 입력):</label>
+                <textarea id="dataUrlInput" placeholder="data:image/jpeg;base64,/9j/4AAQ..."></textarea>
+            </div>
+            <button onclick="testDataUrl()">Data URL 테스트</button>
+            <div id="dataUrlResult"></div>
+        </div>
+
+        <!-- 테스트 3: 샘플 Data URL 테스트 -->
+        <div class="test-section">
+            <h3>3. 샘플 Data URL 테스트</h3>
+            <p>미리 만들어진 샘플 Data URL로 테스트해보세요:</p>
+            <button onclick="testSampleDataUrl()">1x1 픽셀 이미지 테스트</button>
+            <button onclick="testSampleDataUrl2()">컬러 그라데이션 테스트</button>
+            <div id="sampleResult"></div>
+        </div>
+
+        <!-- 이미지 표시 영역 -->
+        <div class="test-section">
+            <h3>4. 이미지 표시 결과</h3>
+            <div class="image-display" id="imageDisplay">
+                <p>이미지가 여기에 표시됩니다...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 샘플 Data URL들
+        const sampleDataUrls = {
+            // 1x1 픽셀 PNG (투명)
+            pixel: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+            
+            // 100x100 픽셀 컬러 그라데이션
+            gradient: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEgAACxIB0t1+/AAAABx0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzIENTNui8sowAAAAWdEVYdENyZWF0aW9uIFRpbWUAMDgvMDUvMTDZqJqjAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDI0LTA4LTA1VDA5OjQ1OjQ5KzAwOjAw2qjZJQAAACV0RVh0ZGF0ZTptb2RpZnkAMjAyNC0wOC0wNVQwOTo0NTo0OSswMDowMNqo2SUAAAAASUVORK5CYII="
+        };
+
+        // API 호출 테스트
+        async function testApiCall() {
+            const imageUrl = document.getElementById('imageUrl').value;
+            const resultDiv = document.getElementById('apiResult');
+            const loadingDiv = document.getElementById('apiLoading');
+            const btn = document.getElementById('apiTestBtn');
+            
+            if (!imageUrl) {
+                showResult(resultDiv, '이미지 URL을 입력해주세요.', 'error');
+                return;
+            }
+            
+            btn.disabled = true;
+            loadingDiv.style.display = 'block';
+            resultDiv.innerHTML = '';
+            
+            try {
+                const response = await fetch('/api/try-on/image', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ imageUrl: imageUrl })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                console.log('API 응답:', result);
+                
+                if (result.isSuccess && result.data && result.data.dataUrl) {
+                    const dataUrl = result.data.dataUrl;
+                    showResult(resultDiv, '✅ API 호출 성공!', 'success');
+                    displayImage(dataUrl, 'API에서 받은 이미지');
+                    showDataUrlInfo(dataUrl, resultDiv);
+                } else {
+                    showResult(resultDiv, '❌ API 응답이 올바르지 않습니다: ' + JSON.stringify(result), 'error');
+                }
+                
+            } catch (error) {
+                console.error('API 호출 실패:', error);
+                showResult(resultDiv, '❌ API 호출 실패: ' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                loadingDiv.style.display = 'none';
+            }
+        }
+
+        // Data URL 직접 테스트
+        function testDataUrl() {
+            const dataUrl = document.getElementById('dataUrlInput').value.trim();
+            const resultDiv = document.getElementById('dataUrlResult');
+            
+            if (!dataUrl) {
+                showResult(resultDiv, 'Data URL을 입력해주세요.', 'error');
+                return;
+            }
+            
+            if (!dataUrl.startsWith('data:')) {
+                showResult(resultDiv, '❌ Data URL 형식이 아닙니다. "data:"로 시작해야 합니다.', 'error');
+                return;
+            }
+            
+            if (!dataUrl.includes(';base64,')) {
+                showResult(resultDiv, '❌ Base64 인코딩이 아닙니다.', 'error');
+                return;
+            }
+            
+            // 이미지로 로드 테스트
+            const img = new Image();
+            img.onload = function() {
+                showResult(resultDiv, '✅ Data URL이 유효합니다!', 'success');
+                displayImage(dataUrl, '직접 입력한 Data URL');
+                showDataUrlInfo(dataUrl, resultDiv);
+            };
+            img.onerror = function() {
+                showResult(resultDiv, '❌ Data URL이 유효하지 않습니다. 이미지 로드에 실패했습니다.', 'error');
+            };
+            img.src = dataUrl;
+        }
+
+        // 샘플 Data URL 테스트
+        function testSampleDataUrl() {
+            const resultDiv = document.getElementById('sampleResult');
+            const dataUrl = sampleDataUrls.pixel;
+            
+            showResult(resultDiv, '✅ 1x1 픽셀 이미지 테스트', 'info');
+            displayImage(dataUrl, '1x1 픽셀 이미지 (투명)');
+            showDataUrlInfo(dataUrl, resultDiv);
+        }
+
+        function testSampleDataUrl2() {
+            const resultDiv = document.getElementById('sampleResult');
+            const dataUrl = sampleDataUrls.gradient;
+            
+            showResult(resultDiv, '✅ 컬러 그라데이션 테스트', 'info');
+            displayImage(dataUrl, '컬러 그라데이션 이미지');
+            showDataUrlInfo(dataUrl, resultDiv);
+        }
+
+        // 이미지 표시
+        function displayImage(dataUrl, title) {
+            const imageDisplay = document.getElementById('imageDisplay');
+            imageDisplay.innerHTML = `
+                <h4>${title}</h4>
+                <img src="${dataUrl}" alt="${title}" onload="console.log('이미지 로드 성공!')" onerror="console.error('이미지 로드 실패!')">
+                <div class="image-info">
+                    <p>이미지가 위에 표시되면 Data URL이 올바르게 작동하는 것입니다!</p>
+                </div>
+            `;
+        }
+
+        // Data URL 정보 표시
+        function showDataUrlInfo(dataUrl, container) {
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'data-url-preview';
+            
+            const mimeMatch = dataUrl.match(/^data:([^;]+);base64,/);
+            const mimeType = mimeMatch ? mimeMatch[1] : '알 수 없음';
+            const base64Length = dataUrl.split(',')[1] ? dataUrl.split(',')[1].length : 0;
+            
+            infoDiv.innerHTML = `
+                <strong>Data URL 정보:</strong><br>
+                MIME 타입: ${mimeType}<br>
+                Base64 길이: ${base64Length} 문자<br>
+                전체 길이: ${dataUrl.length} 문자<br>
+                <details>
+                    <summary>Data URL 미리보기 (처음 200자)</summary>
+                    ${dataUrl.substring(0, 200)}...
+                </details>
+            `;
+            
+            container.appendChild(infoDiv);
+        }
+
+        // 결과 표시
+        function showResult(element, message, type) {
+            element.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Data URL 테스트 도구가 준비되었습니다!');
+        });
+    </script>
+</body>
+</html>
