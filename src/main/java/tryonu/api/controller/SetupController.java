@@ -191,18 +191,6 @@ public class SetupController {
                             "message": "잘못된 요청입니다.",
                             "validationErrors": null
                           }
-                        }"""))),
-        @ApiResponse(responseCode = "404", description = "플러그인 키에 해당하는 활성화된 회사를 찾을 수 없음",
-                    content = @Content(schema = @Schema(
-                        type = "object",
-                        example = """
-                        {
-                          "isSuccess": false,
-                          "error": {
-                            "code": "COMPANY_NOT_FOUND",
-                            "message": "플러그인 키에 해당하는 활성화된 회사를 찾을 수 없습니다.",
-                            "validationErrors": null
-                          }
                         }""")))
     })
     @GetMapping("/asset/plugin")
