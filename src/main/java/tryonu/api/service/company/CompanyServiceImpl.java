@@ -31,17 +31,25 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     public AssetResponse getAssetResponseByUrl(@NonNull String url) {
-        String domain = extractDomainFromUrl(url);
-        Company company = companyRepository.findByDomainAndIsActiveTrueOrThrow(domain);
-
-        return companyConverter.getAssetUrl(company);
+        try {
+            String domain = extractDomainFromUrl(url);
+            Company company = companyRepository.findByDomainAndIsActiveTrueOrThrow(domain);
+            return companyConverter.getAssetUrl(company);
+        } catch (CustomException e) {
+            log.warn("[CompanyService] 회사 조회 실패, fallback URL 사용 - url: {}, error: {}", url, e.getMessage());
+            return companyConverter.getFallbackAssetUrl();
+        }
     }
 
     @Override
     public AssetResponse getAssetResponseByPluginKey(@NonNull String pluginKey) {
-        Company company = companyRepository.findByPluginKeyAndIsActiveTrueOrThrow(pluginKey);
-
-        return companyConverter.getAssetUrl(company);
+        try {
+            Company company = companyRepository.findByPluginKeyAndIsActiveTrueOrThrow(pluginKey);
+            return companyConverter.getAssetUrl(company);
+        } catch (CustomException e) {
+            log.warn("[CompanyService] 회사 조회 실패, fallback URL 사용 - pluginKey: {}, error: {}", pluginKey, e.getMessage());
+            return companyConverter.getFallbackAssetUrl();
+        }
     }
 
     @Override

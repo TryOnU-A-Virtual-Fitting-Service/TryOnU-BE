@@ -1,6 +1,7 @@
 package tryonu.api.converter;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import tryonu.api.domain.Company;
@@ -15,6 +16,12 @@ import tryonu.api.dto.responses.CompanyResponse;
 @Component
 public class CompanyConverter {
     
+    @Value("${assets.fallback.logo.url}")
+    private String fallbackLogoUrl;
+
+    @Value("${assets.fallback.slogan.url}")
+    private String fallbackSloganUrl;
+    
     /**
      * 회사 정보와 애셋 타입에 따라 적절한 애셋 URL을 반환
      * 
@@ -22,7 +29,18 @@ public class CompanyConverter {
      * @return 해당 타입의 애셋 URL
      */
     public AssetResponse getAssetUrl(@NonNull Company company) {
-        return new AssetResponse(company.getDomain(), company.getLogoUrl(), company.getSloganUrl());    
+        return new AssetResponse(company.getLogoUrl(), company.getSloganUrl());    
+    }
+    
+    /**
+     * 회사 조회 실패 시 fallback URL을 사용하여 AssetResponse를 생성
+     * 
+     * @return fallback URL을 사용한 AssetResponse
+     */
+    public AssetResponse getFallbackAssetUrl() {
+        log.debug("[CompanyConverter] Fallback URL을 사용하여 AssetResponse 생성 - logoUrl: {}, sloganUrl: {}", 
+                 fallbackLogoUrl, fallbackSloganUrl);
+        return new AssetResponse(fallbackLogoUrl, fallbackSloganUrl);
     }
     
     /**
