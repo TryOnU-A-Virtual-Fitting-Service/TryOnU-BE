@@ -85,7 +85,8 @@ public class SecurityConfig {
                     "/user/init",            // 익명 사용자 초기화 API (회원가입/최초 진입, 무조건 허용)
                     "/setup",                 // 프론트엔드 애셋 로드 API (로고 등, 무조건 허용)
                     "/webhook/**",            // WebHook 엔드포인트 (외부 서비스 호출, 무조건 허용)
-                    "/error"                  // 에러 페이지 (무조건 허용)
+                    "/error",
+                    "/setup/**"                 // 에러 페이지 (무조건 허용)
                 ));
 
                 boolean isProd = Arrays.asList(env.getActiveProfiles()).contains("prod");

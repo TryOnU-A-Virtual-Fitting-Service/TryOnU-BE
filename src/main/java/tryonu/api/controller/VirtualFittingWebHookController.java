@@ -1,6 +1,8 @@
 package tryonu.api.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,8 +27,18 @@ public class VirtualFittingWebHookController {
         description = "FASHN API로부터 가상피팅 처리 완료 시 호출되는 WebHook 엔드포인트입니다."
     )
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "WebHook 수신 성공"),
-        @ApiResponse(responseCode = "400", description = "잘못된 WebHook 데이터")
+        @ApiResponse(responseCode = "200", description = "WebHook 수신 성공",
+                    content = @Content(schema = @Schema(
+                        type = "string",
+                        example = "WebHook received successfully"))),
+        @ApiResponse(responseCode = "400", description = "잘못된 WebHook 데이터",
+                    content = @Content(schema = @Schema(
+                        type = "string",
+                        example = "Invalid WebHook data"))),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류",
+                    content = @Content(schema = @Schema(
+                        type = "string",
+                        example = "Internal server error")))
     })
     @PostMapping("/virtual-fitting")
     public ResponseEntity<String> receiveVirtualFittingResult(

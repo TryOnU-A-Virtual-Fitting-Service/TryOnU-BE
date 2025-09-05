@@ -83,7 +83,6 @@ public class TryOnController {
                                            "defaultModelId": 5,
                                            "modelName": "슬림 한국인 남성"
                                          },
-                                         "error": null
                                        }"""))),
                         @ApiResponse(responseCode = "400", description = "잘못된 요청",
                                    content = @Content(schema = @Schema(
@@ -91,7 +90,6 @@ public class TryOnController {
                                        example = """
                                        {
                                          "isSuccess": false,
-                                         "data": null,
                                          "error": {
                                            "code": "INVALID_REQUEST",
                                            "message": "잘못된 요청입니다.",
@@ -104,7 +102,6 @@ public class TryOnController {
                                        example = """
                                        {
                                          "isSuccess": false,
-                                         "data": null,
                                          "error": {
                                            "code": "UNAUTHORIZED",
                                            "message": "인증되지 않은 사용자입니다.",
@@ -150,15 +147,13 @@ public class TryOnController {
                                              "createdAt": "2024-01-01T00:00:00"
                                            }
                                          ],
-                                         "error": null
                                        }"""))),
                         @ApiResponse(responseCode = "401", description = "잘못된 X-UUID 헤더, 또는 인증되지 않은 사용자",
                                    content = @Content(schema = @Schema(
                                        type = "object",
                                        example = """
                                        {
-                                         "isSuccess": false,
-                                         "data": null,
+                                         "isSuccess": false,    
                                          "error": {
                                            "code": "UNAUTHORIZED",
                                            "message": "인증되지 않은 사용자입니다.",
