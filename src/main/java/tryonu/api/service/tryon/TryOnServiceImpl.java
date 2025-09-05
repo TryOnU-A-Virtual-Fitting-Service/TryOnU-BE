@@ -37,6 +37,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.Base64;
+import java.util.Optional;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import org.springframework.transaction.annotation.Transactional;
 
@@ -278,38 +281,43 @@ public class TryOnServiceImpl implements TryOnService {
     @Override
     public ImageDataUrlResponse convertImageUrlToDataUrl(ImageUrlRequest request) {
         String imageUrl = request.imageUrl();
-        
         log.info("[TryOnService] 이미지 URL을 Data URL로 변환 시작 - url={}", imageUrl);
-        
+
         try {
-            // 1. URL에서 이미지 다운로드
-            byte[] imageBytes = imageDownloadWebClient
+            ResponseEntity<byte[]> responseEntity = imageDownloadWebClient
                     .get()
                     .uri(imageUrl)
                     .retrieve()
-                    .bodyToMono(byte[].class)
+                    .toEntity(byte[].class)
                     .block();
 
+            byte[] imageBytes = responseEntity.getBody();
             if (imageBytes == null || imageBytes.length == 0) {
-                throw new CustomException(ErrorCode.IMAGE_LOAD_ERROR, "이미지를 다운로드할 수 없습니다.");
+                throw new CustomException(ErrorCode.IMAGE_LOAD_ERROR, "다운로드된 이미지가 비어있습니다.");
             }
 
             log.info("[TryOnService] 이미지 다운로드 완료 - size={}KB", imageBytes.length / 1024);
 
-            // 2. MIME 타입 감지 (간단한 확장자 기반)
-            String mimeType = detectMimeType(imageUrl);
-            
-            // 3. Base64 인코딩
+            // Content-Type 헤더에서 MIME 타입 가져오기 (더 신뢰성 높음)
+            String mimeType = Optional.ofNullable(responseEntity.getHeaders().getContentType())
+                    .map(Object::toString)
+                    .orElseGet(() -> detectMimeType(imageUrl)); // fallback
+
             String base64 = Base64.getEncoder().encodeToString(imageBytes);
-            
-            // 4. Data URL 생성
             String dataUrl = String.format("data:%s;base64,%s", mimeType, base64);
-            
-            log.info("[TryOnService] Data URL 변환 완료 - mimeType={}, dataUrlLength={}", 
+
+            log.info("[TryOnService] Data URL 변환 완료 - mimeType={}, dataUrlLength={}",
                     mimeType, dataUrl.length());
 
             return new ImageDataUrlResponse(dataUrl);
 
+        } catch (WebClientResponseException e) {
+            log.error("[TryOnService] 이미지 URL 변환 실패 (WebClient) - url={}, status={}, body={}", imageUrl, e.getStatusCode(), e.getResponseBodyAsString(), e);
+            if (e.getStatusCode().is4xxClientError()) {
+                throw new CustomException(ErrorCode.RESOURCE_NOT_FOUND, "이미지를 찾을 수 없거나 접근할 수 없습니다: " + e.getStatusCode());
+            } else {
+                throw new CustomException(ErrorCode.VIRTUAL_FITTING_API_ERROR, "이미지 서버에서 오류가 발생했습니다: " + e.getStatusCode());
+            }
         } catch (Exception e) {
             log.error("[TryOnService] 이미지 URL 변환 실패 - url={}, error={}", imageUrl, e.getMessage(), e);
             throw new CustomException(ErrorCode.IMAGE_LOAD_ERROR, "이미지 URL을 Data URL로 변환하는데 실패했습니다: " + e.getMessage());
