@@ -82,7 +82,7 @@ public class TryOnController {
                                            "tryOnResultUrl": "https://cdn.example.com/users/models/tryonresult-1.jpg",
                                            "defaultModelId": 5,
                                            "modelName": "슬림 한국인 남성"
-                                         },
+                                         }
                                        }"""))),
                         @ApiResponse(responseCode = "400", description = "잘못된 요청",
                                    content = @Content(schema = @Schema(

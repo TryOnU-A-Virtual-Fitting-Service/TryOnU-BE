@@ -54,7 +54,7 @@ public class HealthCheckController {
                         "status": "UP",
                         "version": "1.0.0",
                         "uptime": "2 days, 5 hours, 30 minutes"
-                      },
+                      }
                     }""")
             )
         ),

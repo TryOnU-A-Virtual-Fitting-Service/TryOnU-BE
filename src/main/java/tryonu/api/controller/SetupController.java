@@ -115,7 +115,7 @@ public class SetupController {
                             "domain": "musinsa.com",
                             "sloganUrl": "https://cdn.example.com/company/musinsa/slogan.svg",
                             "pluginKey": "f1a1447f-3f20-421b-a8bb-304f35d07a54"
-                          },
+                          }
                         }"""))),
         @ApiResponse(responseCode = "400", description = "잘못된 요청 - 필수 필드 누락 또는 유효성 검사 실패",
                     content = @Content(schema = @Schema(
@@ -178,7 +178,7 @@ public class SetupController {
                           "data": {
                             "logoUrl": "https://cdn.example.com/company/musinsa/logo.svg",
                             "sloganUrl": "https://cdn.example.com/company/musinsa/slogan.svg"
-                          },
+                          }
                         }"""))),
         @ApiResponse(responseCode = "400", description = "잘못된 요청 - pluginKey 파라미터 누락",
                     content = @Content(schema = @Schema(

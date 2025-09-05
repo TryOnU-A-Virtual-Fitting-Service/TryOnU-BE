@@ -86,7 +86,7 @@ public class UserController {
                           "data": {
                             "id": 1,
                             "uuid": "f1a1447f-3f20-421b-a8bb-304f35d07a54"
-                          },
+                          }
                         }"""))),
         @ApiResponse(responseCode = "401", description = "잘못된 X-UUID 헤더, 또는 인증되지 않은 사용자",
                     content = @Content(schema = @Schema(
