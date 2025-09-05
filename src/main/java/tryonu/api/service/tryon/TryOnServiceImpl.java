@@ -306,21 +306,17 @@ public class TryOnServiceImpl implements TryOnService {
             String base64 = Base64.getEncoder().encodeToString(imageBytes);
             String dataUrl = String.format("data:%s;base64,%s", mimeType, base64);
 
-            log.info("[TryOnService] Data URL 변환 완료 - mimeType={}, dataUrlLength={}",
-                    mimeType, dataUrl.length());
+            log.info("[TryOnService] Data URL 변환 완료 - mimeType={}", mimeType);
 
             return new ImageDataUrlResponse(dataUrl);
 
         } catch (WebClientResponseException e) {
             log.error("[TryOnService] 이미지 URL 변환 실패 (WebClient) - url={}, status={}, body={}", imageUrl, e.getStatusCode(), e.getResponseBodyAsString(), e);
-            if (e.getStatusCode().is4xxClientError()) {
-                throw new CustomException(ErrorCode.RESOURCE_NOT_FOUND, "이미지를 찾을 수 없거나 접근할 수 없습니다: " + e.getStatusCode());
-            } else {
-                throw new CustomException(ErrorCode.VIRTUAL_FITTING_API_ERROR, "이미지 서버에서 오류가 발생했습니다: " + e.getStatusCode());
-            }
+            throw new CustomException(ErrorCode.RESOURCE_NOT_FOUND, "이미지를 찾을 수 없거나 접근할 수 없습니다: ");
+            
         } catch (Exception e) {
             log.error("[TryOnService] 이미지 URL 변환 실패 - url={}, error={}", imageUrl, e.getMessage(), e);
-            throw new CustomException(ErrorCode.IMAGE_LOAD_ERROR, "이미지 URL을 Data URL로 변환하는데 실패했습니다: " + e.getMessage());
+            throw new CustomException(ErrorCode.IMAGE_LOAD_ERROR, "이미지 URL을 Data URL로 변환하는데 실패했습니다.");
         }
     }
 
