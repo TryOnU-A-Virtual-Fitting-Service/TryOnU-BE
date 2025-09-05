@@ -14,7 +14,10 @@ public record CompanyResponse(
     
     @Schema(description = "회사 도메인", example = "musinsa.com")
     String domain,
+
+    @Schema(description = "슬로건 이미지 CDN URL", example = "https://cdn.example.com/company/musinsa/musinsa_slogan.svg")
+    String sloganUrl,
     
-    @Schema(description = "고객사 식별자", example = "123e4567-e89b-12d3-a456-426614174000")
+    @Schema(description = "플러그인 키", example = "123e4567-e89b-12d3-a456-426614174000")
     String pluginKey
 ) {}

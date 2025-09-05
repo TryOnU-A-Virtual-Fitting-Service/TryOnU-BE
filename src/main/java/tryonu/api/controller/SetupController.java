@@ -2,6 +2,8 @@ package tryonu.api.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -40,9 +42,41 @@ public class SetupController {
                      "프론트엔드에서 window.location.href로 현재 URL을 전송하면 자동으로 도메인을 파싱합니다."
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "애셋 URL 조회 성공"),
-        @ApiResponse(responseCode = "400", description = "잘못된 요청 - url 파라미터 누락 또는 잘못된 URL 형식"),
-        @ApiResponse(responseCode = "404", description = "요청한 도메인에 해당하는 회사를 찾을 수 없음")
+        @ApiResponse(responseCode = "200", description = "애셋 URL 조회 성공",
+                    content = @Content(schema = @Schema(
+                        type = "object",    
+                        example = """
+                        {
+                          "isSuccess": true,
+                          "data": {
+                            "logoUrl": "https://cdn.example.com/company/musinsa/logo.svg",
+                            "sloganUrl": "https://cdn.example.com/company/musinsa/slogan.svg"
+                          }
+                        }"""))),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청 - url 파라미터 누락 또는 잘못된 URL 형식",
+                    content = @Content(schema = @Schema(
+                        type = "object",
+                        example = """
+                        {
+                          "isSuccess": false,
+                          "error": {
+                            "code": "INVALID_REQUEST",
+                            "message": "잘못된 요청입니다.",
+                            "validationErrors": null
+                          }
+                        }"""))),
+        @ApiResponse(responseCode = "404", description = "요청한 도메인에 해당하는 회사를 찾을 수 없음",
+                    content = @Content(schema = @Schema(
+                        type = "object",
+                        example = """
+                        {
+                          "isSuccess": false,
+                          "error": {
+                            "code": "COMPANY_NOT_FOUND",
+                            "message": "요청한 도메인에 해당하는 회사를 찾을 수 없습니다.",
+                            "validationErrors": null
+                          }
+                        }""")))
     })
     @GetMapping("/asset/domain")
     public ApiResponseWrapper<AssetResponse> getAssetByDomain(
@@ -70,9 +104,46 @@ public class SetupController {
                      "활성화 여부를 지정하지 않으면 기본적으로 활성화 상태로 등록됩니다."
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "회사 등록 성공"),
-        @ApiResponse(responseCode = "400", description = "잘못된 요청 - 필수 필드 누락 또는 유효성 검사 실패"),
-        @ApiResponse(responseCode = "409", description = "이미 존재하는 회사명 또는 도메인")
+        @ApiResponse(responseCode = "200", description = "회사 등록 성공",
+                    content = @Content(schema = @Schema(
+                        type = "object",
+                        example = """
+                        {
+                          "isSuccess": true,
+                          "data": {
+                            "companyName": "musinsa",
+                            "domain": "musinsa.com",
+                            "sloganUrl": "https://cdn.example.com/company/musinsa/slogan.svg",
+                            "pluginKey": "f1a1447f-3f20-421b-a8bb-304f35d07a54"
+                          }
+                        }"""))),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청 - 필수 필드 누락 또는 유효성 검사 실패",
+                    content = @Content(schema = @Schema(
+                        type = "object",
+                        example = """
+                        {
+                          "isSuccess": false,
+                          "error": {
+                            "code": "INVALID_REQUEST",
+                            "message": "잘못된 요청입니다.",
+                            "validationErrors": {
+                              "companyName": "회사명은 필수입니다.",
+                              "domain": "올바른 도메인 형식이 아닙니다."
+                            }
+                          }
+                        }"""))),
+        @ApiResponse(responseCode = "409", description = "이미 존재하는 회사명 또는 도메인",
+                    content = @Content(schema = @Schema(
+                        type = "object",
+                        example = """
+                        {
+                          "isSuccess": false,
+                          "error": {
+                            "code": "COMPANY_ALREADY_EXISTS",
+                            "message": "이미 존재하는 회사명 또는 도메인입니다.",
+                            "validationErrors": null
+                          }
+                        }""")))
     })
     @PostMapping("/company")
     public ApiResponseWrapper<CompanyResponse> registerCompany(
@@ -98,9 +169,29 @@ public class SetupController {
                      "현재는 로고 이미지를 제공하며, 향후 다른 애셋도 추가될 예정입니다."
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "애셋 URL 조회 성공"),
-        @ApiResponse(responseCode = "400", description = "잘못된 요청 - pluginKey 파라미터 누락"),
-        @ApiResponse(responseCode = "404", description = "플러그인 키에 해당하는 활성화된 회사를 찾을 수 없음")
+        @ApiResponse(responseCode = "200", description = "애셋 URL 조회 성공",
+                    content = @Content(schema = @Schema(
+                        type = "object",
+                        example = """
+                        {
+                          "isSuccess": true,
+                          "data": {
+                            "logoUrl": "https://cdn.example.com/company/musinsa/logo.svg",
+                            "sloganUrl": "https://cdn.example.com/company/musinsa/slogan.svg"
+                          }
+                        }"""))),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청 - pluginKey 파라미터 누락",
+                    content = @Content(schema = @Schema(
+                        type = "object",
+                        example = """
+                        {
+                          "isSuccess": false,
+                          "error": {
+                            "code": "INVALID_REQUEST",
+                            "message": "잘못된 요청입니다.",
+                            "validationErrors": null
+                          }
+                        }""")))
     })
     @GetMapping("/asset/plugin")
     public ApiResponseWrapper<AssetResponse> getAssetByPluginKey(

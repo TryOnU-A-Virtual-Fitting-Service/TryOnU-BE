@@ -9,7 +9,6 @@ import tryonu.api.service.defaultmodel.DefaultModelService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -55,9 +54,43 @@ public class DefaultModelController {
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "기본 모델 업로드 성공", 
-                    content = @Content(schema = @Schema(implementation = DefaultModelResponse.class))),
-        @ApiResponse(responseCode = "400", description = "잘못된 요청 또는 파일 업로드 실패"),
-        @ApiResponse(responseCode = "401", description = "잘못된 X-UUID 헤더, 또는 인증되지 않은 사용자")
+                    content = @Content(schema = @Schema(
+                        type = "object",
+                        example = """
+                        {
+                          "isSuccess": true,
+                          "data": {
+                            "defaultModelId": 5,
+                            "defaultModelUrl": "https://cdn.example.com/default-model.jpg",
+                            "modelName": "커스텀 모델",
+                            "sortOrder": 1,
+                            "isCustom": true
+                          }
+                        }"""))),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청 또는 파일 업로드 실패",
+                    content = @Content(schema = @Schema(
+                        type = "object",
+                        example = """
+                        {
+                          "isSuccess": false,
+                          "error": {
+                            "code": "INVALID_REQUEST",
+                            "message": "잘못된 요청입니다.",
+                            "validationErrors": null
+                          }
+                        }"""))),
+        @ApiResponse(responseCode = "401", description = "잘못된 X-UUID 헤더, 또는 인증되지 않은 사용자",
+                    content = @Content(schema = @Schema(
+                        type = "object",
+                        example = """
+                        {
+                          "isSuccess": false,
+                          "error": {
+                            "code": "UNAUTHORIZED",
+                            "message": "인증되지 않은 사용자입니다.",
+                            "validationErrors": null
+                          }
+                        }""")))
     })
     @PostMapping(value = "", consumes = "multipart/form-data")
     public ApiResponseWrapper<DefaultModelResponse> uploadDefaultModel(
@@ -80,8 +113,40 @@ public class DefaultModelController {
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "기본 모델 목록 조회 성공", 
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = DefaultModelDto.class)))),
-        @ApiResponse(responseCode = "401", description = "잘못된 X-UUID 헤더, 또는 인증되지 않은 사용자")
+                    content = @Content(schema = @Schema(
+                        type = "object",
+                        example = """
+                        {
+                          "isSuccess": true,
+                          "data": [
+                            {
+                              "defaultModelId": 1,
+                              "defaultModelUrl": "https://cdn.example.com/male-model.jpg",
+                              "modelName": "남자 모델",
+                              "sortOrder": 1,
+                              "isCustom": false
+                            },
+                            {
+                              "defaultModelId": 2,
+                              "defaultModelUrl": "https://cdn.example.com/female-model.jpg",
+                              "modelName": "여자 모델",
+                              "sortOrder": 2,
+                              "isCustom": false
+                            }
+                          ]
+                        }"""))),
+        @ApiResponse(responseCode = "401", description = "잘못된 X-UUID 헤더, 또는 인증되지 않은 사용자",
+                    content = @Content(schema = @Schema(
+                        type = "object",
+                        example = """
+                        {
+                          "isSuccess": false,
+                          "error": {
+                            "code": "UNAUTHORIZED",
+                            "message": "인증되지 않은 사용자입니다.",
+                            "validationErrors": null
+                          }
+                        }""")))
     })
     @GetMapping("/list")
     public ApiResponseWrapper<List<DefaultModelDto>> getCurrentUserDefaultModels() {

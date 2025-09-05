@@ -26,8 +26,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import tryonu.api.dto.responses.TryOnJobInitResponse;
 import tryonu.api.dto.responses.SizeAdviceResponse;
 import tryonu.api.dto.requests.SizeAdviceRequest;
-import tryonu.api.dto.responses.docs.TryOnResultListApiResponseDoc;
-import tryonu.api.dto.responses.docs.UserInfoApiResponseDoc;
 import tryonu.api.dto.requests.ImageUrlRequest;
 import tryonu.api.dto.responses.ImageDataUrlResponse;
 
@@ -73,9 +71,43 @@ public class TryOnController {
                         "- file: 의류 이미지 파일 (multipart/form-data)\n" +
                         "\nJSON 데이터와 파일을 multipart/form-data로 함께 전송합니다.")
         @ApiResponses({
-                        @ApiResponse(responseCode = "200", description = "가상 피팅 성공", content = @Content(schema = @Schema(implementation = TryOnResponse.class))),
-                        @ApiResponse(responseCode = "400", description = "잘못된 요청"),
-                        @ApiResponse(responseCode = "401", description = "잘못된 X-UUID 헤더, 또는 인증되지 않은 사용자")
+                        @ApiResponse(responseCode = "200", description = "가상 피팅 성공", 
+                                   content = @Content(schema = @Schema(
+                                       type = "object",
+                                       example = """
+                                       {
+                                         "isSuccess": true,
+                                         "data": {
+                                           "tryOnJobId": "1c3f077f-ef18-4361-9ed0-4701904f3d90",
+                                           "tryOnResultUrl": "https://cdn.example.com/users/models/tryonresult-1.jpg",
+                                           "defaultModelId": 5,
+                                           "modelName": "슬림 한국인 남성"
+                                         }
+                                       }"""))),
+                        @ApiResponse(responseCode = "400", description = "잘못된 요청",
+                                   content = @Content(schema = @Schema(
+                                       type = "object",
+                                       example = """
+                                       {
+                                         "isSuccess": false,
+                                         "error": {
+                                           "code": "INVALID_REQUEST",
+                                           "message": "잘못된 요청입니다.",
+                                           "validationErrors": null
+                                         }
+                                       }"""))),
+                        @ApiResponse(responseCode = "401", description = "잘못된 X-UUID 헤더, 또는 인증되지 않은 사용자",
+                                   content = @Content(schema = @Schema(
+                                       type = "object",
+                                       example = """
+                                       {
+                                         "isSuccess": false,
+                                         "error": {
+                                           "code": "UNAUTHORIZED",
+                                           "message": "인증되지 않은 사용자입니다.",
+                                           "validationErrors": null
+                                         }
+                                       }""")))
         })
         @PostMapping(value = "/fitting", consumes = "multipart/form-data")
         public ApiResponseWrapper<TryOnResponse> tryOnWithImage(
@@ -102,8 +134,32 @@ public class TryOnController {
         @Operation(summary = "피팅 결과 목록 조회", description = "X-UUID 헤더를 통해 현재 인증된 사용자의 피팅 결과 목록을 조회합니다. " +
                         "응답에는 사용자의 피팅 결과 목록이 id 내림차순으로 정렬되어 포함됩니다.")
         @ApiResponses({
-                        @ApiResponse(responseCode = "200", description = "피팅 결과 목록 조회 성공", content = @Content(schema = @Schema(implementation = TryOnResultListApiResponseDoc.class))),
-                        @ApiResponse(responseCode = "401", description = "잘못된 X-UUID 헤더, 또는 인증되지 않은 사용자")
+                        @ApiResponse(responseCode = "200", description = "피팅 결과 목록 조회 성공",
+                                   content = @Content(schema = @Schema(
+                                       type = "object",
+                                       example = """
+                                       {
+                                         "isSuccess": true,
+                                         "data": [
+                                           {
+                                             "id": 1,
+                                             "tryOnResultUrl": "https://cdn.example.com/tryon/result1.jpg",
+                                             "createdAt": "2024-01-01T00:00:00"
+                                           }
+                                         ],
+                                       }"""))),
+                        @ApiResponse(responseCode = "401", description = "잘못된 X-UUID 헤더, 또는 인증되지 않은 사용자",
+                                   content = @Content(schema = @Schema(
+                                       type = "object",
+                                       example = """
+                                       {
+                                         "isSuccess": false,    
+                                         "error": {
+                                           "code": "UNAUTHORIZED",
+                                           "message": "인증되지 않은 사용자입니다.",
+                                           "validationErrors": null
+                                         }
+                                       }""")))
         })
         @GetMapping("/list")
         public ApiResponseWrapper<List<TryOnResultDto>> getCurrentUserTryOnResults() {
@@ -120,7 +176,7 @@ public class TryOnController {
                         +
                         "응답에는 사용자의 기본 모델과 피팅 결과 목록이 id 내림차순으로 정렬되어 포함됩니다.")
         @ApiResponses({
-                        @ApiResponse(responseCode = "200", description = "기본 모델 및 피팅 결과 목록 조회 성공", content = @Content(schema = @Schema(implementation = UserInfoApiResponseDoc.class))),
+                        @ApiResponse(responseCode = "200", description = "기본 모델 및 피팅 결과 목록 조회 성공"),
                         @ApiResponse(responseCode = "401", description = "잘못된 X-UUID 헤더, 또는 인증되지 않은 사용자")
         })
         @GetMapping("/with-default-model/list")

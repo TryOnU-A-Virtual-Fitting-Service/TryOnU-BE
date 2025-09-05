@@ -45,12 +45,35 @@ public class HealthCheckController {
             responseCode = "200",
             description = "상태 확인 성공",
             content = @Content(
-                schema = @Schema(implementation = HealthCheckResponse.class)
+                schema = @Schema(
+                    type = "object",    
+                    example = """
+                    {
+                      "isSuccess": true,
+                      "data": {
+                        "status": "UP",
+                        "version": "1.0.0",
+                        "uptime": "2 days, 5 hours, 30 minutes"
+                      }
+                    }""")
             )
         ),
         @ApiResponse(
             responseCode = "500",
-            description = "서버 내부 오류"
+            description = "서버 내부 오류",
+            content = @Content(
+                schema = @Schema(
+                    type = "object",
+                    example = """
+                    {
+                      "isSuccess": false,
+                      "error": {
+                        "code": "INTERNAL_SERVER_ERROR",
+                        "message": "서버 내부 오류가 발생했습니다.",
+                        "validationErrors": null
+                      }
+                    }""")
+            )
         )
     })
     public ApiResponseWrapper<HealthCheckResponse> checkHealth() {

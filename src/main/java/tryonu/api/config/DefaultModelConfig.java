@@ -13,10 +13,10 @@ import tryonu.api.common.enums.Gender;
 @Getter
 public class DefaultModelConfig {
     
-    @Value("${default-models.male.url}")
+    @Value("${assets.default-models.male.url}")
     private String maleUrl;
     
-    @Value("${default-models.female.url}")
+    @Value("${assets.default-models.female.url}")
     private String femaleUrl;
     
     /**

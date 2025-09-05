@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVG URL 테스트</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .test-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+        
+        .test-section h2 {
+            color: #555;
+            margin-top: 0;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        
+        .url-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+        }
+        
+        .url-input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+        
+        .test-button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .test-button:hover {
+            background-color: #0056b3;
+        }
+        
+        .clear-button {
+            background-color: #6c757d;
+        }
+        
+        .clear-button:hover {
+            background-color: #545b62;
+        }
+        
+        .result-area {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: white;
+            min-height: 200px;
+        }
+        
+        .svg-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .svg-container img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            background-color: white;
+        }
+        
+        .error-message {
+            color: #dc3545;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .success-message {
+            color: #155724;
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .info-section {
+            background-color: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .example-urls {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+        
+        .example-urls h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+        
+        .example-url {
+            display: block;
+            padding: 5px 0;
+            color: #007bff;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .example-url:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🖼️ SVG URL 테스트 도구</h1>
+        
+        <div class="info-section">
+            <h3>📋 사용 방법</h3>
+            <p>1. 아래 입력창에 SVG 이미지의 URL을 입력하세요</p>
+            <p>2. "SVG 로드 테스트" 버튼을 클릭하여 이미지를 로드합니다</p>
+            <p>3. "URL 유효성 검사" 버튼으로 URL 형식을 검증합니다</p>
+            <p>4. 예시 URL을 클릭하여 빠르게 테스트할 수 있습니다</p>
+        </div>
+        
+        <div class="test-section">
+            <h2>🔗 URL 입력 및 테스트</h2>
+            <input type="url" id="svgUrl" class="url-input" placeholder="SVG 이미지 URL을 입력하세요 (예: https://example.com/image.svg)">
+            
+            <button onclick="loadSvg()" class="test-button">SVG 로드 테스트</button>
+            <button onclick="validateUrl()" class="test-button">URL 유효성 검사</button>
+            <button onclick="clearResults()" class="test-button clear-button">결과 지우기</button>
+            
+            <div class="example-urls">
+                <h3>📌 테스트용 예시 URL들 (클릭하여 사용)</h3>
+                <a href="#" class="example-url" onclick="setUrl('https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/github.svg')">GitHub 로고 (SVG)</a>
+                <a href="#" class="example-url" onclick="setUrl('https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/apple.svg')">Apple 로고 (SVG)</a>
+                <a href="#" class="example-url" onclick="setUrl('https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/google.svg')">Google 로고 (SVG)</a>
+                <a href="#" class="example-url" onclick="setUrl('https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/microsoft.svg')">Microsoft 로고 (SVG)</a>
+                <a href="#" class="example-url" onclick="setUrl('https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/amazon.svg')">Amazon 로고 (SVG)</a>
+                <a href="#" class="example-url" onclick="setUrl('https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/netflix.svg')">Netflix 로고 (SVG)</a>
+            </div>
+            
+            <div id="result" class="result-area">
+                <p style="color: #6c757d; text-align: center; margin-top: 50px;">URL을 입력하고 테스트 버튼을 클릭하세요</p>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>📊 URL 검증 결과</h2>
+            <div id="validationResult">
+                <p style="color: #6c757d;">URL 유효성 검사를 실행해보세요</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function setUrl(url) {
+            document.getElementById('svgUrl').value = url;
+        }
+        
+        function loadSvg() {
+            const url = document.getElementById('svgUrl').value.trim();
+            const resultDiv = document.getElementById('result');
+            
+            if (!url) {
+                showError('URL을 입력해주세요.');
+                return;
+            }
+            
+            // URL 형식 기본 검증
+            try {
+                new URL(url);
+            } catch (e) {
+                showError('올바른 URL 형식이 아닙니다.');
+                return;
+            }
+            
+            // 로딩 메시지 표시
+            resultDiv.innerHTML = '<p style="color: #007bff; text-align: center;">🔄 이미지를 로드하는 중...</p>';
+            
+            // 이미지 로드 시도
+            const img = new Image();
+            
+            img.onload = function() {
+                const svgContainer = document.createElement('div');
+                svgContainer.className = 'svg-container';
+                
+                // SVG를 iframe으로도 로드해서 내용 확인
+                const iframe = document.createElement('iframe');
+                iframe.src = url;
+                iframe.style.width = '300px';
+                iframe.style.height = '200px';
+                iframe.style.border = '2px solid #007bff';
+                iframe.style.borderRadius = '5px';
+                iframe.style.backgroundColor = 'white';
+                
+                const imgElement = document.createElement('img');
+                imgElement.src = url;
+                imgElement.alt = 'SVG 이미지';
+                imgElement.style.maxWidth = '300px';
+                imgElement.style.maxHeight = '300px';
+                imgElement.style.border = '2px solid #28a745';
+                imgElement.style.borderRadius = '5px';
+                imgElement.style.backgroundColor = 'white';
+                imgElement.style.padding = '10px';
+                
+                svgContainer.appendChild(imgElement);
+                
+                // SVG 원본 내용 확인을 위한 iframe
+                const iframeContainer = document.createElement('div');
+                iframeContainer.innerHTML = '<h4>📄 SVG 원본 내용 (iframe):</h4>';
+                iframeContainer.appendChild(iframe);
+                
+                const successMsg = document.createElement('div');
+                successMsg.className = 'success-message';
+                successMsg.innerHTML = `✅ SVG 이미지가 성공적으로 로드되었습니다!<br>
+                                      <strong>URL:</strong> ${url}<br>
+                                      <strong>크기:</strong> ${img.naturalWidth} x ${img.naturalHeight}px<br>
+                                      <strong>상태:</strong> ${img.naturalWidth > 0 && img.naturalHeight > 0 ? '이미지 데이터 존재' : '⚠️ 이미지 크기가 0 - 빈 SVG일 수 있음'}`;
+                
+                resultDiv.innerHTML = '';
+                resultDiv.appendChild(successMsg);
+                resultDiv.appendChild(svgContainer);
+                resultDiv.appendChild(iframeContainer);
+                
+                // SVG 내용을 직접 가져와서 확인
+                fetch(url)
+                    .then(response => response.text())
+                    .then(svgContent => {
+                        const contentInfo = document.createElement('div');
+                        contentInfo.style.marginTop = '15px';
+                        contentInfo.style.padding = '10px';
+                        contentInfo.style.backgroundColor = '#f8f9fa';
+                        contentInfo.style.border = '1px solid #dee2e6';
+                        contentInfo.style.borderRadius = '5px';
+                        contentInfo.innerHTML = `
+                            <h4>🔍 SVG 내용 분석:</h4>
+                            <p><strong>파일 크기:</strong> ${svgContent.length} bytes</p>
+                            <p><strong>viewBox 존재:</strong> ${svgContent.includes('viewBox') ? '✅' : '❌'}</p>
+                            <p><strong>width/height 속성:</strong> ${svgContent.includes('width=') || svgContent.includes('height=') ? '✅' : '❌'}</p>
+                            <p><strong>그래픽 요소:</strong> ${svgContent.includes('<path') || svgContent.includes('<circle') || svgContent.includes('<rect') || svgContent.includes('<polygon') ? '✅' : '❌'}</p>
+                            <details style="margin-top: 10px;">
+                                <summary>SVG 원본 코드 보기</summary>
+                                <pre style="background: white; padding: 10px; border: 1px solid #ddd; border-radius: 3px; overflow-x: auto; font-size: 12px; margin-top: 10px;">${svgContent.substring(0, 1000)}${svgContent.length > 1000 ? '...' : ''}</pre>
+                            </details>
+                        `;
+                        resultDiv.appendChild(contentInfo);
+                    })
+                    .catch(err => {
+                        console.log('SVG 내용을 가져올 수 없습니다:', err);
+                    });
+            };
+            
+            img.onerror = function() {
+                showError(`❌ 이미지를 로드할 수 없습니다.<br>
+                          <strong>URL:</strong> ${url}<br>
+                          <strong>가능한 원인:</strong><br>
+                          • URL이 잘못되었거나 존재하지 않음<br>
+                          • CORS 정책으로 인한 접근 제한<br>
+                          • 서버에서 이미지를 제공하지 않음<br>
+                          • 네트워크 연결 문제`);
+            };
+            
+            img.src = url;
+        }
+        
+        function validateUrl() {
+            const url = document.getElementById('svgUrl').value.trim();
+            const validationDiv = document.getElementById('validationResult');
+            
+            if (!url) {
+                validationDiv.innerHTML = '<div class="error-message">URL을 입력해주세요.</div>';
+                return;
+            }
+            
+            try {
+                const urlObj = new URL(url);
+                
+                // URL 구조 검증
+                const isValidProtocol = urlObj.protocol === 'http:' || urlObj.protocol === 'https:';
+                const hasHost = urlObj.hostname.length > 0;
+                const isSvgFile = urlObj.pathname.toLowerCase().endsWith('.svg');
+                
+                let validationResults = [];
+                
+                if (isValidProtocol) {
+                    validationResults.push('✅ 프로토콜 (http/https) 유효');
+                } else {
+                    validationResults.push('❌ 프로토콜이 http 또는 https가 아님');
+                }
+                
+                if (hasHost) {
+                    validationResults.push('✅ 호스트명 존재');
+                } else {
+                    validationResults.push('❌ 호스트명이 없음');
+                }
+                
+                if (isSvgFile) {
+                    validationResults.push('✅ SVG 파일 확장자');
+                } else {
+                    validationResults.push('⚠️ SVG 파일 확장자가 아님 (선택사항)');
+                }
+                
+                const isValid = isValidProtocol && hasHost;
+                
+                validationDiv.innerHTML = `
+                    <div class="${isValid ? 'success-message' : 'error-message'}">
+                        <strong>URL 검증 결과:</strong><br>
+                        <strong>입력된 URL:</strong> ${url}<br><br>
+                        ${validationResults.join('<br>')}<br><br>
+                        <strong>전체 결과:</strong> ${isValid ? '✅ 유효한 URL' : '❌ 유효하지 않은 URL'}
+                    </div>
+                `;
+                
+            } catch (e) {
+                validationDiv.innerHTML = `
+                    <div class="error-message">
+                        ❌ <strong>URL 형식 오류:</strong><br>
+                        ${e.message}<br><br>
+                        <strong>입력된 값:</strong> ${url}
+                    </div>
+                `;
+            }
+        }
+        
+        function clearResults() {
+            document.getElementById('result').innerHTML = '<p style="color: #6c757d; text-align: center; margin-top: 50px;">URL을 입력하고 테스트 버튼을 클릭하세요</p>';
+            document.getElementById('validationResult').innerHTML = '<p style="color: #6c757d;">URL 유효성 검사를 실행해보세요</p>';
+            document.getElementById('svgUrl').value = '';
+        }
+        
+        function showError(message) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="error-message">${message}</div>`;
+        }
+        
+        // Enter 키로 SVG 로드
+        document.getElementById('svgUrl').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                loadSvg();
+            }
+        });
+    </script>
+</body>
+</html>

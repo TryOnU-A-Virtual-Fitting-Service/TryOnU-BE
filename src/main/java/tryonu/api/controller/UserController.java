@@ -44,7 +44,20 @@ public class UserController {
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "사용자 초기화 성공"),
-        @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터")
+        @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터",
+                    content = @Content(schema = @Schema(
+                        type = "object",
+                        example = """
+                        {
+                          "isSuccess": false,
+                          "error": {
+                            "code": "INVALID_REQUEST",
+                            "message": "잘못된 요청 데이터입니다.",
+                            "validationErrors": {
+                              "uuid": "UUID는 필수입니다."
+                            }
+                          }
+                        }""")))
     })
     @PostMapping("/init")
     @ResponseStatus(HttpStatus.CREATED)
@@ -65,8 +78,28 @@ public class UserController {
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "사용자 정보 조회 성공", 
-                    content = @Content(schema = @Schema(implementation = SimpleUserResponse.class))),
-        @ApiResponse(responseCode = "401", description = "잘못된 X-UUID 헤더, 또는 인증되지 않은 사용자"),
+                    content = @Content(schema = @Schema(
+                        type = "object",
+                        example = """
+                        {
+                          "isSuccess": true,
+                          "data": {
+                            "id": 1,
+                            "uuid": "f1a1447f-3f20-421b-a8bb-304f35d07a54"
+                          }
+                        }"""))),
+        @ApiResponse(responseCode = "401", description = "잘못된 X-UUID 헤더, 또는 인증되지 않은 사용자",
+                    content = @Content(schema = @Schema(
+                        type = "object",
+                        example = """
+                        {
+                          "isSuccess": false,
+                          "error": {
+                            "code": "UNAUTHORIZED",
+                            "message": "인증되지 않은 사용자입니다.",
+                            "validationErrors": null
+                          }
+                        }""")))
     })
     @GetMapping("/me")
     public ApiResponseWrapper<SimpleUserResponse> getCurrentUserInfo() {
