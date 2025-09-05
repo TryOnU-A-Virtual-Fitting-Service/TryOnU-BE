@@ -9,16 +9,25 @@ import java.util.Map;
  * 
  * @param <T> 응답 데이터의 타입
  */
-@Schema(description = "API 응답 공통 형식")
+@Schema(description = "API 응답 공통 형식", 
+        example = """
+        {
+          "isSuccess": true,
+          "data": {
+            "id": 1,
+            "name": "예시 데이터"
+          },
+          "error": null
+        }""")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record ApiResponseWrapper<T>(
     @Schema(description = "요청 성공 여부", example = "true")
     boolean isSuccess,
     
-    @Schema(description = "응답 데이터")
+    @Schema(description = "응답 데이터 (성공 시에만 존재)")
     T data,
     
-    @Schema(description = "에러 정보")
+    @Schema(description = "에러 정보 (실패 시에만 존재)")
     ErrorResponse error
 ) {
     
@@ -74,7 +83,13 @@ public record ApiResponseWrapper<T>(
      * @param message 에러 메시지
      * @param validationErrors 필드별 validation 에러 (선택)
      */
-    @Schema(description = "에러 응답 정보")
+    @Schema(description = "에러 응답 정보",
+            example = """
+            {
+              "code": "USER_NOT_FOUND",
+              "message": "사용자를 찾을 수 없습니다.",
+              "validationErrors": null
+            }""")
     public record ErrorResponse(
         @Schema(description = "에러 코드", example = "USER_NOT_FOUND")
         String code,
@@ -82,7 +97,8 @@ public record ApiResponseWrapper<T>(
         @Schema(description = "에러 메시지", example = "사용자를 찾을 수 없습니다.")
         String message,
 
-        @Schema(description = "필드별 validation 에러", example = "{\"name\": \"이름은 필수입니다.\"}")
+        @Schema(description = "필드별 validation 에러 (validation 실패 시에만 존재)", 
+                example = "{\"name\": \"이름은 필수입니다.\"}")
         @JsonInclude(JsonInclude.Include.NON_NULL)
         Map<String, String> validationErrors
     ) {}
