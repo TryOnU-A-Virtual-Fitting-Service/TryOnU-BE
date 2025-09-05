@@ -12,9 +12,11 @@ import tryonu.api.dto.requests.VirtualFittingRequest;
 import tryonu.api.dto.responses.*;
 import tryonu.api.domain.User;
 import tryonu.api.domain.DefaultModel;
+import tryonu.api.domain.TryOnResult;
 import tryonu.api.repository.tryonresult.TryOnResultRepository;
 import tryonu.api.common.util.VirtualFittingUtil;
 import tryonu.api.common.util.ImageUploadUtil;
+import tryonu.api.common.util.BackgroundRemovalUtil;
 import tryonu.api.common.util.CategoryPredictionUtil;
 import tryonu.api.common.exception.CustomException;
 import tryonu.api.common.exception.enums.ErrorCode;
@@ -55,6 +57,7 @@ public class TryOnServiceImpl implements TryOnService {
     private final SizeAdviceRepository sizeAdviceRepository;
     private final SizeAdviceConverter sizeAdviceConverter;
     private final SizeAnalyzer sizeAnalyzer;
+    private final BackgroundRemovalUtil backgroundRemovalUtil;
 
     @Value("${virtual-fitting.polling.max-wait-time-ms:60000}") // 기본 1분
     private long maxWaitTimeMs;
@@ -103,6 +106,7 @@ public class TryOnServiceImpl implements TryOnService {
         // 현재 인증된 사용자 및 기본 모델 조회
         User currentUser = SecurityUtils.getCurrentUser();
         DefaultModel defaultModel = defaultModelRepository.findByIdAndIsDeletedFalseOrThrow(defaultModelId); // 검증
+        TryOnResult tryOnResult = tryOnResultRepository.findByTryOnJobIdOrThrow(tryOnJobId);
 
         try {
             // 의류 이미지 카테고리 예측
@@ -139,14 +143,14 @@ public class TryOnServiceImpl implements TryOnService {
                 String resultImageUrl = finalStatus.output().get(0); // 첫 번째 결과 이미지
 
                 // fashn.ai 결과 이미지를 다운로드하여 S3에 업로드
-                String uploadedResultImageUrl = imageUploadUtil.uploadTryOnResultImageFromUrl(resultImageUrl);
+                String uploadedResultImageUrl = imageUploadUtil.uploadTryOnResultImage(backgroundRemovalUtil.removeBackground(resultImageUrl));
                 log.info("[TryOnService] 가상 피팅 결과 S3 업로드 완료 - originalUrl={}, s3Url={}", resultImageUrl,
                         uploadedResultImageUrl);
 
                 // 저장 및 응답 생성은 짧은 쓰기 트랜잭션으로 분리
                 Category category = parseCategory(categoryPredictionResponse.className());
                 TryOnResponse response = tryOnWriteService.saveAndBuildResponse(
-                        tryOnJobId,
+                        tryOnResult,
                         category,
                         clothImageUrl,
                         productPageUrl,
