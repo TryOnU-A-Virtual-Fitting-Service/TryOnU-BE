@@ -86,7 +86,7 @@ public class SecurityConfig {
                     "/setup",                 // 프론트엔드 애셋 로드 API (로고 등, 무조건 허용)
                     "/webhook/**",            // WebHook 엔드포인트 (외부 서비스 호출, 무조건 허용)
                     "/error",
-                    "/setup/**"                 // 에러 페이지 (무조건 허용)
+                    "/setup/**"                 
                 ));
 
                 boolean isProd = Arrays.asList(env.getActiveProfiles()).contains("prod");

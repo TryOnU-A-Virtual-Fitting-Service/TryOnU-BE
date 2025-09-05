@@ -77,7 +77,7 @@ public record ApiResponseWrapper<T>(
     }
     
     /**
-     * 에러 응답 정보image.png
+     * 에러 응답 정보
      * 
      * @param code 에러 코드
      * @param message 에러 메시지
