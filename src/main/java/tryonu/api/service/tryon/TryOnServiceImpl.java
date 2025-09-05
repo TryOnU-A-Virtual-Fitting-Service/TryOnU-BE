@@ -9,7 +9,9 @@ import org.springframework.web.multipart.MultipartFile;
 import tryonu.api.dto.requests.SizeAdviceRequest;
 import tryonu.api.dto.requests.TryOnRequestDto;
 import tryonu.api.dto.requests.VirtualFittingRequest;
+import tryonu.api.dto.requests.ImageUrlRequest;
 import tryonu.api.dto.responses.*;
+import tryonu.api.dto.responses.ImageDataUrlResponse;
 import tryonu.api.domain.User;
 import tryonu.api.domain.DefaultModel;
 import tryonu.api.domain.TryOnResult;
@@ -34,6 +36,7 @@ import tryonu.api.analyzer.SizeAnalyzeRequest;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.Base64;
 
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,6 +61,7 @@ public class TryOnServiceImpl implements TryOnService {
     private final SizeAdviceConverter sizeAdviceConverter;
     private final SizeAnalyzer sizeAnalyzer;
     private final BackgroundRemovalUtil backgroundRemovalUtil;
+    private final org.springframework.web.reactive.function.client.WebClient imageDownloadWebClient;
 
     @Value("${virtual-fitting.polling.max-wait-time-ms:60000}") // 기본 1분
     private long maxWaitTimeMs;
@@ -269,5 +273,73 @@ public class TryOnServiceImpl implements TryOnService {
                 .findDefaultModelsByUserIdOrderBySortOrder(currentUserId);
         List<TryOnResultDto> tryOnResults = tryOnResultRepository.findTryOnResultsByUserIdOrderByIdDesc(currentUserId);
         return userConverter.toUserInfoResponse(defaultModels, tryOnResults);
+    }
+
+    @Override
+    public ImageDataUrlResponse convertImageUrlToDataUrl(ImageUrlRequest request) {
+        String imageUrl = request.imageUrl();
+        
+        log.info("[TryOnService] 이미지 URL을 Data URL로 변환 시작 - url={}", imageUrl);
+        
+        try {
+            // 1. URL에서 이미지 다운로드
+            byte[] imageBytes = imageDownloadWebClient
+                    .get()
+                    .uri(imageUrl)
+                    .retrieve()
+                    .bodyToMono(byte[].class)
+                    .block();
+
+            if (imageBytes == null || imageBytes.length == 0) {
+                throw new CustomException(ErrorCode.IMAGE_LOAD_ERROR, "이미지를 다운로드할 수 없습니다.");
+            }
+
+            log.info("[TryOnService] 이미지 다운로드 완료 - size={}KB", imageBytes.length / 1024);
+
+            // 2. MIME 타입 감지 (간단한 확장자 기반)
+            String mimeType = detectMimeType(imageUrl);
+            
+            // 3. Base64 인코딩
+            String base64 = Base64.getEncoder().encodeToString(imageBytes);
+            
+            // 4. Data URL 생성
+            String dataUrl = String.format("data:%s;base64,%s", mimeType, base64);
+            
+            log.info("[TryOnService] Data URL 변환 완료 - mimeType={}, dataUrlLength={}", 
+                    mimeType, dataUrl.length());
+
+            return new ImageDataUrlResponse(dataUrl);
+
+        } catch (Exception e) {
+            log.error("[TryOnService] 이미지 URL 변환 실패 - url={}, error={}", imageUrl, e.getMessage(), e);
+            throw new CustomException(ErrorCode.IMAGE_LOAD_ERROR, "이미지 URL을 Data URL로 변환하는데 실패했습니다: " + e.getMessage());
+        }
+    }
+
+    /**
+     * URL에서 MIME 타입을 감지합니다.
+     * 
+     * @param imageUrl 이미지 URL
+     * @return MIME 타입
+     */
+    private String detectMimeType(String imageUrl) {
+        String lowerUrl = imageUrl.toLowerCase();
+        
+        if (lowerUrl.contains(".jpg") || lowerUrl.contains(".jpeg")) {
+            return "image/jpeg";
+        } else if (lowerUrl.contains(".png")) {
+            return "image/png";
+        } else if (lowerUrl.contains(".gif")) {
+            return "image/gif";
+        } else if (lowerUrl.contains(".webp")) {
+            return "image/webp";
+        } else if (lowerUrl.contains(".bmp")) {
+            return "image/bmp";
+        } else if (lowerUrl.contains(".svg")) {
+            return "image/svg+xml";
+        } else {
+            // 기본값으로 JPEG 사용
+            return "image/jpeg";
+        }
     }
 }

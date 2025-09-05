@@ -28,6 +28,8 @@ import tryonu.api.dto.responses.SizeAdviceResponse;
 import tryonu.api.dto.requests.SizeAdviceRequest;
 import tryonu.api.dto.responses.docs.TryOnResultListApiResponseDoc;
 import tryonu.api.dto.responses.docs.UserInfoApiResponseDoc;
+import tryonu.api.dto.requests.ImageUrlRequest;
+import tryonu.api.dto.responses.ImageDataUrlResponse;
 
 @Validated
 @RestController
@@ -124,6 +126,37 @@ public class TryOnController {
         @GetMapping("/with-default-model/list")
         public ApiResponseWrapper<UserInfoResponse> getCurrentUserAllData() {
                 UserInfoResponse response = tryOnService.getCurrentUserAllData();
+                return ApiResponseWrapper.ofSuccess(response);
+        }
+
+        /**
+         * 이미지 URL을 Data URL로 변환
+         * 
+         * @param request 이미지 URL 요청
+         * @return Data URL 형태의 이미지 데이터
+         */
+        @Operation(
+            summary = "이미지 URL을 Data URL로 변환",
+            description = "이미지 URL을 받아서 Base64로 인코딩된 Data URL로 변환합니다. " +
+                         "지원하는 이미지 형식: JPG, JPEG, PNG, GIF, WebP, BMP, SVG. " +
+                         "캡처 로직 최적화를 위한 API입니다."
+        )
+        @ApiResponses({
+            @ApiResponse(
+                responseCode = "200", 
+                description = "변환 성공", 
+                content = @Content(schema = @Schema(implementation = ImageDataUrlResponse.class))
+            ),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청 - 유효하지 않은 URL 형식"),
+            @ApiResponse(responseCode = "404", description = "이미지를 찾을 수 없음"),
+            @ApiResponse(responseCode = "500", description = "이미지 다운로드 또는 변환 실패")
+        })
+        @PostMapping("/image")
+        public ApiResponseWrapper<ImageDataUrlResponse> convertImageUrlToDataUrl(
+                @Parameter(description = "이미지 URL 변환 요청", required = true)
+                @Valid @RequestBody ImageUrlRequest request
+        ) {
+                ImageDataUrlResponse response = tryOnService.convertImageUrlToDataUrl(request);
                 return ApiResponseWrapper.ofSuccess(response);
         }
 
