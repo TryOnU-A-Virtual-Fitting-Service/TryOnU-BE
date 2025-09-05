@@ -50,6 +50,12 @@ public class Company extends BaseEntity {
      */
     @Column(name = "logo_url", nullable = false, length = 500)
     private String logoUrl;
+
+    /**
+     * 슬로건 이미지 CDN URL
+     */
+    @Column(name = "slogan_url", nullable = false, length = 500)
+    private String sloganUrl;
     
     
     /**
@@ -61,10 +67,11 @@ public class Company extends BaseEntity {
 
     
     @Builder
-    public Company(String companyName, String domain, String logoUrl, Boolean isActive) {
+    public Company(String companyName, String domain, String logoUrl, String sloganUrl, Boolean isActive) {
         this.companyName = companyName;
         this.domain = domain;
         this.logoUrl = logoUrl;
+        this.sloganUrl = sloganUrl;
         this.isActive = isActive != null ? isActive : true;
         this.pluginKey = UUID.randomUUID().toString();
     }

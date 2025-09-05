@@ -37,6 +37,27 @@ public class CompanyServiceImpl implements CompanyService {
         return companyConverter.getAssetUrl(company);
     }
 
+    @Override
+    public AssetResponse getAssetResponseByPluginKey(@NonNull String pluginKey) {
+        Company company = companyRepository.findByPluginKeyAndIsActiveTrueOrThrow(pluginKey);
+
+        return companyConverter.getAssetUrl(company);
+    }
+
+    @Override
+    @Transactional
+    public CompanyResponse registerCompany(@NonNull CompanyRequest request) {
+        // 중복 검증
+        validateDuplicateCompany(request);
+
+        // 엔티티 변환 및 저장
+        Company company = companyConverter.toEntity(request);
+        Company savedCompany = companyRepository.save(company);
+
+        return companyConverter.toResponse(savedCompany);
+    }
+
+
     /**
      * URL에서 도메인을 추출하는 메서드
      * 
@@ -85,19 +106,6 @@ public class CompanyServiceImpl implements CompanyService {
         return domain;
     }
 
-    @Override
-    @Transactional
-    public CompanyResponse registerCompany(@NonNull CompanyRequest request) {
-        // 중복 검증
-        validateDuplicateCompany(request);
-
-        // 엔티티 변환 및 저장
-        Company company = companyConverter.toEntity(request);
-        Company savedCompany = companyRepository.save(company);
-
-        return companyConverter.toResponse(savedCompany);
-    }
-
     /**
      * 회사 중복 검증
      * 회사명, 도메인의 중복을 검사합니다.
@@ -118,9 +126,5 @@ public class CompanyServiceImpl implements CompanyService {
         }
     }
 
-    @Override
-    public AssetResponse getAssetResponseByPluginKey(@NonNull String pluginKey) {
-        Company company = companyRepository.findByPluginKeyAndIsActiveTrueOrThrow(pluginKey);
-        return companyConverter.getAssetUrl(company);
-    }
+
 }

@@ -15,7 +15,9 @@ public record AssetResponse(
     String domain,
     
     @Schema(description = "로고 CDN URL", example = "https://cdn.example.com/company/musinsa/musinsa_header.svg")
-    String logoUrl
+    String logoUrl,
 
-    // 향후 확장 가능
+    @Schema(description = "slogan CDN URL", example = "https://cdn.example.com/company/musinsa/musinsa_slogan.svg")
+    String sloganUrl
+
 ) {}

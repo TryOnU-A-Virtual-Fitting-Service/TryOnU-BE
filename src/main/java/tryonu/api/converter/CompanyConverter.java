@@ -22,11 +22,7 @@ public class CompanyConverter {
      * @return 해당 타입의 애셋 URL
      */
     public AssetResponse getAssetUrl(@NonNull Company company) {
-        String assetUrl = company.getLogoUrl();
-        
-        log.debug("[CompanyConverter] 애셋 URL 변환 완료 - assetUrl: {}", assetUrl);
-
-        return new AssetResponse(company.getDomain(), assetUrl);    
+        return new AssetResponse(company.getDomain(), company.getLogoUrl(), company.getSloganUrl());    
     }
     
     /**
@@ -42,6 +38,7 @@ public class CompanyConverter {
                 .companyName(request.companyName())
                 .domain(request.domain())
                 .logoUrl(request.logoUrl())
+                .sloganUrl(request.sloganUrl())
                 .isActive(request.isActive())
                 .build();
         
@@ -61,6 +58,7 @@ public class CompanyConverter {
         CompanyResponse response = new CompanyResponse(
                 company.getCompanyName(),
                 company.getDomain(),
+                company.getSloganUrl(),
                 company.getPluginKey()
         );
         

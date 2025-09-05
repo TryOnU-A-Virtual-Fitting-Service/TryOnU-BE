@@ -29,6 +29,12 @@ public record CompanyRequest(
     @Pattern(regexp = "^https?://.*", message = "올바른 URL 형식이 아닙니다.")
     String logoUrl,
         
+    @Schema(description = "슬로건 이미지 CDN URL", example = "https://cdn.example.com/company/musinsa/musinsa_slogan.svg")
+    @NotBlank(message = "슬로건 URL은 필수입니다.")
+    @Size(max = 500, message = "슬로건 URL은 500자를 초과할 수 없습니다.")
+    @Pattern(regexp = "^https?://.*", message = "올바른 URL 형식이 아닙니다.")
+    String sloganUrl,
+    
     @Schema(description = "활성화 여부", example = "true", defaultValue = "true")
     Boolean isActive
     
