@@ -58,30 +58,11 @@ jobs:
           username: ec2-user
           key: ${{ secrets.API_EC2_PRIVATE_KEY }}
           script: |
-            # 명령어 실패 시 즉시 스크립트 중단
-            set -e
-
             # ECR 로그인
             aws ecr get-login-password --region ap-northeast-2 | sudo docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}
             
-            # 기존 ThatzFit API 컨테이너 정리
-            sudo docker stop thatzfit-api || true
-            sudo docker rm thatzfit-api || true
-
-            # 최신 ThatzFit API 이미지 pull
-            sudo docker pull ${{ steps.build-image.outputs.image }}
-
-            # ThatzFit API 컨테이너 실행 (CloudWatch 로깅 포함)
-            sudo docker run -d --name thatzfit-api \
-              -p 8080:8080 \
-              -e SPRING_PROFILES_ACTIVE=prod \
-              --restart always \
-              --log-driver=awslogs \
-              --log-opt awslogs-region=ap-northeast-2 \
-              --log-opt awslogs-group="/aws/ec2/thatzfit-api" \
-              --log-opt awslogs-create-group=true \
-              ${{ steps.build-image.outputs.image }}
-      
+            # 무중단 배포 진행
+            /home/ec2-user/deploy.sh ${{ steps.build-image.outputs.image }}
 
 
   # Slack 알림
