@@ -64,7 +64,6 @@ jobs:
             # 무중단 배포 진행
             /home/ec2-user/deploy.sh ${{ steps.build-image.outputs.image }}
 
-
   # Slack 알림
   notify-slack:
     needs: build-and-deploy
@@ -93,7 +92,7 @@ jobs:
                   "fields": [
                     { "type": "mrkdwn", "text": "*Repository:*\n${{ github.repository }}" },
                     { "type": "mrkdwn", "text": "*Branch:*\n${{ github.ref_name }}" },
-                    { "type": "mrkdwn", "text": "*Commit:*\n<https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha.slice(0,7) }}>" },
+                    { "type": "mrkdwn", "text": "*Commit:*\n<https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.short_sha }}>" },
                     { "type": "mrkdwn", "text": "*Author:*\n${{ github.actor }}" }
                   ]
                 }
@@ -124,7 +123,7 @@ jobs:
                   "fields": [
                     { "type": "mrkdwn", "text": "*Repository:*\n${{ github.repository }}" },
                     { "type": "mrkdwn", "text": "*Branch:*\n${{ github.ref_name }}" },
-                    { "type": "mrkdwn", "text": "*Commit:*\n<https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha.slice(0,7) }}>" },
+                    { "type": "mrkdwn", "text": "*Commit:*\n<https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.short_sha }}>" },
                     { "type": "mrkdwn", "text": "*Author:*\n${{ github.actor }}" }
                   ]
                 }
@@ -132,3 +131,4 @@ jobs:
             }
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
