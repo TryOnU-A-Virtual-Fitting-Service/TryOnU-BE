@@ -30,4 +30,7 @@ ENV JAVA_OPTS="-Xms256m -Xmx768m -XX:+UseG1GC -XX:+UseContainerSupport \
 -XX:MaxDirectMemorySize=150m -Xlog:gc*:gc.log:time \
 -XX:+UseStringDeduplication -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/app/logs/"
 
+HEALTHCHECK --interval=5s --timeout=3s --start-period=30s --retries=5 \
+  CMD curl -f http://localhost:8080/actuator/health || exit 1
+
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -Dspring.profiles.active=prod -jar app.jar"] 
