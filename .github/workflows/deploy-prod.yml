@@ -69,9 +69,11 @@ jobs:
   notify-slack:
     needs: build-and-deploy
     runs-on: ubuntu-latest
-    if: always()
+    if: always() # 이전 작업의 성공/실패와 관계없이 항상 실행
     steps:
-      - name: Send Slack Notification
+      # 배포 성공 시 알림
+      - name: Send Slack Notification on Success
+        if: needs.build-and-deploy.result == 'success' # build-and-deploy 작업이 성공했을 때만 실행
         uses: slackapi/slack-github-action@v1.26.0
         with:
           channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
@@ -82,7 +84,7 @@ jobs:
                   "type": "header",
                   "text": {
                     "type": "plain_text",
-                    "text": "🚀 API 서버 배포 결과: ${{ needs.build-and-deploy.result }}",
+                    "text": "✅ API 서버 배포 성공!",
                     "emoji": true
                   }
                 },
@@ -90,8 +92,39 @@ jobs:
                   "type": "section",
                   "fields": [
                     { "type": "mrkdwn", "text": "*Repository:*\n${{ github.repository }}" },
-                    { "type": "mrkdwn", "text": "*Branch:*\n${{ github.ref }}" },
-                    { "type": "mrkdwn", "text": "*Commit:*\n<https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>" },
+                    { "type": "mrkdwn", "text": "*Branch:*\n${{ github.ref_name }}" },
+                    { "type": "mrkdwn", "text": "*Commit:*\n<https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha.slice(0,7) }}>" },
+                    { "type": "mrkdwn", "text": "*Author:*\n${{ github.actor }}" }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+      # 배포 실패 시 알림
+      - name: Send Slack Notification on Failure
+        if: needs.build-and-deploy.result != 'success' # build-and-deploy 작업이 성공하지 않았을 때(실패, 취소 등) 실행
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "❌ API 서버 배포 실패",
+                    "emoji": true
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    { "type": "mrkdwn", "text": "*Repository:*\n${{ github.repository }}" },
+                    { "type": "mrkdwn", "text": "*Branch:*\n${{ github.ref_name }}" },
+                    { "type": "mrkdwn", "text": "*Commit:*\n<https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha.slice(0,7) }}>" },
                     { "type": "mrkdwn", "text": "*Author:*\n${{ github.actor }}" }
                   ]
                 }
