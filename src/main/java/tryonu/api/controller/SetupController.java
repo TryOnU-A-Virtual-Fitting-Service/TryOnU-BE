@@ -50,7 +50,8 @@ public class SetupController {
                           "isSuccess": true,
                           "data": {
                             "logoUrl": "https://cdn.example.com/company/musinsa/logo.svg",
-                            "sloganUrl": "https://cdn.example.com/company/musinsa/slogan.svg"
+                            "sloganUrl": "https://cdn.example.com/company/musinsa/slogan.svg",
+                            "btnUrl": "https://cdn.example.com/company/musinsa/btn.svg"
                           }
                         }"""))),
         @ApiResponse(responseCode = "400", description = "잘못된 요청 - url 파라미터 누락 또는 잘못된 URL 형식",
@@ -177,7 +178,8 @@ public class SetupController {
                           "isSuccess": true,
                           "data": {
                             "logoUrl": "https://cdn.example.com/company/musinsa/logo.svg",
-                            "sloganUrl": "https://cdn.example.com/company/musinsa/slogan.svg"
+                            "sloganUrl": "https://cdn.example.com/company/musinsa/slogan.svg",
+                            "btnUrl": "https://cdn.example.com/company/musinsa/btn.svg"
                           }
                         }"""))),
         @ApiResponse(responseCode = "400", description = "잘못된 요청 - pluginKey 파라미터 누락",
