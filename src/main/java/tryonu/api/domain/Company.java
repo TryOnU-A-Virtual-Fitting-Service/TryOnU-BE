@@ -57,6 +57,11 @@ public class Company extends BaseEntity {
     @Column(name = "slogan_url", nullable = false, length = 500)
     private String sloganUrl;
     
+    /**
+     * btn 이미지 CDN URL
+     */
+    @Column(name = "btn_url", nullable = false, length = 500)
+    private String btnUrl;
     
     /**
      * 활성화 여부
