@@ -21,6 +21,9 @@ public class CompanyConverter {
 
     @Value("${assets.fallback.slogan.url}")
     private String fallbackSloganUrl;
+
+    @Value("${assets.fallback.btn.url}")
+    private String fallbackBtnUrl;
     
     /**
      * 회사 정보와 애셋 타입에 따라 적절한 애셋 URL을 반환
@@ -29,7 +32,7 @@ public class CompanyConverter {
      * @return 해당 타입의 애셋 URL
      */
     public AssetResponse getAssetUrl(@NonNull Company company) {
-        return new AssetResponse(company.getLogoUrl(), company.getSloganUrl());    
+        return new AssetResponse(company.getLogoUrl(), company.getSloganUrl(), company.getBtnUrl());    
     }
     
     /**
@@ -39,8 +42,8 @@ public class CompanyConverter {
      */
     public AssetResponse getFallbackAssetUrl() {
         log.debug("[CompanyConverter] Fallback URL을 사용하여 AssetResponse 생성 - logoUrl: {}, sloganUrl: {}", 
-                 fallbackLogoUrl, fallbackSloganUrl);
-        return new AssetResponse(fallbackLogoUrl, fallbackSloganUrl);
+                 fallbackLogoUrl, fallbackSloganUrl, fallbackBtnUrl);
+        return new AssetResponse(fallbackLogoUrl, fallbackSloganUrl, fallbackBtnUrl);
     }
     
     /**
