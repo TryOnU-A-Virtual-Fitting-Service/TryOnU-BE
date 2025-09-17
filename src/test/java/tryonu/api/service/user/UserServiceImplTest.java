@@ -236,6 +236,7 @@ class UserServiceImplTest extends BaseServiceTest {
                 void getCurrentUserSimpleInfo_Success() {
                         // Given
                         RecentlyUsedModel recentlyUsedModel = new RecentlyUsedModel(
+                                        1L,
                                         "https://test-bucket.s3.amazonaws.com/models/default-female-model.jpg",
                                         "default-female-model.jpg",
                                         "기본 여성 모델");
@@ -250,7 +251,7 @@ class UserServiceImplTest extends BaseServiceTest {
 
                                 // Then
                                 assertThat(result).isNotNull();
-                                assertThat(result.recentlyUsedModel().modelUrl())
+                                assertThat(result.recentlyUsedModel().defaultModelUrl())
                                                 .isEqualTo(testUser.getRecentlyUsedModelUrl());
                                 assertThat(result.recentlyUsedModel().modelName())
                                                 .isEqualTo(testUser.getRecentlyUsedModelName());
