@@ -99,6 +99,7 @@ class TryOnServiceImplTest extends BaseServiceTest {
                 @DisplayName("성공: 정상적인 가상 피팅 요청")
                 void tryOn_Success() {
                         // Given
+                        final byte[] testImageBytes = "test-image-bytes".getBytes();
                         CategoryPredictionResponse categoryResponse = ResponseFixture
                                         .createCategoryPredictionResponse();
                         String clothImageUrl = "https://test-bucket.s3.amazonaws.com/clothes/test-cloth.jpg";
@@ -133,8 +134,8 @@ class TryOnServiceImplTest extends BaseServiceTest {
                                                 anyLong()))
                                                 .willReturn(completedStatus);
                                 given(backgroundRemovalUtil.removeBackground(completedStatus.output().get(0)))
-                                                .willReturn("test-image-bytes".getBytes());
-                                given(imageUploadUtil.uploadTryOnResultImage("test-image-bytes".getBytes()))
+                                                .willReturn(testImageBytes);
+                                given(imageUploadUtil.uploadTryOnResultImage(testImageBytes))
                                                 .willReturn(uploadedResultImageUrl);
                                 given(tryOnWriteService.saveAndBuildResponse(
                                                 eq(testTryOnResult),
@@ -165,7 +166,7 @@ class TryOnServiceImplTest extends BaseServiceTest {
                                                 anyLong(),
                                                 anyLong());
                                 then(backgroundRemovalUtil).should().removeBackground(completedStatus.output().get(0));
-                                then(imageUploadUtil).should().uploadTryOnResultImage("test-image-bytes".getBytes());
+                                then(imageUploadUtil).should().uploadTryOnResultImage(testImageBytes);
                         }
                 }
 

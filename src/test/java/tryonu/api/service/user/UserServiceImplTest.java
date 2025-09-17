@@ -235,8 +235,9 @@ class UserServiceImplTest extends BaseServiceTest {
                 @DisplayName("성공: 현재 사용자 간단 정보 조회")
                 void getCurrentUserSimpleInfo_Success() {
                         // Given
+                        final Long RECENTLY_USED_MODEL_ID = 1L;
                         RecentlyUsedModel recentlyUsedModel = new RecentlyUsedModel(
-                                        1L,
+                                        RECENTLY_USED_MODEL_ID,
                                         "https://test-bucket.s3.amazonaws.com/models/default-female-model.jpg",
                                         "default-female-model.jpg",
                                         "기본 여성 모델");
