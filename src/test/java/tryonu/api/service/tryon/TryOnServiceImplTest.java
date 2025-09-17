@@ -13,6 +13,7 @@ import tryonu.api.config.BaseServiceTest;
 import tryonu.api.common.util.VirtualFittingUtil;
 import tryonu.api.common.util.ImageUploadUtil;
 import tryonu.api.common.util.CategoryPredictionUtil;
+import tryonu.api.common.util.BackgroundRemovalUtil;
 import tryonu.api.repository.tryonresult.TryOnResultRepository;
 import tryonu.api.repository.defaultmodel.DefaultModelRepository;
 import tryonu.api.converter.TryOnResultConverter;
@@ -73,6 +74,9 @@ class TryOnServiceImplTest extends BaseServiceTest {
         @Mock
         private TryOnWriteService tryOnWriteService;
 
+        @Mock
+        private BackgroundRemovalUtil backgroundRemovalUtil;
+
         private User testUser;
         private DefaultModel testDefaultModel;
         private TryOnRequestDto testRequest;
@@ -114,6 +118,8 @@ class TryOnServiceImplTest extends BaseServiceTest {
                                 given(defaultModelRepository
                                                 .findByIdAndIsDeletedFalseOrThrow(testRequest.defaultModelId()))
                                                 .willReturn(testDefaultModel);
+                                given(tryOnResultRepository.findByTryOnJobIdOrThrow(testRequest.tryOnJobId()))
+                                                .willReturn(testTryOnResult);
                                 given(categoryPredictionUtil.predictCategory(any(MultipartFile.class)))
                                                 .willReturn(categoryResponse);
                                 given(imageUploadUtil.uploadClothImage(any(MultipartFile.class)))
@@ -126,7 +132,9 @@ class TryOnServiceImplTest extends BaseServiceTest {
                                 given(virtualFittingUtil.waitForCompletion(eq(virtualFittingResponse.id()), anyLong(),
                                                 anyLong()))
                                                 .willReturn(completedStatus);
-                                given(imageUploadUtil.uploadTryOnResultImageFromUrl(completedStatus.output().get(0)))
+                                given(backgroundRemovalUtil.removeBackground(completedStatus.output().get(0)))
+                                                .willReturn("test-image-bytes".getBytes());
+                                given(imageUploadUtil.uploadTryOnResultImage("test-image-bytes".getBytes()))
                                                 .willReturn(uploadedResultImageUrl);
                                 given(tryOnWriteService.saveAndBuildResponse(
                                                 eq(testTryOnResult),
@@ -156,8 +164,8 @@ class TryOnServiceImplTest extends BaseServiceTest {
                                 then(virtualFittingUtil).should().waitForCompletion(eq(virtualFittingResponse.id()),
                                                 anyLong(),
                                                 anyLong());
-                                then(imageUploadUtil).should()
-                                                .uploadTryOnResultImageFromUrl(completedStatus.output().get(0));
+                                then(backgroundRemovalUtil).should().removeBackground(completedStatus.output().get(0));
+                                then(imageUploadUtil).should().uploadTryOnResultImage("test-image-bytes".getBytes());
                         }
                 }
 

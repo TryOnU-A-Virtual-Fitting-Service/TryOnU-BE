@@ -91,8 +91,6 @@ class TryOnWriteServiceImplTest extends BaseServiceTest {
                         given(tryOnResultConverter.toClothEntity(clothImageUrl, productPageUrl, category))
                                         .willReturn(testCloth);
                         given(clothRepository.save(testCloth)).willReturn(testCloth);
-                        given(tryOnResultRepository.findByTryOnJobIdOrThrow(tryOnJobId))
-                                        .willReturn(testTryOnResult);
                         given(tryOnResultRepository.save(testTryOnResult)).willReturn(testTryOnResult);
                         given(userRepository.save(testUser)).willReturn(testUser);
                         given(tryOnResultConverter.toTryOnResponse(testTryOnResult, defaultModelName))
@@ -120,7 +118,6 @@ class TryOnWriteServiceImplTest extends BaseServiceTest {
                         // Verify interactions
                         then(tryOnResultConverter).should().toClothEntity(clothImageUrl, productPageUrl, category);
                         then(clothRepository).should().save(testCloth);
-                        then(tryOnResultRepository).should().findByTryOnJobIdOrThrow(tryOnJobId);
                         then(tryOnResultRepository).should().save(testTryOnResult);
                         then(userRepository).should().save(testUser);
                         then(tryOnResultConverter).should().toTryOnResponse(testTryOnResult, defaultModelName);
@@ -158,8 +155,6 @@ class TryOnWriteServiceImplTest extends BaseServiceTest {
                         given(tryOnResultConverter.toClothEntity(clothImageUrl, productPageUrl, category))
                                         .willReturn(clothWithNullUrl);
                         given(clothRepository.save(clothWithNullUrl)).willReturn(clothWithNullUrl);
-                        given(tryOnResultRepository.findByTryOnJobIdOrThrow(tryOnJobId))
-                                        .willReturn(tryOnResultWithNullUrl);
                         given(tryOnResultRepository.save(tryOnResultWithNullUrl)).willReturn(tryOnResultWithNullUrl);
                         given(userRepository.save(testUser)).willReturn(testUser);
                         given(tryOnResultConverter.toTryOnResponse(tryOnResultWithNullUrl, defaultModelName))
@@ -211,8 +206,6 @@ class TryOnWriteServiceImplTest extends BaseServiceTest {
                         given(tryOnResultConverter.toClothEntity(clothImageUrl, productPageUrl, category))
                                         .willReturn(cloth);
                         given(clothRepository.save(cloth)).willReturn(cloth);
-                        given(tryOnResultRepository.findByTryOnJobIdOrThrow(tryOnJobId))
-                                        .willReturn(tryOnResult);
                         given(tryOnResultRepository.save(tryOnResult)).willReturn(tryOnResult);
                         given(userRepository.save(testUser)).willReturn(testUser);
                         given(tryOnResultConverter.toTryOnResponse(tryOnResult, testDefaultModel.getModelName()))
