@@ -91,8 +91,6 @@ class TryOnWriteServiceImplTest extends BaseServiceTest {
                         given(tryOnResultConverter.toClothEntity(clothImageUrl, productPageUrl, category))
                                         .willReturn(testCloth);
                         given(clothRepository.save(testCloth)).willReturn(testCloth);
-                        given(tryOnResultRepository.findByTryOnJobIdOrThrow(tryOnJobId))
-                                        .willReturn(testTryOnResult);
                         given(tryOnResultRepository.save(testTryOnResult)).willReturn(testTryOnResult);
                         given(userRepository.save(testUser)).willReturn(testUser);
                         given(tryOnResultConverter.toTryOnResponse(testTryOnResult, defaultModelName))
@@ -100,7 +98,7 @@ class TryOnWriteServiceImplTest extends BaseServiceTest {
 
                         // When
                         TryOnResponse result = tryOnWriteService.saveAndBuildResponse(
-                                        tryOnJobId,
+                                        testTryOnResult,
                                         category,
                                         clothImageUrl,
                                         productPageUrl,
@@ -114,13 +112,12 @@ class TryOnWriteServiceImplTest extends BaseServiceTest {
                         assertThat(result).isNotNull();
                         assertThat(result.tryOnJobId()).isEqualTo(tryOnJobId);
                         assertThat(result.modelName()).isEqualTo(defaultModelName);
-                        assertThat(result.tryOnResultImageUrl()).isEqualTo(uploadedResultImageUrl);
+                        assertThat(result.tryOnResultUrl()).isEqualTo(uploadedResultImageUrl);
                         assertThat(result.defaultModelId()).isEqualTo(testDefaultModel.getId());
 
                         // Verify interactions
                         then(tryOnResultConverter).should().toClothEntity(clothImageUrl, productPageUrl, category);
                         then(clothRepository).should().save(testCloth);
-                        then(tryOnResultRepository).should().findByTryOnJobIdOrThrow(tryOnJobId);
                         then(tryOnResultRepository).should().save(testTryOnResult);
                         then(userRepository).should().save(testUser);
                         then(tryOnResultConverter).should().toTryOnResponse(testTryOnResult, defaultModelName);
@@ -158,8 +155,6 @@ class TryOnWriteServiceImplTest extends BaseServiceTest {
                         given(tryOnResultConverter.toClothEntity(clothImageUrl, productPageUrl, category))
                                         .willReturn(clothWithNullUrl);
                         given(clothRepository.save(clothWithNullUrl)).willReturn(clothWithNullUrl);
-                        given(tryOnResultRepository.findByTryOnJobIdOrThrow(tryOnJobId))
-                                        .willReturn(tryOnResultWithNullUrl);
                         given(tryOnResultRepository.save(tryOnResultWithNullUrl)).willReturn(tryOnResultWithNullUrl);
                         given(userRepository.save(testUser)).willReturn(testUser);
                         given(tryOnResultConverter.toTryOnResponse(tryOnResultWithNullUrl, defaultModelName))
@@ -167,7 +162,7 @@ class TryOnWriteServiceImplTest extends BaseServiceTest {
 
                         // When
                         TryOnResponse result = tryOnWriteService.saveAndBuildResponse(
-                                        tryOnJobId,
+                                        tryOnResultWithNullUrl,
                                         category,
                                         clothImageUrl,
                                         productPageUrl, // null
@@ -180,7 +175,7 @@ class TryOnWriteServiceImplTest extends BaseServiceTest {
                         // Then
                         assertThat(result).isNotNull();
                         assertThat(result.modelName()).isEqualTo(defaultModelName);
-                        assertThat(result.tryOnResultImageUrl()).isEqualTo(uploadedResultImageUrl);
+                        assertThat(result.tryOnResultUrl()).isEqualTo(uploadedResultImageUrl);
 
                         then(tryOnResultConverter).should().toClothEntity(clothImageUrl, null, category);
                 }
@@ -211,8 +206,6 @@ class TryOnWriteServiceImplTest extends BaseServiceTest {
                         given(tryOnResultConverter.toClothEntity(clothImageUrl, productPageUrl, category))
                                         .willReturn(cloth);
                         given(clothRepository.save(cloth)).willReturn(cloth);
-                        given(tryOnResultRepository.findByTryOnJobIdOrThrow(tryOnJobId))
-                                        .willReturn(tryOnResult);
                         given(tryOnResultRepository.save(tryOnResult)).willReturn(tryOnResult);
                         given(userRepository.save(testUser)).willReturn(testUser);
                         given(tryOnResultConverter.toTryOnResponse(tryOnResult, testDefaultModel.getModelName()))
@@ -220,7 +213,7 @@ class TryOnWriteServiceImplTest extends BaseServiceTest {
 
                         // When
                         TryOnResponse result = tryOnWriteService.saveAndBuildResponse(
-                                        tryOnJobId,
+                                        tryOnResult,
                                         category,
                                         clothImageUrl,
                                         productPageUrl,
@@ -233,7 +226,7 @@ class TryOnWriteServiceImplTest extends BaseServiceTest {
                         // Then
                         assertThat(result).isNotNull();
                         assertThat(result.modelName()).isEqualTo(testDefaultModel.getModelName());
-                        assertThat(result.tryOnResultImageUrl()).isEqualTo(uploadedResultImageUrl);
+                        assertThat(result.tryOnResultUrl()).isEqualTo(uploadedResultImageUrl);
 
                         then(tryOnResultConverter).should().toClothEntity(clothImageUrl, productPageUrl, category);
                 }

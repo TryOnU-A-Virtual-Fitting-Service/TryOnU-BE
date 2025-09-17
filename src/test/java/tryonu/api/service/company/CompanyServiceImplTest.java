@@ -122,31 +122,39 @@ class CompanyServiceImplTest extends BaseServiceTest {
         }
 
         @Test
-        @DisplayName("실패: 잘못된 URL 형식")
+        @DisplayName("실패: 잘못된 URL 형식 - fallback URL 반환")
         void getAssetResponseByUrl_Fail_InvalidUrl() {
             // Given
             String invalidUrl = "invalid-url-format";
+            AssetResponse fallbackResponse = ResponseFixture.createAssetResponse();
 
-            // When & Then
-            assertThatThrownBy(() -> companyService.getAssetResponseByUrl(invalidUrl))
-                    .isInstanceOf(CustomException.class)
-                    .extracting("errorCode")
-                    .isEqualTo(ErrorCode.INVALID_REQUEST);
+            given(companyConverter.getFallbackAssetUrl()).willReturn(fallbackResponse);
 
+            // When
+            AssetResponse result = companyService.getAssetResponseByUrl(invalidUrl);
+
+            // Then
+            assertThat(result).isEqualTo(fallbackResponse);
             then(companyRepository).should(never()).findByDomainAndIsActiveTrueOrThrow(any());
+            then(companyConverter).should().getFallbackAssetUrl();
         }
 
         @Test
-        @DisplayName("실패: 호스트가 없는 URL")
+        @DisplayName("실패: 호스트가 없는 URL - fallback URL 반환")
         void getAssetResponseByUrl_Fail_NoHost() {
             // Given
             String urlWithoutHost = "file:///local/file.html";
+            AssetResponse fallbackResponse = ResponseFixture.createAssetResponse();
 
-            // When & Then
-            assertThatThrownBy(() -> companyService.getAssetResponseByUrl(urlWithoutHost))
-                    .isInstanceOf(CustomException.class)
-                    .extracting("errorCode")
-                    .isEqualTo(ErrorCode.INVALID_REQUEST);
+            given(companyConverter.getFallbackAssetUrl()).willReturn(fallbackResponse);
+
+            // When
+            AssetResponse result = companyService.getAssetResponseByUrl(urlWithoutHost);
+
+            // Then
+            assertThat(result).isEqualTo(fallbackResponse);
+            then(companyRepository).should(never()).findByDomainAndIsActiveTrueOrThrow(any());
+            then(companyConverter).should().getFallbackAssetUrl();
         }
     }
 

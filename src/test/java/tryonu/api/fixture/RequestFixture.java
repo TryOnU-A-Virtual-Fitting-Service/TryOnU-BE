@@ -47,6 +47,7 @@ public class RequestFixture {
                 "testcompany",
                 "test-company.com",
                 "https://cdn.example.com/company/test/logo.png",
+                "https://cdn.example.com/company/test/slogan.png",
                 true);
     }
 
@@ -55,6 +56,7 @@ public class RequestFixture {
                 companyName,
                 domain,
                 "https://cdn.example.com/company/" + companyName + "/logo.png",
+                "https://cdn.example.com/company/" + companyName + "/slogan.png",
                 true);
     }
 

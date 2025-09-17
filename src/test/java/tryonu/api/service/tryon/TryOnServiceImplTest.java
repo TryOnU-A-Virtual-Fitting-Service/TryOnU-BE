@@ -13,11 +13,13 @@ import tryonu.api.config.BaseServiceTest;
 import tryonu.api.common.util.VirtualFittingUtil;
 import tryonu.api.common.util.ImageUploadUtil;
 import tryonu.api.common.util.CategoryPredictionUtil;
+import tryonu.api.common.util.BackgroundRemovalUtil;
 import tryonu.api.repository.tryonresult.TryOnResultRepository;
 import tryonu.api.repository.defaultmodel.DefaultModelRepository;
 import tryonu.api.converter.TryOnResultConverter;
 import tryonu.api.converter.UserConverter;
 import tryonu.api.common.auth.SecurityUtils;
+import tryonu.api.domain.TryOnResult;
 import tryonu.api.domain.User;
 import tryonu.api.domain.DefaultModel;
 import tryonu.api.dto.requests.TryOnRequestDto;
@@ -72,6 +74,9 @@ class TryOnServiceImplTest extends BaseServiceTest {
         @Mock
         private TryOnWriteService tryOnWriteService;
 
+        @Mock
+        private BackgroundRemovalUtil backgroundRemovalUtil;
+
         private User testUser;
         private DefaultModel testDefaultModel;
         private TryOnRequestDto testRequest;
@@ -94,6 +99,7 @@ class TryOnServiceImplTest extends BaseServiceTest {
                 @DisplayName("성공: 정상적인 가상 피팅 요청")
                 void tryOn_Success() {
                         // Given
+                        final byte[] testImageBytes = "test-image-bytes".getBytes();
                         CategoryPredictionResponse categoryResponse = ResponseFixture
                                         .createCategoryPredictionResponse();
                         String clothImageUrl = "https://test-bucket.s3.amazonaws.com/clothes/test-cloth.jpg";
@@ -101,6 +107,7 @@ class TryOnServiceImplTest extends BaseServiceTest {
                         VirtualFittingResponse virtualFittingResponse = ResponseFixture.createVirtualFittingResponse();
                         VirtualFittingStatusResponse completedStatus = ResponseFixture.createCompletedStatusResponse();
                         String uploadedResultImageUrl = "https://test-bucket.s3.amazonaws.com/results/test-result.jpg";
+                        TryOnResult testTryOnResult = TryOnResultFixture.createTryOnResult();
                         TryOnResponse expectedResponse = ResponseFixture.createTryOnResponse(
                                         testRequest.tryOnJobId(),
                                         uploadedResultImageUrl,
@@ -112,6 +119,8 @@ class TryOnServiceImplTest extends BaseServiceTest {
                                 given(defaultModelRepository
                                                 .findByIdAndIsDeletedFalseOrThrow(testRequest.defaultModelId()))
                                                 .willReturn(testDefaultModel);
+                                given(tryOnResultRepository.findByTryOnJobIdOrThrow(testRequest.tryOnJobId()))
+                                                .willReturn(testTryOnResult);
                                 given(categoryPredictionUtil.predictCategory(any(MultipartFile.class)))
                                                 .willReturn(categoryResponse);
                                 given(imageUploadUtil.uploadClothImage(any(MultipartFile.class)))
@@ -124,10 +133,12 @@ class TryOnServiceImplTest extends BaseServiceTest {
                                 given(virtualFittingUtil.waitForCompletion(eq(virtualFittingResponse.id()), anyLong(),
                                                 anyLong()))
                                                 .willReturn(completedStatus);
-                                given(imageUploadUtil.uploadTryOnResultImageFromUrl(completedStatus.output().get(0)))
+                                given(backgroundRemovalUtil.removeBackground(completedStatus.output().get(0)))
+                                                .willReturn(testImageBytes);
+                                given(imageUploadUtil.uploadTryOnResultImage(testImageBytes))
                                                 .willReturn(uploadedResultImageUrl);
                                 given(tryOnWriteService.saveAndBuildResponse(
-                                                eq(testRequest.tryOnJobId()),
+                                                eq(testTryOnResult),
                                                 eq(Category.LONG_SLEEVE),
                                                 eq(clothImageUrl),
                                                 eq(testRequest.productPageUrl()),
@@ -144,7 +155,7 @@ class TryOnServiceImplTest extends BaseServiceTest {
                                 assertThat(result).isNotNull();
                                 assertThat(result.tryOnJobId()).isEqualTo(testRequest.tryOnJobId());
                                 assertThat(result.modelName()).isEqualTo(testDefaultModel.getModelName());
-                                assertThat(result.tryOnResultImageUrl()).isEqualTo(uploadedResultImageUrl);
+                                assertThat(result.tryOnResultUrl()).isEqualTo(uploadedResultImageUrl);
                                 assertThat(result.defaultModelId()).isEqualTo(testDefaultModel.getId());
 
                                 // Verify interactions
@@ -154,8 +165,8 @@ class TryOnServiceImplTest extends BaseServiceTest {
                                 then(virtualFittingUtil).should().waitForCompletion(eq(virtualFittingResponse.id()),
                                                 anyLong(),
                                                 anyLong());
-                                then(imageUploadUtil).should()
-                                                .uploadTryOnResultImageFromUrl(completedStatus.output().get(0));
+                                then(backgroundRemovalUtil).should().removeBackground(completedStatus.output().get(0));
+                                then(imageUploadUtil).should().uploadTryOnResultImage(testImageBytes);
                         }
                 }
 
