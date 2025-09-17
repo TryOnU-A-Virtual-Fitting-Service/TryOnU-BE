@@ -111,13 +111,10 @@ jacocoTestReport {
     afterEvaluate {
         classDirectories.setFrom(
                 files(classDirectories.files.collect {
-                    fileTree(dir: it, exclude: [
-                            '**/Q*.class',
-                            '**/tryonu/api/ApiApplication.class',
-                            '**/tryonu/api/dto/**',
-                            '**/tryonu/api/config/**',
-                            '**/tryonu/api/common/exception/**',
-                            '**/tryonu/api/common/enums/**'
+                    fileTree(dir: it, include: [
+                            '**/tryonu/api/service/**'
+                    ], exclude: [
+                            '**/Q*.class'
                     ])
                 })
         )
