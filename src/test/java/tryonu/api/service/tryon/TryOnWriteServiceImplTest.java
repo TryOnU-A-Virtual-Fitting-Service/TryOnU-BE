@@ -100,7 +100,7 @@ class TryOnWriteServiceImplTest extends BaseServiceTest {
 
                         // When
                         TryOnResponse result = tryOnWriteService.saveAndBuildResponse(
-                                        tryOnJobId,
+                                        testTryOnResult,
                                         category,
                                         clothImageUrl,
                                         productPageUrl,
@@ -114,7 +114,7 @@ class TryOnWriteServiceImplTest extends BaseServiceTest {
                         assertThat(result).isNotNull();
                         assertThat(result.tryOnJobId()).isEqualTo(tryOnJobId);
                         assertThat(result.modelName()).isEqualTo(defaultModelName);
-                        assertThat(result.tryOnResultImageUrl()).isEqualTo(uploadedResultImageUrl);
+                        assertThat(result.tryOnResultUrl()).isEqualTo(uploadedResultImageUrl);
                         assertThat(result.defaultModelId()).isEqualTo(testDefaultModel.getId());
 
                         // Verify interactions
@@ -167,7 +167,7 @@ class TryOnWriteServiceImplTest extends BaseServiceTest {
 
                         // When
                         TryOnResponse result = tryOnWriteService.saveAndBuildResponse(
-                                        tryOnJobId,
+                                        tryOnResultWithNullUrl,
                                         category,
                                         clothImageUrl,
                                         productPageUrl, // null
@@ -180,7 +180,7 @@ class TryOnWriteServiceImplTest extends BaseServiceTest {
                         // Then
                         assertThat(result).isNotNull();
                         assertThat(result.modelName()).isEqualTo(defaultModelName);
-                        assertThat(result.tryOnResultImageUrl()).isEqualTo(uploadedResultImageUrl);
+                        assertThat(result.tryOnResultUrl()).isEqualTo(uploadedResultImageUrl);
 
                         then(tryOnResultConverter).should().toClothEntity(clothImageUrl, null, category);
                 }
@@ -220,7 +220,7 @@ class TryOnWriteServiceImplTest extends BaseServiceTest {
 
                         // When
                         TryOnResponse result = tryOnWriteService.saveAndBuildResponse(
-                                        tryOnJobId,
+                                        tryOnResult,
                                         category,
                                         clothImageUrl,
                                         productPageUrl,
@@ -233,7 +233,7 @@ class TryOnWriteServiceImplTest extends BaseServiceTest {
                         // Then
                         assertThat(result).isNotNull();
                         assertThat(result.modelName()).isEqualTo(testDefaultModel.getModelName());
-                        assertThat(result.tryOnResultImageUrl()).isEqualTo(uploadedResultImageUrl);
+                        assertThat(result.tryOnResultUrl()).isEqualTo(uploadedResultImageUrl);
 
                         then(tryOnResultConverter).should().toClothEntity(clothImageUrl, productPageUrl, category);
                 }

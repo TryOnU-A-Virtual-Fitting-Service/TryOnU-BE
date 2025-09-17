@@ -18,6 +18,7 @@ import tryonu.api.repository.defaultmodel.DefaultModelRepository;
 import tryonu.api.converter.TryOnResultConverter;
 import tryonu.api.converter.UserConverter;
 import tryonu.api.common.auth.SecurityUtils;
+import tryonu.api.domain.TryOnResult;
 import tryonu.api.domain.User;
 import tryonu.api.domain.DefaultModel;
 import tryonu.api.dto.requests.TryOnRequestDto;
@@ -101,6 +102,7 @@ class TryOnServiceImplTest extends BaseServiceTest {
                         VirtualFittingResponse virtualFittingResponse = ResponseFixture.createVirtualFittingResponse();
                         VirtualFittingStatusResponse completedStatus = ResponseFixture.createCompletedStatusResponse();
                         String uploadedResultImageUrl = "https://test-bucket.s3.amazonaws.com/results/test-result.jpg";
+                        TryOnResult testTryOnResult = TryOnResultFixture.createTryOnResult();
                         TryOnResponse expectedResponse = ResponseFixture.createTryOnResponse(
                                         testRequest.tryOnJobId(),
                                         uploadedResultImageUrl,
@@ -127,7 +129,7 @@ class TryOnServiceImplTest extends BaseServiceTest {
                                 given(imageUploadUtil.uploadTryOnResultImageFromUrl(completedStatus.output().get(0)))
                                                 .willReturn(uploadedResultImageUrl);
                                 given(tryOnWriteService.saveAndBuildResponse(
-                                                eq(testRequest.tryOnJobId()),
+                                                eq(testTryOnResult),
                                                 eq(Category.LONG_SLEEVE),
                                                 eq(clothImageUrl),
                                                 eq(testRequest.productPageUrl()),
@@ -144,7 +146,7 @@ class TryOnServiceImplTest extends BaseServiceTest {
                                 assertThat(result).isNotNull();
                                 assertThat(result.tryOnJobId()).isEqualTo(testRequest.tryOnJobId());
                                 assertThat(result.modelName()).isEqualTo(testDefaultModel.getModelName());
-                                assertThat(result.tryOnResultImageUrl()).isEqualTo(uploadedResultImageUrl);
+                                assertThat(result.tryOnResultUrl()).isEqualTo(uploadedResultImageUrl);
                                 assertThat(result.defaultModelId()).isEqualTo(testDefaultModel.getId());
 
                                 // Verify interactions
